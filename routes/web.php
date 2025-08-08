@@ -38,6 +38,8 @@ Route::middleware(['auth'])->group(function () {
     // Special routes for lots
     Route::get('lots/{lot}/report', [LotController::class, 'report'])->name('lots.report');
     Route::get('lots/{lot}/pdf', [LotController::class, 'downloadPDF'])->name('lots.pdf');
+    Route::get('lots/{lot}/payments', [LotController::class, 'payments'])->name('lots.payments');
+    Route::post('lots/{lot}/payments', [LotController::class, 'addPayment'])->name('lots.payments.add');
     
     // Special routes for payments
     Route::get('sales/{sale}/payment', [PaymentController::class, 'createSalePayment'])->name('payments.sale.create');

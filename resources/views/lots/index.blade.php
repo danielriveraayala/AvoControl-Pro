@@ -136,6 +136,54 @@
         </div>
     </div>
 
+    <!-- Estadísticas de Pagos -->
+    <div class="row" id="paymentStatsRow">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3 id="totalDebt">${{ $stats['total_debt'] ?? '0.00' }}</h3>
+                    <p>Total Deuda Proveedores</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3 id="totalPaid">${{ $stats['total_paid'] ?? '0.00' }}</h3>
+                    <p>Total Pagado</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3 id="potentialProfit">${{ $stats['potential_profit'] ?? '0.00' }}</h3>
+                    <p>Ganancia Proyectada</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3 id="lotsWithDebt">{{ $stats['lots_with_debt'] ?? 0 }}</h3>
+                    <p>Lotes con Saldo Pendiente</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Tabla de Lotes -->
     <div class="row">
         <div class="col-12">
@@ -185,6 +233,46 @@
                 </div>
                 <form id="lotForm" data-mode="create">
                     <div class="modal-body">
+                        <!-- Estadísticas en tiempo real -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card card-info">
+                                    <div class="card-header">
+                                        <h3 class="card-title">📊 Estadísticas del Lote</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="info-box bg-info">
+                                                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Costo Total</span>
+                                                        <span class="info-box-number" id="total-cost">$0.00</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="info-box bg-success">
+                                                    <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Ganancia Potencial</span>
+                                                        <span class="info-box-number" id="potential-profit">
+                                                            <button type="button" class="btn btn-sm btn-outline-light" onclick="toggleSensitiveData()">
+                                                                <i class="fas fa-eye-slash"></i> Mostrar
+                                                            </button>
+                                                        </span>
+                                                        <div id="profit-details" style="display: none;">
+                                                            <small class="text-light" id="profit-amount">$0.00</small><br>
+                                                            <small class="text-light" id="profit-margin">0% margen</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -257,39 +345,50 @@
                             </div>
                         </div>
 
-                        <!-- Estadísticas en tiempo real -->
+                        <!-- Sección de Pago Inicial -->
                         <div class="row">
                             <div class="col-12">
-                                <div class="card card-info">
+                                <div class="card card-warning collapsed-card">
                                     <div class="card-header">
-                                        <h3 class="card-title">📊 Estadísticas del Lote</h3>
+                                        <h3 class="card-title">💰 Pago Inicial (Opcional)</h3>
+                                        <div class="card-tools">
+                                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="card-body">
+                                    <div class="card-body" style="display: none;">
                                         <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="info-box bg-info">
-                                                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
-                                                    <div class="info-box-content">
-                                                        <span class="info-box-text">Costo Total</span>
-                                                        <span class="info-box-number" id="total-cost">$0.00</span>
-                                                    </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="monto_pago">Monto del Pago</label>
+                                                    <input type="number" name="monto_pago" id="monto_pago" class="form-control" step="0.01" min="0">
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="info-box bg-success">
-                                                    <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
-                                                    <div class="info-box-content">
-                                                        <span class="info-box-text">Ganancia Potencial</span>
-                                                        <span class="info-box-number" id="potential-profit">
-                                                            <button type="button" class="btn btn-sm btn-outline-light" onclick="toggleSensitiveData()">
-                                                                <i class="fas fa-eye-slash"></i> Mostrar
-                                                            </button>
-                                                        </span>
-                                                        <div id="profit-details" style="display: none;">
-                                                            <small class="text-light" id="profit-amount">$0.00</small><br>
-                                                            <small class="text-light" id="profit-margin">0% margen</small>
-                                                        </div>
-                                                    </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="fecha_pago">Fecha del Pago</label>
+                                                    <input type="date" name="fecha_pago" id="fecha_pago" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="tipo_pago">Tipo de Pago</label>
+                                                    <select name="tipo_pago" id="tipo_pago" class="form-control">
+                                                        <option value="efectivo">Efectivo</option>
+                                                        <option value="transferencia">Transferencia</option>
+                                                        <option value="cheque">Cheque</option>
+                                                        <option value="deposito">Depósito</option>
+                                                        <option value="otro">Otro</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label for="notas_pago">Notas del Pago</label>
+                                                    <textarea name="notas_pago" id="notas_pago" class="form-control" rows="2" placeholder="Referencia, número de transferencia, etc."></textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -333,6 +432,84 @@
                         <i class="fas fa-file-pdf"></i> Descargar PDF
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Timeline Modal -->
+    <div class="modal fade" id="paymentTimelineModal" tabindex="-1" aria-labelledby="paymentTimelineModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title text-white" id="paymentTimelineModalTitle">Historial de Pagos</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="paymentTimelineContent">
+                        <!-- Payment timeline content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success" id="addPaymentBtn">
+                        <i class="fas fa-plus"></i> Agregar Pago
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Payment Modal -->
+    <div class="modal fade" id="addPaymentModal" tabindex="-1" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white" id="addPaymentModalTitle">Agregar Pago</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addPaymentForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="paymentLotId" name="lot_id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="paymentAmount">Monto del Pago *</label>
+                                    <input type="number" class="form-control" id="paymentAmount" name="amount" step="0.01" min="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="paymentDate">Fecha del Pago *</label>
+                                    <input type="date" class="form-control" id="paymentDate" name="payment_date" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentType">Tipo de Pago</label>
+                            <select class="form-control" id="paymentType" name="payment_type">
+                                <option value="efectivo">Efectivo</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="cheque">Cheque</option>
+                                <option value="deposito">Depósito</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentNotes">Notas</label>
+                            <textarea class="form-control" id="paymentNotes" name="notes" rows="3" placeholder="Referencia, número de transferencia, etc."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Pago
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -455,6 +632,9 @@ $(document).ready(function() {
                             <button class="btn btn-primary" onclick="openEditLotModal(${data})" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </button>
+                            <button class="btn btn-success" onclick="openPaymentTimeline(${data})" title="Pagos">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </button>
                             <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
@@ -533,7 +713,7 @@ function openEditLotModal(id) {
     .then(data => {
         console.log('Edit data received:', data);
         console.log('Precio venta sugerido:', data.precio_venta_sugerido);
-        
+
         // Populate form fields
         $('#supplier_id').val(data.supplier_id || '');
         $('#codigo').val(data.codigo || '');
@@ -543,6 +723,14 @@ function openEditLotModal(id) {
         $('#calidad').val(data.calidad || '');
         $('#notas').val(data.notas || '');
         $('#fecha_compra').val(data.fecha_compra || '');
+
+        // Populate payment fields if payment data exists
+        $('#monto_pago').val(data.amount_paid || '');
+        if (data.latest_payment) {
+            $('#fecha_pago').val(data.latest_payment.payment_date || '');
+            $('#tipo_pago').val(data.latest_payment.payment_type || 'efectivo');
+            $('#notas_pago').val(data.latest_payment.notes || '');
+        }
 
         console.log('Form field set with value:', $('#precio_venta_sugerido').val());
 
@@ -560,7 +748,7 @@ function openEditLotModal(id) {
 function openViewLotModal(id) {
     console.log('Opening view lot modal for ID:', id);
     currentLotId = id;
-    
+
     fetch(`{{ url('lots') }}/${id}/report`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -640,7 +828,7 @@ function printLotReport() {
     // Obtener datos del lote actual desde el modal
     const lotCode = $('#reportModalTitle').text().replace('Reporte del Lote ', '');
     const lotData = extractLotDataFromModal();
-    
+
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
         <!DOCTYPE html>
@@ -654,7 +842,7 @@ function printLotReport() {
                     size: 80mm auto;
                     margin: 0;
                 }
-                
+
                 body {
                     font-family: 'Courier New', monospace;
                     font-size: 12px;
@@ -664,86 +852,93 @@ function printLotReport() {
                     width: 70mm;
                     color: #000;
                 }
-                
+
                 .center {
                     text-align: center;
                 }
-                
+
                 .bold {
                     font-weight: bold;
                 }
-                
+
                 .header {
                     text-align: center;
                     border-bottom: 1px dashed #000;
                     padding-bottom: 5px;
                     margin-bottom: 8px;
                 }
-                
+
                 .company {
                     font-size: 14px;
                     font-weight: bold;
                     margin-bottom: 2px;
                 }
-                
+
                 .ticket-title {
                     font-size: 13px;
                     font-weight: bold;
                     margin: 3px 0;
                 }
-                
+
                 .section {
                     margin-bottom: 8px;
                     border-bottom: 1px dashed #ccc;
                     padding-bottom: 5px;
                 }
-                
+
                 .row {
                     display: flex;
                     justify-content: space-between;
                     margin: 1px 0;
                 }
-                
+
                 .label {
                     font-weight: bold;
                     width: 50%;
                 }
-                
+
                 .value {
                     text-align: right;
                     width: 50%;
                 }
-                
+
                 .separator {
                     border-top: 1px dashed #000;
                     margin: 8px 0;
                 }
-                
+
                 .footer {
                     text-align: center;
                     font-size: 10px;
                     margin-top: 10px;
                 }
-                
+
                 .status {
                     text-align: center;
                     font-weight: bold;
                     padding: 2px;
                     margin: 3px 0;
                 }
-                
+
                 .progress-bar {
                     width: 100%;
                     height: 8px;
                     background: #ddd;
                     margin: 2px 0;
                 }
-                
+
                 .progress-fill {
                     height: 100%;
                     background: #000;
                 }
-                
+
+                .payment-status {
+                    border: 1px solid #000;
+                    padding: 3px;
+                    margin: 3px 0;
+                    text-align: center;
+                }
+
                 @media print {
                     body {
                         -webkit-print-color-adjust: exact;
@@ -758,11 +953,11 @@ function printLotReport() {
                 <div class="ticket-title">REPORTE DE LOTE</div>
                 <div>${new Date().toLocaleString('es-ES')}</div>
             </div>
-            
+
             <div class="section">
                 <div class="center bold">LOTE: ${lotCode}</div>
             </div>
-            
+
             <div class="section">
                 <div class="row">
                     <span class="label">Proveedor:</span>
@@ -781,7 +976,7 @@ function printLotReport() {
                     <span class="value">${lotData.status}</span>
                 </div>
             </div>
-            
+
             <div class="section">
                 <div class="center bold">PESOS</div>
                 <div class="row">
@@ -801,7 +996,7 @@ function printLotReport() {
                 </div>
                 <div class="center">Vendido: ${lotData.soldPercentage}%</div>
             </div>
-            
+
             <div class="section">
                 <div class="center bold">FINANZAS</div>
                 <div class="row">
@@ -822,7 +1017,34 @@ function printLotReport() {
                     <span class="value bold">$${lotData.profit}</span>
                 </div>
             </div>
-            
+
+            <div class="section">
+                <div class="center bold">ESTADO DE PAGOS</div>
+                <div class="payment-status bold">
+                    ${lotData.paymentStatus || 'PENDIENTE'}
+                </div>
+                <div class="row">
+                    <span class="label">Total a Pagar:</span>
+                    <span class="value">$${lotData.totalCost}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Monto Pagado:</span>
+                    <span class="value">$${lotData.amountPaid || '0.00'}</span>
+                </div>
+                <div class="separator"></div>
+                <div class="row">
+                    <span class="label">SALDO PENDIENTE:</span>
+                    <span class="value bold">$${lotData.amountOwed || lotData.totalCost}</span>
+                </div>
+                ${lotData.latestPayment ? `
+                <div style="font-size: 10px; margin-top: 5px;">
+                    <div class="center">Último Pago:</div>
+                    <div>${lotData.latestPayment.date} - $${lotData.latestPayment.amount}</div>
+                    <div>${lotData.latestPayment.type} - ${lotData.latestPayment.notes || ''}</div>
+                </div>
+                ` : ''}
+            </div>
+
             ${lotData.suggestedPrice ? `
             <div class="section">
                 <div class="center bold">PROYECCION</div>
@@ -842,7 +1064,7 @@ function printLotReport() {
                 <div class="center">Margen: ${lotData.potentialMargin}%</div>
             </div>
             ` : ''}
-            
+
             ${lotData.notes ? `
             <div class="section">
                 <div class="center bold">NOTAS</div>
@@ -851,7 +1073,7 @@ function printLotReport() {
                 </div>
             </div>
             ` : ''}
-            
+
             <div class="footer">
                 <div>AvoControl Pro v1.0</div>
                 <div>Sistema de Gestión de Aguacates</div>
@@ -870,7 +1092,7 @@ function printLotReport() {
 function extractLotDataFromModal() {
     // Extraer datos del modal actual para el ticket
     const reportContent = document.getElementById('reportContent');
-    
+
     // Buscar el precio sugerido y datos potenciales
     const suggestedPriceRow = $(reportContent).find('table:eq(2) tr').filter(function() {
         return $(this).find('td:first').text().includes('Precio Venta Sugerido');
@@ -881,7 +1103,43 @@ function extractLotDataFromModal() {
     const potentialProfitRow = $(reportContent).find('table:eq(2) tr').filter(function() {
         return $(this).find('td:first').text().includes('Ganancia Potencial');
     });
-    
+
+    // Extraer datos de pagos (tabla después de métricas financieras)
+    const paymentTables = $(reportContent).find('table');
+    let amountPaid = '0.00';
+    let amountOwed = '0.00';
+    let paymentStatus = 'PENDIENTE';
+    let latestPayment = null;
+
+    // Buscar tabla de estado de pagos
+    paymentTables.each(function() {
+        const table = $(this);
+        const firstRowText = table.find('tr:first td:first').text();
+        if (firstRowText.includes('Total a Pagar')) {
+            amountPaid = table.find('tr:first td:nth-child(4)').text().replace(/[^0-9.]/g, '').trim() || '0.00';
+            amountOwed = table.find('tr:last td:nth-child(2)').text().replace(/[^0-9.]/g, '').trim() || '0.00';
+            const statusBadge = table.find('.badge').first().text().trim();
+            paymentStatus = statusBadge.toUpperCase();
+        }
+    });
+
+    // Buscar tabla de historial de pagos para obtener último pago
+    const paymentHistoryTable = $(reportContent).find('table').filter(function() {
+        return $(this).find('th').first().text().includes('Fecha') && $(this).find('th').eq(1).text().includes('Monto');
+    });
+
+    if (paymentHistoryTable.length > 0) {
+        const lastPaymentRow = paymentHistoryTable.find('tbody tr:first');
+        if (lastPaymentRow.length > 0) {
+            latestPayment = {
+                date: lastPaymentRow.find('td:first').text().trim(),
+                amount: lastPaymentRow.find('td:nth-child(2)').text().replace(/[^0-9.]/g, '').trim(),
+                type: lastPaymentRow.find('td:nth-child(3)').text().trim(),
+                notes: lastPaymentRow.find('td:nth-child(5)').text().trim()
+            };
+        }
+    }
+
     return {
         supplier: $(reportContent).find('table:first tr:nth-child(2) td:nth-child(2)').text().trim() || 'Anónimo',
         date: $(reportContent).find('table:first tr:nth-child(3) td:nth-child(2)').text().trim(),
@@ -892,14 +1150,19 @@ function extractLotDataFromModal() {
         availableWeight: $(reportContent).find('table:eq(1) tr:nth-child(3) td:nth-child(2)').text().trim(),
         soldPercentage: $(reportContent).find('table:eq(1) tr:nth-child(4) td:nth-child(2)').text().replace('%', '').trim(),
         pricePerKg: $(reportContent).find('table:eq(2) tr:nth-child(1) td:nth-child(2)').text().replace('$', '').trim(),
-        totalCost: $(reportContent).find('table:eq(2) tr:nth-child(2) td:nth-child(2)').text().replace('$', '').trim(),
-        revenue: $(reportContent).find('table:eq(2) tr:nth-child(3) td:nth-child(2)').text().replace('$', '').trim(),
-        profit: $(reportContent).find('table:eq(2) tr:nth-child(4) td:nth-child(2)').text().replace(/[^0-9.-]/g, '').trim(),
+        totalCost: $(reportContent).find('table:eq(2) tr:nth-child(1) td:nth-child(4)').text().replace('$', '').trim(),
+        revenue: $(reportContent).find('table:eq(2) tr:nth-child(2) td:nth-child(2)').text().replace('$', '').trim(),
+        profit: $(reportContent).find('table:eq(2) tr:nth-child(2) td:nth-child(4)').text().replace(/[^0-9.-]/g, '').trim(),
         suggestedPrice: suggestedPriceRow.length ? suggestedPriceRow.find('td:nth-child(2)').text().replace(/[^0-9.]/g, '').trim() : null,
         potentialRevenue: potentialRevenueRow.length ? potentialRevenueRow.find('td:nth-child(2)').text().replace(/[^0-9.-]/g, '').trim() : null,
         potentialProfit: potentialProfitRow.length ? potentialProfitRow.find('td:nth-child(2)').text().replace(/[^0-9.-]/g, '').trim() : null,
         potentialMargin: potentialProfitRow.length ? potentialProfitRow.find('small').text().replace(/[^0-9.-]/g, '').trim() : null,
-        notes: $(reportContent).find('.alert').text().trim() || null
+        notes: $(reportContent).find('.alert').text().trim() || null,
+        // Datos de pagos
+        amountPaid: amountPaid,
+        amountOwed: amountOwed,
+        paymentStatus: paymentStatus,
+        latestPayment: latestPayment
     };
 }
 
@@ -1022,6 +1285,185 @@ function openCreateLotModal() {
 
     $('#lotModal').modal('show');
 }
+
+// Payment Timeline Functions
+function openPaymentTimeline(id) {
+    currentLotId = id;
+
+    fetch(`{{ url('lots') }}/${id}/payments`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        displayPaymentTimeline(data);
+        $('#paymentTimelineModal').modal('show');
+    })
+    .catch(error => {
+        console.error('Error loading payment timeline:', error);
+        toastr.error('Error al cargar el historial de pagos');
+    });
+}
+
+function displayPaymentTimeline(data) {
+    const lot = data.lot;
+    const payments = data.payments;
+
+    $('#paymentTimelineModalTitle').text(`Historial de Pagos - ${lot.lot_code}`);
+
+    const paymentStatusBadge = {
+        'pending': '<span class="badge badge-warning">Pendiente</span>',
+        'partial': '<span class="badge badge-info">Parcial</span>',
+        'paid': '<span class="badge badge-success">Pagado</span>'
+    };
+
+    let html = `
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card bg-info">
+                    <div class="card-body text-center">
+                        <h4>$${parseFloat(lot.total_purchase_cost).toFixed(2)}</h4>
+                        <p class="mb-0">Costo Total</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success">
+                    <div class="card-body text-center">
+                        <h4>$${parseFloat(lot.amount_paid || 0).toFixed(2)}</h4>
+                        <p class="mb-0">Total Pagado</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-warning">
+                    <div class="card-body text-center">
+                        <h4>$${parseFloat(lot.amount_owed || 0).toFixed(2)}</h4>
+                        <p class="mb-0">Pendiente</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            ${paymentStatusBadge[lot.payment_status]}
+                            Estado del Pago - ${lot.supplier_name}
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <h5>Timeline de Pagos</h5>
+    `;
+
+    if (payments.length === 0) {
+        html += `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No se han registrado pagos para este lote.
+                </div>
+        `;
+    } else {
+        html += '<div class="timeline">';
+        payments.forEach((payment, index) => {
+            const typeIcons = {
+                'efectivo': 'fas fa-money-bill-wave',
+                'transferencia': 'fas fa-exchange-alt',
+                'cheque': 'fas fa-file-invoice',
+                'deposito': 'fas fa-university',
+                'otro': 'fas fa-question-circle'
+            };
+
+            html += `
+                <div class="time-label">
+                    <span class="badge badge-primary">${payment.payment_date}</span>
+                </div>
+                <div>
+                    <i class="${typeIcons[payment.payment_type]} bg-green"></i>
+                    <div class="timeline-item">
+                        <span class="time">
+                            <i class="fas fa-clock"></i> ${payment.created_at}
+                        </span>
+                        <h3 class="timeline-header">
+                            <strong>$${parseFloat(payment.amount).toFixed(2)}</strong>
+                            <span class="badge badge-info ml-2">${payment.payment_type.toUpperCase()}</span>
+                        </h3>
+                        <div class="timeline-body">
+                            ${payment.notes ? `<p><i class="fas fa-sticky-note"></i> ${payment.notes}</p>` : ''}
+                            <small class="text-muted">
+                                <i class="fas fa-user"></i> Registrado por: ${payment.paid_by}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    $('#paymentTimelineContent').html(html);
+    $('#paymentLotId').val(lot.id);
+}
+
+// Add Payment Modal
+$(document).on('click', '#addPaymentBtn', function() {
+    $('#addPaymentModal').modal('show');
+    $('#paymentDate').val(new Date().toISOString().split('T')[0]);
+});
+
+// Handle Add Payment Form Submission
+$(document).on('submit', '#addPaymentForm', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const lotId = $('#paymentLotId').val();
+
+    fetch(`{{ url('lots') }}/${lotId}/payments`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success(data.message);
+            $('#addPaymentModal').modal('hide');
+            $('#addPaymentForm')[0].reset();
+
+            // Refresh the payment timeline
+            openPaymentTimeline(lotId);
+
+            // Refresh the DataTable to show updated payment status
+            lotsTable.ajax.reload();
+        } else {
+            toastr.error(data.message || 'Error al agregar el pago');
+        }
+    })
+    .catch(error => {
+        console.error('Error adding payment:', error);
+        toastr.error('Error al agregar el pago');
+    });
+});
 </script>
 @endpush
 

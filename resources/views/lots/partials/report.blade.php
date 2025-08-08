@@ -148,8 +148,130 @@ $('#reportModalTitle').text('Reporte del Lote {{ $lot->lot_code }}');
                 </table>
             </div>
 
-            <!-- Notas -->
+            <!-- Estado de Pagos -->
             <div class="col-md-6">
+                <h5 class="text-success"><i class="fas fa-money-bill-wave"></i> Estado de Pagos</h5>
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Total a Pagar:</strong></td>
+                        <td>${{ number_format($lot->total_purchase_cost, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Monto Pagado:</strong></td>
+                        <td class="text-success"><strong>${{ number_format($lot->amount_paid ?? 0, 2) }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Saldo Pendiente:</strong></td>
+                        <td class="{{ ($lot->amount_owed ?? 0) > 0 ? 'text-danger' : 'text-success' }}">
+                            <strong>${{ number_format($lot->amount_owed ?? 0, 2) }}</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Estado del Pago:</strong></td>
+                        <td>
+                            @php
+                                $paymentStatusClass = match($lot->payment_status ?? 'pending') {
+                                    'paid' => 'success',
+                                    'partial' => 'warning',
+                                    'pending' => 'danger',
+                                    default => 'secondary'
+                                };
+                                $paymentStatusText = match($lot->payment_status ?? 'pending') {
+                                    'paid' => 'Pagado Completo',
+                                    'partial' => 'Pago Parcial',
+                                    'pending' => 'Pendiente',
+                                    default => 'Desconocido'
+                                };
+                            @endphp
+                            <span class="badge badge-{{ $paymentStatusClass }}">{{ $paymentStatusText }}</span>
+                        </td>
+                    </tr>
+                    @if($lot->lotPayments && $lot->lotPayments->count() > 0)
+                    <tr>
+                        <td colspan="2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                {{ $lot->lotPayments->count() }} pago{{ $lot->lotPayments->count() > 1 ? 's' : '' }} registrado{{ $lot->lotPayments->count() > 1 ? 's' : '' }}
+                            </small>
+                        </td>
+                    </tr>
+                    @endif
+                </table>
+            </div>
+        </div>
+
+        @if($lot->lotPayments && $lot->lotPayments->count() > 0)
+        <div class="row mt-3">
+            <div class="col-12">
+                <h5 class="text-success"><i class="fas fa-history"></i> Historial de Pagos</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Monto</th>
+                                <th>Tipo de Pago</th>
+                                <th>Registrado por</th>
+                                <th>Notas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($lot->lotPayments->sortBy('payment_date') as $payment)
+                            <tr>
+                                <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
+                                <td class="text-success"><strong>${{ number_format($payment->amount, 2) }}</strong></td>
+                                <td>
+                                    @php
+                                        $paymentTypeClass = match($payment->payment_type) {
+                                            'efectivo' => 'success',
+                                            'transferencia' => 'info',
+                                            'cheque' => 'warning',
+                                            'deposito' => 'primary',
+                                            default => 'secondary'
+                                        };
+                                        $paymentTypeText = match($payment->payment_type) {
+                                            'efectivo' => 'Efectivo',
+                                            'transferencia' => 'Transferencia',
+                                            'cheque' => 'Cheque',
+                                            'deposito' => 'Depósito',
+                                            default => ucfirst($payment->payment_type)
+                                        };
+                                    @endphp
+                                    <span class="badge badge-{{ $paymentTypeClass }}">{{ $paymentTypeText }}</span>
+                                </td>
+                                <td>{{ $payment->paidByUser ? $payment->paidByUser->name : 'Sistema' }}</td>
+                                <td>
+                                    @if($payment->notes)
+                                        <small>{{ $payment->notes }}</small>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr class="font-weight-bold bg-light">
+                                <td><strong>Total Pagado:</strong></td>
+                                <td class="text-success"><strong>${{ number_format($lot->lotPayments->sum('amount'), 2) }}</strong></td>
+                                <td colspan="3">
+                                    <strong>Saldo Restante: 
+                                        <span class="{{ ($lot->amount_owed ?? 0) > 0 ? 'text-danger' : 'text-success' }}">
+                                            ${{ number_format($lot->amount_owed ?? 0, 2) }}
+                                        </span>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <div class="row mt-3">
+            <!-- Notas -->
+            <div class="col-md-12">
                 <h5 class="text-info"><i class="fas fa-sticky-note"></i> Notas</h5>
                 @php
                     $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);

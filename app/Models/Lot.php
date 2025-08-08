@@ -17,6 +17,9 @@ class Lot extends Model
         'total_weight',
         'purchase_price_per_kg',
         'total_purchase_cost',
+        'amount_paid',
+        'amount_owed',
+        'payment_status',
         'quality_grade',
         'status',
         'weight_sold',
@@ -28,6 +31,8 @@ class Lot extends Model
         'total_weight' => 'decimal:2',
         'purchase_price_per_kg' => 'decimal:2',
         'total_purchase_cost' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
+        'amount_owed' => 'decimal:2',
         'weight_sold' => 'decimal:2',
         'weight_available' => 'decimal:2',
         'harvest_date' => 'date',
@@ -50,6 +55,11 @@ class Lot extends Model
         return $this->morphMany(Payment::class, 'payable');
     }
 
+    public function lotPayments()
+    {
+        return $this->hasMany(LotPayment::class)->orderBy('payment_date', 'desc');
+    }
+
     public function scopeAvailable($query)
     {
         return $query->where('status', '!=', 'sold')->where('weight_available', '>', 0);
@@ -68,6 +78,24 @@ class Lot extends Model
             $this->status = 'partial';
         } else {
             $this->status = 'active';
+        }
+        
+        $this->save();
+    }
+
+    public function updatePaymentAmounts()
+    {
+        $totalPaid = $this->lotPayments()->sum('amount');
+        $this->amount_paid = $totalPaid;
+        $this->amount_owed = $this->total_purchase_cost - $totalPaid;
+        
+        // Update payment status
+        if ($this->amount_owed <= 0) {
+            $this->payment_status = 'paid';
+        } elseif ($this->amount_paid > 0) {
+            $this->payment_status = 'partial';
+        } else {
+            $this->payment_status = 'pending';
         }
         
         $this->save();

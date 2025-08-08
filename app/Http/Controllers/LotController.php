@@ -122,11 +122,32 @@ class LotController extends Controller
         $totalWeight = $statsQuery->sum('weight_available') ?: 0;
         $totalValue = $statsQuery->sum('total_purchase_cost') ?: 0;
         
+        // Calculate payment statistics
+        $totalDebt = (clone $statsQuery)->sum('amount_owed') ?: 0;
+        $totalPaid = (clone $statsQuery)->sum('amount_paid') ?: 0;
+        $lotsWithDebt = (clone $statsQuery)->where('amount_owed', '>', 0)->count();
+        
+        // Calculate potential profit
+        $potentialProfit = 0;
+        $lotsWithSuggestedPrice = (clone $statsQuery)->whereNotNull('metadata')->get();
+        foreach ($lotsWithSuggestedPrice as $lot) {
+            $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);
+            if (isset($metadata['precio_venta_sugerido']) && $metadata['precio_venta_sugerido'] > 0) {
+                $potentialRevenue = $lot->total_weight * $metadata['precio_venta_sugerido'];
+                $potentialProfit += $potentialRevenue - $lot->total_purchase_cost;
+            }
+        }
+        
         $stats = [
             'total' => $statsQuery->count(),
             'active' => (clone $statsQuery)->where('status', 'active')->count(),
             'weight' => number_format((float)$totalWeight, 2),
-            'value' => number_format((float)$totalValue, 2)
+            'value' => number_format((float)$totalValue, 2),
+            // Payment statistics
+            'total_debt' => number_format((float)$totalDebt, 2),
+            'total_paid' => number_format((float)$totalPaid, 2),
+            'potential_profit' => number_format((float)$potentialProfit, 2),
+            'lots_with_debt' => $lotsWithDebt
         ];
 
         // Handle AJAX requests (non-DataTables)
@@ -179,10 +200,26 @@ class LotController extends Controller
             'calidad' => 'required|exists:quality_grades,name',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'notas' => 'nullable|string|max:1000',
+            'monto_pago' => 'nullable|numeric|min:0',
+            'fecha_pago' => 'nullable|date',
+            'tipo_pago' => 'nullable|in:efectivo,transferencia,cheque,deposito,otro',
+            'notas_pago' => 'nullable|string|max:500',
         ]);
 
         try {
-            DB::transaction(function () use ($validated) {
+            DB::transaction(function () use ($validated, $request) {
+                $totalCost = $validated['peso_inicial'] * $validated['precio_compra'];
+                $amountPaid = $validated['monto_pago'] ?? 0;
+                $amountOwed = $totalCost - $amountPaid;
+                
+                // Determine payment status
+                $paymentStatus = 'pending';
+                if ($amountOwed <= 0) {
+                    $paymentStatus = 'paid';
+                } elseif ($amountPaid > 0) {
+                    $paymentStatus = 'partial';
+                }
+                
                 $lot = Lot::create([
                     'lot_code' => $validated['codigo'],
                     'harvest_date' => $validated['fecha_compra'],
@@ -194,18 +231,34 @@ class LotController extends Controller
                     'status' => 'active',
                     'weight_sold' => 0,
                     'weight_available' => $validated['peso_inicial'],
-                    'total_purchase_cost' => $validated['peso_inicial'] * $validated['precio_compra'],
+                    'total_purchase_cost' => $totalCost,
+                    'amount_paid' => $amountPaid,
+                    'amount_owed' => $amountOwed,
+                    'payment_status' => $paymentStatus,
                     'metadata' => json_encode([
                         'notas' => $validated['notas'],
                         'precio_venta_sugerido' => $validated['precio_venta_sugerido']
                     ])
                 ]);
 
+                // Create initial payment record if payment was made
+                if ($amountPaid > 0 && $validated['fecha_pago']) {
+                    \App\Models\LotPayment::create([
+                        'lot_id' => $lot->id,
+                        'amount' => $amountPaid,
+                        'payment_date' => $validated['fecha_pago'],
+                        'payment_type' => $validated['tipo_pago'] ?? 'efectivo',
+                        'paid_by_user_id' => auth()->id(),
+                        'notes' => $validated['notas_pago']
+                    ]);
+                }
+
                 // Update supplier totals only if supplier exists
                 if ($validated['supplier_id']) {
                     $supplier = Supplier::find($validated['supplier_id']);
                     $supplier->total_purchased += $lot->total_purchase_cost;
-                    $supplier->balance_owed += $lot->total_purchase_cost;
+                    // Only add amount owed to balance, not the full cost if partially paid
+                    $supplier->balance_owed += $amountOwed;
                     $supplier->save();
                 }
             });
@@ -230,11 +283,14 @@ class LotController extends Controller
 
     public function show(Request $request, Lot $lot)
     {
-        $lot->load(['supplier', 'saleItems.sale.customer', 'payments']);
+        $lot->load(['supplier', 'saleItems.sale.customer', 'payments', 'lotPayments']);
         
         if ($request->wantsJson()) {
             // Process metadata properly - handle both array and JSON string
             $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);
+            
+            // Get latest payment for pre-filling form
+            $latestPayment = $lot->lotPayments->first();
             
             // Debug logging
             \Log::info('Loading lot for edit', [
@@ -255,6 +311,15 @@ class LotController extends Controller
                 'calidad' => $lot->quality_grade,
                 'notas' => $metadata['notas'] ?? '',
                 'fecha_compra' => $lot->harvest_date->format('Y-m-d'),
+                // Payment fields
+                'amount_paid' => $lot->amount_paid,
+                'amount_owed' => $lot->amount_owed,
+                'payment_status' => $lot->payment_status,
+                'latest_payment' => $latestPayment ? [
+                    'payment_date' => $latestPayment->payment_date->format('Y-m-d'),
+                    'payment_type' => $latestPayment->payment_type,
+                    'notes' => $latestPayment->notes
+                ] : null
             ];
             
             \Log::info('Response data', $response);
@@ -305,29 +370,45 @@ class LotController extends Controller
             'calidad' => 'required|exists:quality_grades,name',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'notas' => 'nullable|string|max:1000',
+            'monto_pago' => 'nullable|numeric|min:0',
+            'fecha_pago' => 'nullable|date',
+            'tipo_pago' => 'nullable|in:efectivo,transferencia,cheque,deposito,otro',
+            'notas_pago' => 'nullable|string|max:500',
         ]);
 
         try {
-            DB::transaction(function () use ($lot, $validated) {
+            DB::transaction(function () use ($lot, $validated, $request) {
                 // Update supplier balance with difference only if supplier exists
                 $oldCost = $lot->total_purchase_cost;
+                $oldOwed = $lot->amount_owed;
                 $newCost = $validated['peso_inicial'] * $validated['precio_compra'];
-                $difference = $newCost - $oldCost;
+                $newPaid = $validated['monto_pago'] ?? $lot->amount_paid;
+                $newOwed = $newCost - $newPaid;
+                $costDifference = $newCost - $oldCost;
+                $owedDifference = $newOwed - $oldOwed;
+
+                // Determine payment status
+                $paymentStatus = 'pending';
+                if ($newOwed <= 0) {
+                    $paymentStatus = 'paid';
+                } elseif ($newPaid > 0) {
+                    $paymentStatus = 'partial';
+                }
 
                 if ($lot->supplier_id && $validated['supplier_id']) {
                     // Update existing supplier
-                    $lot->supplier->balance_owed += $difference;
-                    $lot->supplier->total_purchased += $difference;
+                    $lot->supplier->balance_owed += $owedDifference;
+                    $lot->supplier->total_purchased += $costDifference;
                     $lot->supplier->save();
                 } elseif ($lot->supplier_id && !$validated['supplier_id']) {
                     // Remove from old supplier
-                    $lot->supplier->balance_owed -= $oldCost;
+                    $lot->supplier->balance_owed -= $oldOwed;
                     $lot->supplier->total_purchased -= $oldCost;
                     $lot->supplier->save();
                 } elseif (!$lot->supplier_id && $validated['supplier_id']) {
                     // Add to new supplier
                     $supplier = Supplier::find($validated['supplier_id']);
-                    $supplier->balance_owed += $newCost;
+                    $supplier->balance_owed += $newOwed;
                     $supplier->total_purchased += $newCost;
                     $supplier->save();
                 }
@@ -343,11 +424,28 @@ class LotController extends Controller
                     'supplier_id' => $validated['supplier_id'],
                     'weight_available' => $validated['peso_inicial'] - $lot->weight_sold,
                     'total_purchase_cost' => $newCost,
+                    'amount_paid' => $newPaid,
+                    'amount_owed' => $newOwed,
+                    'payment_status' => $paymentStatus,
                     'metadata' => json_encode([
                         'notas' => $validated['notas'],
                         'precio_venta_sugerido' => $validated['precio_venta_sugerido']
                     ])
                 ]);
+
+                // Create additional payment record if new payment was made
+                if (isset($validated['monto_pago']) && $validated['monto_pago'] > 0 && 
+                    $validated['fecha_pago'] && $validated['monto_pago'] > $lot->amount_paid) {
+                    $additionalPayment = $validated['monto_pago'] - $lot->amount_paid;
+                    \App\Models\LotPayment::create([
+                        'lot_id' => $lot->id,
+                        'amount' => $additionalPayment,
+                        'payment_date' => $validated['fecha_pago'],
+                        'payment_type' => $validated['tipo_pago'] ?? 'efectivo',
+                        'paid_by_user_id' => auth()->id(),
+                        'notes' => $validated['notas_pago']
+                    ]);
+                }
             });
 
             if ($request->wantsJson()) {
@@ -400,7 +498,7 @@ class LotController extends Controller
 
     public function report(Request $request, Lot $lot)
     {
-        $lot->load(['supplier', 'saleItems.sale.customer', 'payments']);
+        $lot->load(['supplier', 'saleItems.sale.customer', 'payments', 'lotPayments.paidByUser']);
         
         // Get metadata for suggested price
         $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);
@@ -441,7 +539,7 @@ class LotController extends Controller
 
     public function downloadPDF(Lot $lot)
     {
-        $lot->load(['supplier', 'saleItems.sale.customer', 'payments']);
+        $lot->load(['supplier', 'saleItems.sale.customer', 'payments', 'lotPayments.paidByUser']);
         
         // Get metadata for suggested price
         $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);
@@ -470,5 +568,79 @@ class LotController extends Controller
         $pdf->loadView('lots.pdf.report', compact('lot', 'metrics'));
         
         return $pdf->download("lote_{$lot->lot_code}_reporte.pdf");
+    }
+
+    public function payments(Request $request, Lot $lot)
+    {
+        $lot->load(['lotPayments.paidByUser', 'supplier']);
+        
+        if ($request->wantsJson()) {
+            return response()->json([
+                'lot' => [
+                    'id' => $lot->id,
+                    'lot_code' => $lot->lot_code,
+                    'total_purchase_cost' => $lot->total_purchase_cost,
+                    'amount_paid' => $lot->amount_paid,
+                    'amount_owed' => $lot->amount_owed,
+                    'payment_status' => $lot->payment_status,
+                    'supplier_name' => $lot->supplier ? $lot->supplier->name : 'Sin proveedor'
+                ],
+                'payments' => $lot->lotPayments->map(function($payment) {
+                    return [
+                        'id' => $payment->id,
+                        'amount' => $payment->amount,
+                        'payment_date' => $payment->payment_date->format('Y-m-d'),
+                        'payment_type' => $payment->payment_type,
+                        'notes' => $payment->notes,
+                        'paid_by' => $payment->paidByUser ? $payment->paidByUser->name : 'Sistema',
+                        'created_at' => $payment->created_at->format('d/m/Y H:i')
+                    ];
+                })
+            ]);
+        }
+    }
+
+    public function addPayment(Request $request, Lot $lot)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'payment_date' => 'required|date',
+            'payment_type' => 'required|in:efectivo,transferencia,cheque,deposito,otro',
+            'notes' => 'nullable|string|max:500'
+        ]);
+
+        try {
+            DB::transaction(function () use ($lot, $validated) {
+                // Create payment record
+                \App\Models\LotPayment::create([
+                    'lot_id' => $lot->id,
+                    'amount' => $validated['amount'],
+                    'payment_date' => $validated['payment_date'],
+                    'payment_type' => $validated['payment_type'],
+                    'paid_by_user_id' => auth()->id(),
+                    'notes' => $validated['notes']
+                ]);
+
+                // Update lot payment amounts
+                $lot->updatePaymentAmounts();
+
+                // Update supplier balance if supplier exists
+                if ($lot->supplier) {
+                    $lot->supplier->balance_owed -= $validated['amount'];
+                    $lot->supplier->save();
+                }
+            });
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Pago agregado exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error adding payment: ' . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error al agregar el pago: ' . $e->getMessage()
+            ], 422);
+        }
     }
 }
