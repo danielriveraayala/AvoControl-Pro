@@ -12,36 +12,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    
+
     <!-- Additional UX Libraries CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
     
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap4.min.css">
+
     <!-- Custom CSS for improved UX -->
     <style>
         /* Loading state */
         body.loading {
             cursor: wait;
         }
-        
+
         body.loading * {
             pointer-events: none;
         }
-        
+
         /* Smooth transitions */
         .card, .info-box, .small-box {
             transition: all 0.3s ease;
         }
-        
+
         .card:hover, .info-box:hover {
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
         }
-        
+
         /* Loading spinner overlay */
         .ajax-loading {
             position: relative;
         }
-        
+
         .ajax-loading::before {
             content: '';
             position: absolute;
@@ -52,7 +56,7 @@
             background: rgba(255, 255, 255, 0.8);
             z-index: 1000;
         }
-        
+
         .ajax-loading::after {
             content: '';
             position: absolute;
@@ -67,96 +71,96 @@
             animation: spin 1s ease-in-out infinite;
             z-index: 1001;
         }
-        
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        
+
         /* Improved table styles */
         .table-hover tbody tr:hover {
             background-color: rgba(0, 123, 255, 0.075);
         }
-        
+
         /* Status badges */
         .badge {
             font-size: 0.875rem;
             padding: 0.375rem 0.75rem;
         }
-        
+
         /* Quick action buttons */
         .quick-actions {
             white-space: nowrap;
         }
-        
+
         .quick-actions .btn {
             margin: 0 2px;
             padding: 0.25rem 0.5rem;
         }
-        
+
         /* Select2 integration with AdminLTE */
         .select2-container--default .select2-selection--single {
             height: calc(2.25rem + 2px);
             border-color: #ced4da;
         }
-        
+
         .select2-container--default .select2-selection--single .select2-selection__rendered {
             line-height: calc(2.25rem + 2px);
             padding-left: 0.75rem;
             padding-right: 0.75rem;
         }
-        
+
         /* Modal improvements */
         .modal-xl {
             max-width: 90%;
         }
-        
+
         /* Progress bars */
         .progress-sm {
             height: 0.625rem;
         }
-        
+
         /* Custom scrollbar */
         .table-responsive::-webkit-scrollbar {
             height: 8px;
         }
-        
+
         .table-responsive::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
-        
+
         .table-responsive::-webkit-scrollbar-thumb {
             background: #c1c1c1;
             border-radius: 4px;
         }
-        
+
         .table-responsive::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
-        
+
         /* Responsive improvements */
         @media (max-width: 768px) {
             .table-responsive {
                 font-size: 0.875rem;
             }
-            
+
             .btn-group-sm .btn {
                 padding: 0.125rem 0.25rem;
                 font-size: 0.75rem;
             }
-            
+
             .card-tools .btn-group {
                 flex-direction: column;
             }
-            
+
             .small-box .inner h3 {
                 font-size: 1.5rem;
             }
-            
+
             .info-box-number {
                 font-size: 1.2rem;
             }
         }
-        
+
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
             .select2-container--default .select2-selection--single {
@@ -166,7 +170,7 @@
             }
         }
     </style>
-    
+
     @stack('styles')
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -227,7 +231,7 @@
             <!-- Sidebar Menu -->
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                    
+
                     <!-- Dashboard -->
                     <li class="nav-item">
                         <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -249,13 +253,7 @@
                             <li class="nav-item">
                                 <a href="{{ route('lots.index') }}" class="nav-link {{ request()->routeIs('lots.index') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Lista de Lotes</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('lots.create') }}" class="nav-link {{ request()->routeIs('lots.create') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Nuevo Lote</p>
+                                    <p>Gestión de Lotes</p>
                                 </a>
                             </li>
                         </ul>
@@ -386,6 +384,14 @@
                         </ul>
                     </li>
 
+                    <!-- Configuración -->
+                    <li class="nav-item">
+                        <a href="{{ route('configuration.index') }}" class="nav-link {{ request()->routeIs('configuration.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>Configuración</p>
+                        </a>
+                    </li>
+
                 </ul>
             </nav>
         </div>
@@ -441,6 +447,12 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+<!-- DataTables JavaScript -->
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap4.min.js"></script>
 
 <!-- Global AJAX Setup -->
 <script>

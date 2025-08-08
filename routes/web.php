@@ -7,6 +7,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ConfigurationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('suppliers', SupplierController::class);
     Route::resource('customers', CustomerController::class);
     
+    // Special routes for lots
+    Route::get('lots/{lot}/report', [LotController::class, 'report'])->name('lots.report');
+    Route::get('lots/{lot}/pdf', [LotController::class, 'downloadPDF'])->name('lots.pdf');
+    
     // Special routes for payments
     Route::get('sales/{sale}/payment', [PaymentController::class, 'createSalePayment'])->name('payments.sale.create');
     Route::post('sales/{sale}/payment', [PaymentController::class, 'storeSalePayment'])->name('payments.sale.store');
@@ -43,6 +48,14 @@ Route::middleware(['auth'])->group(function () {
     
     // Special route for marking sales as delivered
     Route::patch('sales/{sale}/deliver', [SaleController::class, 'markDelivered'])->name('sales.deliver');
+    
+    // Configuration routes
+    Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
+    Route::get('configuration/qualities-table', [ConfigurationController::class, 'getQualitiesTable'])->name('configuration.qualities.table');
+    Route::post('configuration/quality', [ConfigurationController::class, 'storeQuality'])->name('configuration.quality.store');
+    Route::get('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'showQuality'])->name('configuration.quality.show');
+    Route::put('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'updateQuality'])->name('configuration.quality.update');
+    Route::delete('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'destroyQuality'])->name('configuration.quality.destroy');
 });
 
 require __DIR__.'/auth.php';

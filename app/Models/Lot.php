@@ -45,6 +45,11 @@ class Lot extends Model
         return $this->hasMany(SaleItem::class);
     }
 
+    public function payments()
+    {
+        return $this->morphMany(Payment::class, 'payable');
+    }
+
     public function scopeAvailable($query)
     {
         return $query->where('status', '!=', 'sold')->where('weight_available', '>', 0);

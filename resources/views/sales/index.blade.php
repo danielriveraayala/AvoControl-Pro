@@ -192,8 +192,6 @@ $(document).ready(function() {
     // Load initial data
     loadSales();
     
-    // Auto-refresh every 2 minutes
-    setInterval(loadSales, 120000);
 });
 
 function loadSales(page = 1) {

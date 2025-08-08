@@ -147,12 +147,9 @@
                 </div>
                 <div class="card-body table-responsive p-0">
                     <div id="customersTableContainer">
-                        <div class="text-center p-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="sr-only">Cargando...</span>
-                            </div>
-                            <p class="mt-2 text-muted">Cargando clientes...</p>
-                        </div>
+                        @if(!request()->ajax())
+                            @include('customers.partials.table')
+                        @endif
                     </div>
                 </div>
             </div>
@@ -179,13 +176,43 @@
 
 @push('scripts')
 <script>
+let customersDataTable = null;
+
 $(document).ready(function() {
-    // Load initial data
-    loadCustomers();
-    
-    // Auto-refresh every 2 minutes
-    setInterval(loadCustomers, 120000);
+    // Apply DataTable to existing table
+    if ($('#customersTableContainer table').length > 0) {
+        initializeCustomersDataTable();
+    } else {
+        // Load initial data if table doesn't exist
+        loadCustomers();
+    }
 });
+
+function initializeCustomersDataTable() {
+    // Apply DataTable to existing table
+    if (!$.fn.DataTable.isDataTable('#customersTableContainer table')) {
+        customersDataTable = $('#customersTableContainer table').DataTable({
+            pageLength: 25,
+            order: [[0, 'asc']], // Order by name
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+            },
+            responsive: true,
+            autoWidth: false,
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                 '<"row"<"col-sm-12"tr>>' +
+                 '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            drawCallback: function() {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        });
+    }
+    
+    // Apply filters when changed
+    $('form[method="GET"] select, form[method="GET"] input').on('change', function() {
+        loadCustomers();
+    });
+}
 
 function loadCustomers(page = 1) {
     const formData = new FormData($('form[method="GET"]')[0]);
@@ -224,6 +251,9 @@ function loadCustomers(page = 1) {
                 $('.small-box:eq(2) .inner h3').text('$' + data.stats.balance);
                 $('.small-box:eq(3) .inner h3').text(data.stats.mayoristas || data.stats.active);
             }
+            
+            // Re-initialize DataTable on new content
+            initializeCustomersDataTable();
             
             // Initialize tooltips
             $('[data-toggle="tooltip"]').tooltip();

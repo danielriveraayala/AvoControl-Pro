@@ -311,10 +311,6 @@ $(function () {
         });
     }
 
-    // Auto-refresh dashboard every 5 minutes
-    setTimeout(function() {
-        window.location.reload();
-    }, 300000);
 });
 </script>
 @endpush

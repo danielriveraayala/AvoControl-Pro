@@ -25,6 +25,8 @@ class Supplier extends Model
 
     protected $casts = [
         'status' => 'string',
+        'balance_owed' => 'decimal:2',
+        'total_purchased' => 'decimal:2',
     ];
 
     public function lots()

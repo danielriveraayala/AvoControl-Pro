@@ -1,44 +1,26 @@
 <table class="table table-hover text-nowrap">
     <thead>
         <tr>
-            <th class="sortable-header cursor-pointer" data-field="lot_code">
-                Código <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
-            <th class="sortable-header cursor-pointer" data-field="supplier_name">
-                Proveedor <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
-            <th class="sortable-header cursor-pointer" data-field="harvest_date">
-                Fecha Cosecha <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
-            <th class="sortable-header cursor-pointer" data-field="total_weight">
-                Peso Total <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
-            <th class="sortable-header cursor-pointer" data-field="weight_available">
-                Disponible <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
-            <th class="sortable-header cursor-pointer" data-field="quality_grade">
-                Calidad <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
-            <th class="sortable-header cursor-pointer" data-field="status">
-                Estado <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
-            <th class="sortable-header cursor-pointer" data-field="purchase_price_per_kg">
-                Precio/kg <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
-            <th class="sortable-header cursor-pointer" data-field="total_purchase_cost">
-                Valor Total <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
+            <th>Código</th>
+            <th>Proveedor</th>
+            <th>Fecha Cosecha</th>
+            <th>Peso Total</th>
+            <th>Disponible</th>
+            <th>Calidad</th>
+            <th>Estado</th>
+            <th>Precio/kg</th>
+            <th>Valor Total</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
         @forelse($lots as $lot)
         <tr>
-            <td class="text-sm">
+            <td>
                 <strong class="text-primary">{{ $lot->lot_code }}</strong>
                 <br><small class="text-muted">{{ $lot->created_at->format('d/m/Y') }}</small>
             </td>
-            <td class="text-sm">
+            <td>
                 <div class="d-flex align-items-center">
                     <div>
                         @if($lot->supplier)
@@ -64,7 +46,7 @@
                 <strong>{{ number_format($lot->total_weight, 2) }} kg</strong>
                 @if($lot->weight_sold > 0)
                     <div class="progress progress-sm mt-1">
-                        <div class="progress-bar bg-success"
+                        <div class="progress-bar bg-success" 
                              style="width: {{ ($lot->weight_sold / $lot->total_weight) * 100 }}%"
                              title="Vendido: {{ number_format($lot->weight_sold, 2) }} kg">
                         </div>
@@ -130,32 +112,32 @@
             </td>
             <td>
                 <div class="btn-group btn-group-sm quick-actions">
-                    <button type="button"
-                            class="btn btn-info"
+                    <button type="button" 
+                            class="btn btn-info" 
                             onclick="openViewLotModal({{ $lot->id }})"
-                            data-toggle="tooltip"
+                            data-toggle="tooltip" 
                             title="Ver reporte">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button type="button"
-                            class="btn btn-primary"
+                    <button type="button" 
+                            class="btn btn-primary" 
                             onclick="openEditLotModal({{ $lot->id }})"
-                            data-toggle="tooltip"
+                            data-toggle="tooltip" 
                             title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
                     @if($lot->status !== 'vendido')
-                        <button type="button"
-                                class="btn btn-success"
+                        <button type="button" 
+                                class="btn btn-success" 
                                 onclick="createSale({{ $lot->id }})"
-                                data-toggle="tooltip"
+                                data-toggle="tooltip" 
                                 title="Crear venta">
                             <i class="fas fa-shopping-cart"></i>
                         </button>
                     @endif
                     <div class="btn-group btn-group-sm">
-                        <button type="button"
-                                class="btn btn-secondary dropdown-toggle dropdown-icon"
+                        <button type="button" 
+                                class="btn btn-secondary dropdown-toggle dropdown-icon" 
                                 data-toggle="dropdown">
                             <span class="sr-only">Toggle Dropdown</span>
                         </button>
@@ -175,8 +157,8 @@
                                 </button>
                             @endif
                             <div class="dropdown-divider"></div>
-                            <button type="button"
-                                    class="dropdown-item text-danger"
+                            <button type="button" 
+                                    class="dropdown-item text-danger" 
                                     onclick="deleteLot({{ $lot->id }}, '{{ $lot->lot_code }}')">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
@@ -218,7 +200,7 @@
     <div class="text-muted">
         Mostrando {{ $lots->firstItem() }} a {{ $lots->lastItem() }} de {{ $lots->total() }} lotes
     </div>
-    <div class="pagination-custom">
+    <div>
         {{ $lots->withQueryString()->onEachSide(2)->links() }}
     </div>
 </div>
@@ -239,7 +221,7 @@ function showSalesHistory(lotId) {
             <p class="mt-2">Cargando historial...</p>
         </div>
     `);
-
+    
     fetch(`/lots/${lotId}/sales-history`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
