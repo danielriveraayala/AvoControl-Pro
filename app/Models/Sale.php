@@ -71,9 +71,18 @@ class Sale extends Model
     {
         $this->total_weight = $this->saleItems()->sum('weight');
         $this->total_amount = $this->saleItems()->sum('subtotal');
-        $this->save();
         
-        // Update payment status after calculating totals
-        $this->updatePaymentStatus();
+        // Update payment status in the same operation
+        $totalPaid = $this->payments()->sum('amount');
+        
+        if ($totalPaid >= $this->total_amount) {
+            $this->payment_status = 'paid';
+        } elseif ($totalPaid > 0) {
+            $this->payment_status = 'partial';
+        } else {
+            $this->payment_status = 'pending';
+        }
+        
+        $this->save(); // Save everything at once
     }
 }

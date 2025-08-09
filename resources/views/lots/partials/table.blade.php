@@ -13,9 +13,6 @@
             <th class="sortable-header cursor-pointer" data-field="total_weight">
                 Peso Total <i class="fas fa-sort sort-icon text-muted"></i>
             </th>
-            <th class="sortable-header cursor-pointer" data-field="weight_available">
-                Disponible <i class="fas fa-sort sort-icon text-muted"></i>
-            </th>
             <th class="sortable-header cursor-pointer" data-field="quality_grade">
                 Calidad <i class="fas fa-sort sort-icon text-muted"></i>
             </th>
@@ -62,19 +59,7 @@
             </td>
             <td>
                 <strong>{{ number_format($lot->total_weight, 2) }} kg</strong>
-                @if($lot->weight_sold > 0)
-                    <div class="progress progress-sm mt-1">
-                        <div class="progress-bar bg-success"
-                             style="width: {{ ($lot->weight_sold / $lot->total_weight) * 100 }}%"
-                             title="Vendido: {{ number_format($lot->weight_sold, 2) }} kg">
-                        </div>
-                    </div>
-                @endif
-            </td>
-            <td>
-                <span class="badge {{ $lot->weight_available > 0 ? 'badge-success' : 'badge-secondary' }}">
-                    {{ number_format($lot->weight_available, 2) }} kg
-                </span>
+                <br><small class="text-muted">Contribuye al acopio</small>
             </td>
             <td>
                 @switch($lot->quality_grade)
@@ -169,9 +154,9 @@
                             <button type="button" class="dropdown-item" onclick="downloadLotPDF({{ $lot->id }})">
                                 <i class="fas fa-file-pdf"></i> Descargar PDF
                             </button>
-                            @if($lot->saleItems->count() > 0)
+                            @if($lot->saleAllocations->count() > 0)
                                 <button type="button" class="dropdown-item" onclick="showSalesHistory({{ $lot->id }})">
-                                    <i class="fas fa-history"></i> Ver Ventas
+                                    <i class="fas fa-history"></i> Ver Asignaciones
                                 </button>
                             @endif
                             <div class="dropdown-divider"></div>
@@ -187,7 +172,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="10" class="text-center py-5">
+            <td colspan="9" class="text-center py-5">
                 <div class="d-flex flex-column align-items-center">
                     <i class="fas fa-boxes fa-4x text-muted mb-3"></i>
                     <h4 class="text-muted mb-2">No hay lotes registrados</h4>

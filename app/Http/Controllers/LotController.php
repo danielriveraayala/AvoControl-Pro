@@ -12,7 +12,7 @@ class LotController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lot::with(['supplier', 'saleItems']);
+        $query = Lot::with(['supplier', 'saleAllocations']);
 
         // Filters - Only apply if values are not null/empty
         if ($request->filled('status')) {
@@ -20,7 +20,10 @@ class LotController extends Controller
         }
         
         if ($request->filled('quality')) {
-            $query->where('quality_grade', $request->quality);
+            $qualityGradeRecord = \App\Models\QualityGrade::where('name', $request->quality)->first();
+            if ($qualityGradeRecord) {
+                $query->where('quality_grade_id', $qualityGradeRecord->id);
+            }
         }
         
         if ($request->filled('supplier_id')) {
@@ -50,25 +53,28 @@ class LotController extends Controller
                       ->orWhereHas('supplier', function($sq) use ($search) {
                           $sq->where('name', 'LIKE', "%{$search}%");
                       })
-                      ->orWhere('quality_grade', 'LIKE', "%{$search}%");
+                      ->orWhereHas('qualityGrade', function($qg) use ($search) {
+                          $qg->where('name', 'LIKE', "%{$search}%");
+                      });
                 });
                 $totalFiltered = $query->count();
             }
             
             // Apply ordering
             if ($request->has('order')) {
-                $columns = ['lot_code', 'supplier.name', 'harvest_date', 'total_weight', 'weight_available', 
-                           'quality_grade', 'status', 'purchase_price_per_kg', 'total_purchase_cost', 'id'];
-                $orderColumnIndex = $request->order[0]['column'] ?? 2;
+                // Updated columns with payment_status column
+                $columns = ['supplier.name', 'harvest_date', 'total_weight', 
+                           'quality_grade', 'purchase_price_per_kg', 'total_purchase_cost', 'payment_status', 'id'];
+                $orderColumnIndex = $request->order[0]['column'] ?? 1;
                 $orderDir = $request->order[0]['dir'] ?? 'desc';
                 
-                if ($orderColumnIndex == 1) { // Supplier column
+                if ($orderColumnIndex == 0) { // Supplier column
                     $query->leftJoin('suppliers', 'lots.supplier_id', '=', 'suppliers.id')
                           ->select('lots.*')
                           ->orderByRaw('suppliers.name IS NULL, suppliers.name ' . $orderDir);
                 } else {
-                    $orderColumn = ['lot_code', 'supplier_id', 'harvest_date', 'total_weight', 'weight_available', 
-                                   'quality_grade', 'status', 'purchase_price_per_kg', 'total_purchase_cost', 'id'][$orderColumnIndex] ?? 'harvest_date';
+                    $orderColumn = ['supplier_id', 'harvest_date', 'total_weight', 
+                                   'quality_grade', 'purchase_price_per_kg', 'total_purchase_cost', 'payment_status', 'id'][$orderColumnIndex] ?? 'harvest_date';
                     $query->orderBy($orderColumn, $orderDir);
                 }
             } else {
@@ -118,36 +124,66 @@ class LotController extends Controller
         $suppliers = Supplier::orderBy('name')->get();
         $qualityGrades = QualityGrade::active()->ordered()->get();
 
-        // Calculate stats
-        $totalWeight = $statsQuery->sum('weight_available') ?: 0;
-        $totalValue = $statsQuery->sum('total_purchase_cost') ?: 0;
+        // Calculate comprehensive stats
+        $totalLots = $statsQuery->count();
+        $availableWeight = $statsQuery->sum('weight_available') ?: 0;
+        $soldWeight = $statsQuery->sum('weight_sold') ?: 0;
+        $totalInvestment = $statsQuery->sum('total_purchase_cost') ?: 0;
+        $pendingDebt = $statsQuery->sum('amount_owed') ?: 0;
+        $avgPurchasePrice = $totalLots > 0 ? $statsQuery->avg('purchase_price_per_kg') : 0;
         
-        // Calculate payment statistics
-        $totalDebt = (clone $statsQuery)->sum('amount_owed') ?: 0;
-        $totalPaid = (clone $statsQuery)->sum('amount_paid') ?: 0;
-        $lotsWithDebt = (clone $statsQuery)->where('amount_owed', '>', 0)->count();
+        // Calculate stats by quality
+        $qualityBreakdown = [];
+        $qualityStats = Lot::with(['qualityGrade'])
+            ->select('quality_grade_id')
+            ->selectRaw('COUNT(*) as lots')
+            ->selectRaw('SUM(total_weight) as total_kg')
+            ->selectRaw('AVG(purchase_price_per_kg) as avg_price')
+            ->selectRaw('SUM(total_purchase_cost) as total_value')
+            ->where('quality_grade_id', '!=', null);
+            
+        // Apply same filters to quality stats
+        if ($request->filled('status')) {
+            $qualityStats->where('status', $request->status);
+        }
+        if ($request->filled('quality')) {
+            $qualityGradeRecord = \App\Models\QualityGrade::where('name', $request->quality)->first();
+            if ($qualityGradeRecord) {
+                $qualityStats->where('quality_grade_id', $qualityGradeRecord->id);
+            }
+        }
+        if ($request->filled('supplier_id')) {
+            $qualityStats->where('supplier_id', $request->supplier_id);
+        }
+        if ($request->has('date_from') && $request->date_from) {
+            $qualityStats->whereDate('harvest_date', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $qualityStats->whereDate('harvest_date', '<=', $request->date_to);
+        }
         
-        // Calculate potential profit
-        $potentialProfit = 0;
-        $lotsWithSuggestedPrice = (clone $statsQuery)->whereNotNull('metadata')->get();
-        foreach ($lotsWithSuggestedPrice as $lot) {
-            $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);
-            if (isset($metadata['precio_venta_sugerido']) && $metadata['precio_venta_sugerido'] > 0) {
-                $potentialRevenue = $lot->total_weight * $metadata['precio_venta_sugerido'];
-                $potentialProfit += $potentialRevenue - $lot->total_purchase_cost;
+        $qualityStats = $qualityStats->groupBy('quality_grade_id')->get();
+        
+        foreach ($qualityStats as $stat) {
+            if ($stat->qualityGrade) {
+                $qualityBreakdown[] = [
+                    'quality_name' => $stat->qualityGrade->name,
+                    'lots' => $stat->lots,
+                    'total_kg' => $stat->total_kg ?: 0,
+                    'avg_price' => $stat->avg_price ?: 0,
+                    'total_value' => $stat->total_value ?: 0
+                ];
             }
         }
         
         $stats = [
-            'total' => $statsQuery->count(),
-            'active' => (clone $statsQuery)->where('status', 'active')->count(),
-            'weight' => number_format((float)$totalWeight, 2),
-            'value' => number_format((float)$totalValue, 2),
-            // Payment statistics
-            'total_debt' => number_format((float)$totalDebt, 2),
-            'total_paid' => number_format((float)$totalPaid, 2),
-            'potential_profit' => number_format((float)$potentialProfit, 2),
-            'lots_with_debt' => $lotsWithDebt
+            'total' => $totalLots,
+            'available_weight' => $availableWeight,
+            'sold_weight' => $soldWeight,
+            'avg_purchase_price' => $avgPurchasePrice,
+            'total_investment' => $totalInvestment,
+            'pending_debt' => $pendingDebt,
+            'quality_breakdown' => $qualityBreakdown
         ];
 
         // Handle AJAX requests (non-DataTables)
@@ -159,15 +195,21 @@ class LotController extends Controller
                     'query_sql' => $query->toSql()
                 ]);
                 
+                // Check if it's a stats-only request
+                if ($request->has('ajax') && $request->get('ajax') == '1') {
+                    return response()->json([
+                        'stats' => $stats,
+                        'success' => true
+                    ]);
+                }
+                
                 $html = view('lots.partials.table', compact('lots'))->render();
                 return response()->json([
                     'html' => $html,
                     'stats' => $stats,
                     'success' => true,
                     'debug' => [
-                        'lots_count' => $lots->count(),
-                        'sort' => $sortField,
-                        'direction' => $sortDirection
+                        'lots_count' => $lots->count()
                     ]
                 ]);
             } catch (\Exception $e) {
@@ -186,7 +228,8 @@ class LotController extends Controller
     public function create()
     {
         $suppliers = Supplier::orderBy('name')->get();
-        return view('lots.create', compact('suppliers'));
+        $qualityGrades = QualityGrade::active()->ordered()->get();
+        return view('lots.create', compact('suppliers', 'qualityGrades'));
     }
 
     public function store(Request $request)
@@ -194,13 +237,12 @@ class LotController extends Controller
         $validated = $request->validate([
             'codigo' => 'required|string|unique:lots,lot_code',
             'fecha_compra' => 'required|date',
-            'peso_inicial' => 'required|numeric|min:0.01',
-            'precio_compra' => 'required|numeric|min:0.01',
-            'precio_venta_sugerido' => 'nullable|numeric|min:0.01',
-            'calidad' => 'required|exists:quality_grades,name',
+            'peso_inicial' => 'required|numeric|min:0.01|max:9999999',
+            'precio_compra' => 'required|numeric|min:0.01|max:99999',
+            'calidad' => 'required|exists:quality_grades,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'notas' => 'nullable|string|max:1000',
-            'monto_pago' => 'nullable|numeric|min:0',
+            'monto_pago' => 'nullable|numeric|min:0|max:99999999999',
             'fecha_pago' => 'nullable|date',
             'tipo_pago' => 'nullable|in:efectivo,transferencia,cheque,deposito,otro',
             'notas_pago' => 'nullable|string|max:500',
@@ -220,13 +262,17 @@ class LotController extends Controller
                     $paymentStatus = 'partial';
                 }
                 
+                // Get quality grade name for backward compatibility
+                $qualityGrade = QualityGrade::find($validated['calidad']);
+                
                 $lot = Lot::create([
                     'lot_code' => $validated['codigo'],
                     'harvest_date' => $validated['fecha_compra'],
                     'entry_date' => now(),
                     'total_weight' => $validated['peso_inicial'],
                     'purchase_price_per_kg' => $validated['precio_compra'],
-                    'quality_grade' => $validated['calidad'],
+                    'quality_grade' => $qualityGrade->name, // Keep for backward compatibility
+                    'quality_grade_id' => $validated['calidad'], // Use ID for relationship
                     'supplier_id' => $validated['supplier_id'],
                     'status' => 'active',
                     'weight_sold' => 0,
@@ -235,10 +281,7 @@ class LotController extends Controller
                     'amount_paid' => $amountPaid,
                     'amount_owed' => $amountOwed,
                     'payment_status' => $paymentStatus,
-                    'metadata' => json_encode([
-                        'notas' => $validated['notas'],
-                        'precio_venta_sugerido' => $validated['precio_venta_sugerido']
-                    ])
+                    'notes' => $validated['notas']
                 ]);
 
                 // Create initial payment record if payment was made
@@ -283,22 +326,11 @@ class LotController extends Controller
 
     public function show(Request $request, Lot $lot)
     {
-        $lot->load(['supplier', 'saleItems.sale.customer', 'payments', 'lotPayments']);
+        $lot->load(['supplier', 'saleAllocations.saleItem.sale.customer', 'payments', 'lotPayments']);
         
         if ($request->wantsJson()) {
-            // Process metadata properly - handle both array and JSON string
-            $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);
-            
             // Get latest payment for pre-filling form
             $latestPayment = $lot->lotPayments->first();
-            
-            // Debug logging
-            \Log::info('Loading lot for edit', [
-                'lot_id' => $lot->id,
-                'raw_metadata' => $lot->getAttributes()['metadata'],
-                'processed_metadata' => $metadata,
-                'precio_venta_sugerido' => $metadata['precio_venta_sugerido'] ?? 'NOT_FOUND'
-            ]);
             
             $response = [
                 'id' => $lot->id,
@@ -307,9 +339,9 @@ class LotController extends Controller
                 'codigo' => $lot->lot_code,
                 'peso_inicial' => $lot->total_weight,
                 'precio_compra' => $lot->purchase_price_per_kg,
-                'precio_venta_sugerido' => $metadata['precio_venta_sugerido'] ?? null,
                 'calidad' => $lot->quality_grade,
-                'notas' => $metadata['notas'] ?? '',
+                'quality_grade_id' => $lot->quality_grade_id, // Add ID for form
+                'notas' => $lot->notes ?? '',
                 'fecha_compra' => $lot->harvest_date->format('Y-m-d'),
                 // Payment fields
                 'amount_paid' => $lot->amount_paid,
@@ -326,23 +358,8 @@ class LotController extends Controller
             
             return response()->json($response);
         }
-        
-        // Calculate metrics
-        $metrics = [
-            'weight_metrics' => [
-                'total' => $lot->total_weight,
-                'sold' => $lot->weight_sold,
-                'available' => $lot->weight_available,
-                'sold_percentage' => $lot->total_weight > 0 ? ($lot->weight_sold / $lot->total_weight) * 100 : 0
-            ],
-            'financial_metrics' => [
-                'purchase_cost' => $lot->total_purchase_cost,
-                'revenue' => $lot->saleItems->sum('subtotal') ?? 0,
-                'profit' => ($lot->saleItems->sum('subtotal') ?? 0) - ($lot->weight_sold * $lot->purchase_price_per_kg),
-            ]
-        ];
 
-        return view('lots.show', compact('lot', 'metrics'));
+        return view('lots.show', compact('lot'));
     }
 
     public function edit(Lot $lot)
@@ -353,24 +370,18 @@ class LotController extends Controller
 
     public function update(Request $request, Lot $lot)
     {
-        // Only allow editing if lot hasn't been sold
-        if ($lot->weight_sold > 0) {
-            if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'No se puede editar un lote que ya tiene ventas'], 422);
-            }
-            return redirect()->back()->with('error', 'No se puede editar un lote que ya tiene ventas');
-        }
-
+        // No restrictions for editing in acopio model
+        // Lots contribute to aggregated inventory, not individual sales
+        
         $validated = $request->validate([
             'codigo' => 'required|string|unique:lots,lot_code,' . $lot->id,
             'fecha_compra' => 'required|date',
-            'peso_inicial' => 'required|numeric|min:0.01',
-            'precio_compra' => 'required|numeric|min:0.01',
-            'precio_venta_sugerido' => 'nullable|numeric|min:0.01',
-            'calidad' => 'required|exists:quality_grades,name',
+            'peso_inicial' => 'required|numeric|min:0.01|max:9999999',
+            'precio_compra' => 'required|numeric|min:0.01|max:99999',
+            'calidad' => 'required|exists:quality_grades,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'notas' => 'nullable|string|max:1000',
-            'monto_pago' => 'nullable|numeric|min:0',
+            'monto_pago' => 'nullable|numeric|min:0|max:99999999999',
             'fecha_pago' => 'nullable|date',
             'tipo_pago' => 'nullable|in:efectivo,transferencia,cheque,deposito,otro',
             'notas_pago' => 'nullable|string|max:500',
@@ -413,6 +424,9 @@ class LotController extends Controller
                     $supplier->save();
                 }
 
+                // Get quality grade name for backward compatibility
+                $qualityGrade = QualityGrade::find($validated['calidad']);
+                
                 // Update lot
                 $lot->update([
                     'lot_code' => $validated['codigo'],
@@ -420,17 +434,15 @@ class LotController extends Controller
                     'entry_date' => now(),
                     'total_weight' => $validated['peso_inicial'],
                     'purchase_price_per_kg' => $validated['precio_compra'],
-                    'quality_grade' => $validated['calidad'],
+                    'quality_grade' => $qualityGrade->name, // Keep for backward compatibility
+                    'quality_grade_id' => $validated['calidad'], // Use ID for relationship
                     'supplier_id' => $validated['supplier_id'],
                     'weight_available' => $validated['peso_inicial'] - $lot->weight_sold,
                     'total_purchase_cost' => $newCost,
                     'amount_paid' => $newPaid,
                     'amount_owed' => $newOwed,
                     'payment_status' => $paymentStatus,
-                    'metadata' => json_encode([
-                        'notas' => $validated['notas'],
-                        'precio_venta_sugerido' => $validated['precio_venta_sugerido']
-                    ])
+                    'notes' => $validated['notas']
                 ]);
 
                 // Create additional payment record if new payment was made
@@ -463,23 +475,71 @@ class LotController extends Controller
 
     public function destroy(Request $request, Lot $lot)
     {
-        // Only allow deletion if lot hasn't been sold
-        if ($lot->weight_sold > 0) {
-            if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'No se puede eliminar un lote que ya tiene ventas'], 422);
-            }
-            return redirect()->back()->with('error', 'No se puede eliminar un lote que ya tiene ventas');
-        }
-
         try {
+            // Verificar si eliminar este lote causará déficit
+            if ($lot->quality_grade_id) {
+                // Obtener inventario actual de esta calidad
+                $inventarioActual = Lot::where('quality_grade_id', $lot->quality_grade_id)
+                    ->where('status', '!=', 'cancelled')
+                    ->sum('total_weight');
+                    
+                // Obtener ventas comprometidas de esta calidad
+                $qualityName = $lot->qualityGrade->name;
+                $ventasComprometidas = DB::table('sale_items')
+                    ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+                    ->where('sales.status', '!=', 'cancelled')
+                    ->where('sale_items.quality_name', $qualityName)
+                    ->sum('sale_items.quantity');
+                    
+                // Calcular nuevo balance después de eliminar
+                $nuevoInventario = $inventarioActual - $lot->total_weight;
+                $deficit = $ventasComprometidas - $nuevoInventario;
+                
+                // Si habrá déficit, advertir pero permitir continuar
+                if ($deficit > 0) {
+                    \Log::warning("Eliminación de lote causará déficit", [
+                        'lot_id' => $lot->id,
+                        'quality' => $qualityName,
+                        'deficit' => $deficit,
+                        'inventario_actual' => $inventarioActual,
+                        'nuevo_inventario' => $nuevoInventario,
+                        'ventas_comprometidas' => $ventasComprometidas
+                    ]);
+                    
+                    // Opcionalmente, podríamos retornar una advertencia
+                    if ($request->wantsJson() && !$request->has('force')) {
+                        return response()->json([
+                            'warning' => true,
+                            'message' => "¡Advertencia! Eliminar este lote causará un déficit de {$deficit} kg en {$qualityName}. ¿Desea continuar?",
+                            'deficit' => $deficit,
+                            'quality' => $qualityName
+                        ], 200);
+                    }
+                }
+            }
+            
             DB::transaction(function () use ($lot) {
+                // Delete any sale allocations related to this lot (cleanup)
+                if ($lot->saleAllocations) {
+                    $lot->saleAllocations()->delete();
+                }
+                
+                // Delete any lot payments
+                if ($lot->lotPayments) {
+                    $lot->lotPayments()->delete();
+                }
+                
                 // Update supplier balance only if supplier exists
                 if ($lot->supplier) {
-                    $lot->supplier->balance_owed -= $lot->total_purchase_cost;
+                    // Only adjust if there's an amount owed
+                    if ($lot->amount_owed > 0) {
+                        $lot->supplier->balance_owed -= $lot->amount_owed;
+                    }
                     $lot->supplier->total_purchased -= $lot->total_purchase_cost;
                     $lot->supplier->save();
                 }
 
+                // Delete the lot
                 $lot->delete();
             });
 
@@ -489,43 +549,22 @@ class LotController extends Controller
 
             return redirect()->route('lots.index')->with('success', 'Lote eliminado exitosamente');
         } catch (\Exception $e) {
+            \Log::error('Error deleting lot: ' . $e->getMessage());
+            
             if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'Error al eliminar el lote'], 422);
+                return response()->json(['success' => false, 'message' => 'Error al eliminar el lote: ' . $e->getMessage()], 422);
             }
-            return back()->with('error', 'Error al eliminar el lote');
+            return back()->with('error', 'Error al eliminar el lote: ' . $e->getMessage());
         }
     }
 
     public function report(Request $request, Lot $lot)
     {
-        $lot->load(['supplier', 'saleItems.sale.customer', 'payments', 'lotPayments.paidByUser']);
-        
-        // Get metadata for suggested price
-        $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);
-        $suggestedPrice = $metadata['precio_venta_sugerido'] ?? null;
-        
-        // Calculate metrics
-        $metrics = [
-            'weight_metrics' => [
-                'total' => $lot->total_weight,
-                'sold' => $lot->weight_sold,
-                'available' => $lot->weight_available,
-                'sold_percentage' => $lot->total_weight > 0 ? ($lot->weight_sold / $lot->total_weight) * 100 : 0
-            ],
-            'financial_metrics' => [
-                'purchase_cost' => $lot->total_purchase_cost,
-                'revenue' => $lot->saleItems->sum('subtotal') ?? 0,
-                'profit' => ($lot->saleItems->sum('subtotal') ?? 0) - ($lot->weight_sold * $lot->purchase_price_per_kg),
-                'suggested_price_per_kg' => $suggestedPrice,
-                'potential_revenue' => $suggestedPrice ? ($lot->total_weight * $suggestedPrice) : null,
-                'potential_profit' => $suggestedPrice ? (($lot->total_weight * $suggestedPrice) - $lot->total_purchase_cost) : null,
-                'potential_margin' => $suggestedPrice && $lot->total_purchase_cost > 0 ? ((($lot->total_weight * $suggestedPrice) - $lot->total_purchase_cost) / $lot->total_purchase_cost * 100) : null
-            ]
-        ];
+        $lot->load(['supplier', 'payments', 'lotPayments.paidByUser', 'saleAllocations']);
 
         if ($request->wantsJson()) {
             try {
-                $html = view('lots.partials.report', compact('lot', 'metrics'))->render();
+                $html = view('lots.partials.report', compact('lot'))->render();
                 \Log::info('Report HTML generated successfully', ['lot_id' => $lot->id, 'html_length' => strlen($html)]);
                 return response()->json(['html' => $html, 'success' => true]);
             } catch (\Exception $e) {
@@ -534,38 +573,15 @@ class LotController extends Controller
             }
         }
 
-        return view('lots.report', compact('lot', 'metrics'));
+        return view('lots.report', compact('lot'));
     }
 
     public function downloadPDF(Lot $lot)
     {
-        $lot->load(['supplier', 'saleItems.sale.customer', 'payments', 'lotPayments.paidByUser']);
-        
-        // Get metadata for suggested price
-        $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);
-        $suggestedPrice = $metadata['precio_venta_sugerido'] ?? null;
-        
-        // Calculate metrics
-        $metrics = [
-            'weight_metrics' => [
-                'total' => $lot->total_weight,
-                'sold' => $lot->weight_sold,
-                'available' => $lot->weight_available,
-                'sold_percentage' => $lot->total_weight > 0 ? ($lot->weight_sold / $lot->total_weight) * 100 : 0
-            ],
-            'financial_metrics' => [
-                'purchase_cost' => $lot->total_purchase_cost,
-                'revenue' => $lot->saleItems->sum('subtotal') ?? 0,
-                'profit' => ($lot->saleItems->sum('subtotal') ?? 0) - ($lot->weight_sold * $lot->purchase_price_per_kg),
-                'suggested_price_per_kg' => $suggestedPrice,
-                'potential_revenue' => $suggestedPrice ? ($lot->total_weight * $suggestedPrice) : null,
-                'potential_profit' => $suggestedPrice ? (($lot->total_weight * $suggestedPrice) - $lot->total_purchase_cost) : null,
-                'potential_margin' => $suggestedPrice && $lot->total_purchase_cost > 0 ? ((($lot->total_weight * $suggestedPrice) - $lot->total_purchase_cost) / $lot->total_purchase_cost * 100) : null
-            ]
-        ];
+        $lot->load(['supplier', 'payments', 'lotPayments.paidByUser', 'saleAllocations']);
 
         $pdf = app('dompdf.wrapper');
-        $pdf->loadView('lots.pdf.report', compact('lot', 'metrics'));
+        $pdf->loadView('lots.pdf.report', compact('lot'));
         
         return $pdf->download("lote_{$lot->lot_code}_reporte.pdf");
     }

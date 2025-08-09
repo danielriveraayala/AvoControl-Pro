@@ -36,11 +36,15 @@ class ReportService
             'active_lots' => Lot::where('status', 'active')->count(),
             'partial_lots' => Lot::where('status', 'partial')->count(),
             'sold_lots' => Lot::where('status', 'sold')->count(),
-            'quality_distribution' => Lot::where('status', '!=', 'sold')
-                ->select('quality_grade', DB::raw('SUM(weight_available) as weight'))
-                ->groupBy('quality_grade')
+            'quality_distribution' => Lot::with(['qualityGrade'])
+                ->where('status', '!=', 'sold')
+                ->where('quality_grade_id', '!=', null)
+                ->select('quality_grade_id', DB::raw('SUM(weight_available) as weight'))
+                ->groupBy('quality_grade_id')
                 ->get()
-                ->mapWithKeys(fn($item) => [$item->quality_grade => $item->weight])
+                ->mapWithKeys(fn($item) => [
+                    $item->qualityGrade ? $item->qualityGrade->name : 'Sin calidad' => $item->weight
+                ])
                 ->toArray(),
             'oldest_lot_days' => Lot::where('status', '!=', 'sold')
                 ->orderBy('harvest_date')
@@ -90,8 +94,17 @@ class ReportService
         $salesQuery = Sale::whereBetween('sale_date', [$start, $end]);
         $lotsQuery = Lot::whereBetween('entry_date', [$start, $end]);
         
+        // Get total sales count first
+        $totalSales = $salesQuery->count();
+        $deliveredSales = Sale::whereBetween('sale_date', [$start, $end])
+            ->where('status', 'delivered')
+            ->count();
+        $paidSales = Sale::whereBetween('sale_date', [$start, $end])
+            ->where('payment_status', 'paid')
+            ->count();
+        
         return [
-            'total_sales' => $salesQuery->count(),
+            'total_sales' => $totalSales,
             'total_weight_sold' => $salesQuery->sum('total_weight'),
             'average_sale_value' => $salesQuery->avg('total_amount') ?? 0,
             'new_lots' => $lotsQuery->count(),
@@ -102,10 +115,10 @@ class ReportService
             'active_suppliers' => Lot::whereBetween('entry_date', [$start, $end])
                 ->distinct('supplier_id')
                 ->count('supplier_id'),
-            'delivery_rate' => $salesQuery->count() > 0 ?
-                ($salesQuery->where('status', 'delivered')->count() / $salesQuery->count()) * 100 : 0,
-            'payment_collection_rate' => $salesQuery->count() > 0 ?
-                ($salesQuery->where('payment_status', 'paid')->count() / $salesQuery->count()) * 100 : 0
+            'delivery_rate' => $totalSales > 0 ?
+                ($deliveredSales / $totalSales) * 100 : 0,
+            'payment_collection_rate' => $totalSales > 0 ?
+                ($paidSales / $totalSales) * 100 : 0
         ];
     }
     
@@ -137,7 +150,7 @@ class ReportService
         }
         
         // Check for pending deliveries
-        $pendingDeliveries = Sale::where('status', 'pending')
+        $pendingDeliveries = Sale::where('status', 'draft')
             ->where('sale_date', '<=', now()->subDays(3))
             ->count();
         

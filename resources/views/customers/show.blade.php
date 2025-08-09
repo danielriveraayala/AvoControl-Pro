@@ -203,7 +203,7 @@
                             @foreach($customer->sales as $sale)
                             <tr>
                                 <td>
-                                    <a href="{{ route('sales.show', $sale) }}" class="text-primary">
+                                    <a href="{{ route('sales.index') }}?customer_id={{ $sale->customer_id }}" class="text-primary">
                                         {{ $sale->sale_code ?? $sale->invoice_number }}
                                     </a>
                                 </td>

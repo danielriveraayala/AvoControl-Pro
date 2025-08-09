@@ -8,6 +8,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ConfigurationController;
+use App\Http\Controllers\AcopioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,8 @@ Route::get('/', function () {
     return redirect('/dashboard');
 });
 
+
+
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -35,21 +38,40 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('suppliers', SupplierController::class);
     Route::resource('customers', CustomerController::class);
     
-    // Special routes for lots
+    // Acopio routes
+    Route::get('acopio', [AcopioController::class, 'index'])->name('acopio.index');
+    Route::get('acopio/{quality}', [AcopioController::class, 'show'])->name('acopio.show');
+    Route::get('acopio-movimientos', [AcopioController::class, 'movimientos'])->name('acopio.movimientos');
+    Route::get('acopio-reporte', [AcopioController::class, 'reporte'])->name('acopio.reporte');
+    
+    
+    // Lots routes
     Route::get('lots/{lot}/report', [LotController::class, 'report'])->name('lots.report');
     Route::get('lots/{lot}/pdf', [LotController::class, 'downloadPDF'])->name('lots.pdf');
     Route::get('lots/{lot}/payments', [LotController::class, 'payments'])->name('lots.payments');
     Route::post('lots/{lot}/payments', [LotController::class, 'addPayment'])->name('lots.payments.add');
     
-    // Special routes for payments
-    Route::get('sales/{sale}/payment', [PaymentController::class, 'createSalePayment'])->name('payments.sale.create');
-    Route::post('sales/{sale}/payment', [PaymentController::class, 'storeSalePayment'])->name('payments.sale.store');
-    Route::get('lots/{lot}/payment', [PaymentController::class, 'createLotPayment'])->name('payments.lot.create');
-    Route::post('lots/{lot}/payment', [PaymentController::class, 'storeLotPayment'])->name('payments.lot.store');
-    Route::get('payments/cash-flow', [PaymentController::class, 'dailyCashFlow'])->name('payments.cash-flow');
+    // Sales AJAX routes
+    Route::group(['prefix' => 'sales'], function() {
+        Route::get('{sale}/details', [SaleController::class, 'details'])->name('sales.details');
+        Route::get('{sale}/edit-modal', [SaleController::class, 'editModal'])->name('sales.edit-modal');
+        Route::post('{sale}/update-modal', [SaleController::class, 'updateModal'])->name('sales.update-modal');
+        Route::patch('{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.update-status');
+        Route::get('{sale}/payment-form', [SaleController::class, 'paymentForm'])->name('sales.payment-form');
+        Route::get('{sale}/payment-timeline', [SaleController::class, 'paymentTimeline'])->name('sales.payment-timeline');
+        Route::get('{sale}/invoice', [SaleController::class, 'invoice'])->name('sales.invoice');
+        Route::patch('{sale}/deliver', [SaleController::class, 'markDelivered'])->name('sales.deliver');
+    });
     
-    // Special route for marking sales as delivered
-    Route::patch('sales/{sale}/deliver', [SaleController::class, 'markDelivered'])->name('sales.deliver');
+    // Payment routes
+    Route::group(['prefix' => 'payments'], function() {
+        Route::get('sales/{sale}/create', [PaymentController::class, 'createSalePayment'])->name('payments.sale.create');
+        Route::post('sales/{sale}/store', [PaymentController::class, 'storeSalePayment'])->name('payments.sale.store');
+        Route::get('lots/{lot}/create', [PaymentController::class, 'createLotPayment'])->name('payments.lot.create');
+        Route::post('lots/{lot}/store', [PaymentController::class, 'storeLotPayment'])->name('payments.lot.store');
+        Route::get('cash-flow', [PaymentController::class, 'dailyCashFlow'])->name('payments.cash-flow');
+        Route::post('sale-payment', [PaymentController::class, 'storeSalePayment'])->name('payments.store-sale-payment');
+    });
     
     // Configuration routes
     Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');

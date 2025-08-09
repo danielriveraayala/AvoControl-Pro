@@ -48,7 +48,7 @@ class SaleSeeder extends Seeder
                 'invoice_number' => 'INV-' . $saleCode,
                 'total_weight' => 0, // Will be updated after creating items
                 'total_amount' => 0, // Will be updated after creating items
-                'status' => ['pending', 'delivered'][rand(0, 1)],
+                'status' => ['draft', 'delivered'][rand(0, 1)],
                 'payment_status' => 'pending'
             ]);
 

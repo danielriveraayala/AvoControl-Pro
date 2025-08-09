@@ -88,9 +88,9 @@
         </div>
     </div>
 
-    <!-- Estadísticas -->
+    <!-- Estadísticas Principales -->
     <div class="row" id="statsRow">
-        <div class="col-lg-3 col-6">
+        <div class="col-lg-4 col-6">
             <div class="small-box bg-info">
                 <div class="inner">
                     <h3 id="totalLots">{{ $stats['total'] ?? 0 }}</h3>
@@ -101,87 +101,116 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-6">
+        <div class="col-lg-4 col-6">
             <div class="small-box bg-success">
                 <div class="inner">
-                    <h3 id="activeLots">{{ $stats['active'] ?? 0 }}</h3>
-                    <p>Lotes Activos</p>
+                    <h3 id="availableWeight">{{ number_format($stats['available_weight'] ?? 0, 0) }}</h3>
+                    <p>kg Disponibles</p>
                 </div>
                 <div class="icon">
-                    <i class="fas fa-check-circle"></i>
+                    <i class="fas fa-weight-hanging"></i>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-6">
+        <div class="col-lg-4 col-6">
             <div class="small-box bg-warning">
                 <div class="inner">
-                    <h3 id="totalWeight">{{ $stats['weight'] ?? '0.00' }} kg</h3>
-                    <p>Peso Total</p>
+                    <h3 id="soldWeight">{{ number_format($stats['sold_weight'] ?? 0, 0) }}</h3>
+                    <p>kg Vendidos</p>
                 </div>
                 <div class="icon">
-                    <i class="fas fa-weight"></i>
+                    <i class="fas fa-shipping-fast"></i>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-danger">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-primary">
                 <div class="inner">
-                    <h3 id="totalValue">${{ $stats['value'] ?? '0.00' }}</h3>
-                    <p>Valor Total</p>
+                    <h3 id="avgPurchasePrice">${{ number_format($stats['avg_purchase_price'] ?? 0, 2) }}</h3>
+                    <p>Precio Promedio Compra</p>
                 </div>
                 <div class="icon">
-                    <i class="fas fa-dollar-sign"></i>
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-secondary">
+                <div class="inner">
+                    <h3 id="totalInvestment">${{ number_format($stats['total_investment'] ?? 0, 0) }}</h3>
+                    <p>Inversión Total</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3 id="pendingDebt">${{ number_format($stats['pending_debt'] ?? 0, 0) }}</h3>
+                    <p>Saldo Pendiente</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-exclamation-circle"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Estadísticas de Pagos -->
-    <div class="row" id="paymentStatsRow">
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3 id="totalDebt">${{ $stats['total_debt'] ?? '0.00' }}</h3>
-                    <p>Total Deuda Proveedores</p>
+    <!-- Estadísticas por Calidad -->
+    <div class="row" id="qualityStatsRow">
+        @if(isset($stats['quality_breakdown']) && count($stats['quality_breakdown']) > 0)
+            @foreach($stats['quality_breakdown'] as $qualityStats)
+                <div class="col-lg-3 col-6">
+                    <div class="card card-outline
+                        @switch($qualityStats['quality_name'])
+                            @case('Primeras') card-success @break
+                            @case('Segunda') card-warning @break
+                            @case('Tercera') card-info @break
+                            @case('Cuarta') card-primary @break
+                            @default card-secondary
+                        @endswitch
+                    ">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-star"></i> {{ $qualityStats['quality_name'] }}
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="description-block">
+                                        <h5 class="description-header">{{ $qualityStats['lots'] }}</h5>
+                                        <span class="description-text">LOTES</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="description-block">
+                                        <h5 class="description-header">{{ number_format($qualityStats['total_kg'], 0) }}</h5>
+                                        <span class="description-text">KG TOTAL</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-6">
+                                    <div class="description-block">
+                                        <h5 class="description-header text-success">${{ number_format($qualityStats['avg_price'], 2) }}</h5>
+                                        <span class="description-text">PRECIO PROM.</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="description-block">
+                                        <h5 class="description-header text-danger">${{ number_format($qualityStats['total_value'], 0) }}</h5>
+                                        <span class="description-text">INVERSIÓN</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3 id="totalPaid">${{ $stats['total_paid'] ?? '0.00' }}</h3>
-                    <p>Total Pagado</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3 id="potentialProfit">${{ $stats['potential_profit'] ?? '0.00' }}</h3>
-                    <p>Ganancia Proyectada</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3 id="lotsWithDebt">{{ $stats['lots_with_debt'] ?? 0 }}</h3>
-                    <p>Lotes con Saldo Pendiente</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-balance-scale"></i>
-                </div>
-            </div>
-        </div>
+            @endforeach
+        @endif
     </div>
 
     <!-- Tabla de Lotes -->
@@ -200,15 +229,13 @@
                     <table id="lotsTable" class="table table-bordered table-hover">
                         <thead>
                             <tr>
-                                <th>Código</th>
                                 <th>Proveedor</th>
                                 <th>Fecha Cosecha</th>
                                 <th>Peso Total</th>
-                                <th>Disponible</th>
                                 <th>Calidad</th>
-                                <th>Estado</th>
                                 <th>Precio/kg</th>
                                 <th>Valor Total</th>
+                                <th>Estado Pago</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -238,33 +265,20 @@
                             <div class="col-12">
                                 <div class="card card-info">
                                     <div class="card-header">
-                                        <h3 class="card-title">📊 Estadísticas del Lote</h3>
+                                        <h3 class="card-title">💰 Costo del Lote</h3>
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
-                                            <div class="col-md-6">
+                                            <div class="col-md-12">
                                                 <div class="info-box bg-info">
                                                     <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
                                                     <div class="info-box-content">
-                                                        <span class="info-box-text">Costo Total</span>
+                                                        <span class="info-box-text">Costo Total de Compra</span>
                                                         <span class="info-box-number" id="total-cost">$0.00</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="info-box bg-success">
-                                                    <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
-                                                    <div class="info-box-content">
-                                                        <span class="info-box-text">Ganancia Potencial</span>
-                                                        <span class="info-box-number" id="potential-profit">
-                                                            <button type="button" class="btn btn-sm btn-outline-light" onclick="toggleSensitiveData()">
-                                                                <i class="fas fa-eye-slash"></i> Mostrar
-                                                            </button>
-                                                        </span>
-                                                        <div id="profit-details" style="display: none;">
-                                                            <small class="text-light" id="profit-amount">$0.00</small><br>
-                                                            <small class="text-light" id="profit-margin">0% margen</small>
+                                                        <div class="progress">
+                                                            <div class="progress-bar" style="width: 0%"></div>
                                                         </div>
+                                                        <span class="progress-description">Peso: <span id="total-weight">0 kg</span> × $<span id="price-per-kg">0.00</span>/kg</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -293,22 +307,18 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="peso_inicial">Peso Inicial (kg) <span class="text-danger">*</span></label>
-                                    <input type="number" name="peso_inicial" id="peso_inicial" class="form-control" step="0.01" required>
+                                    <input type="number" name="peso_inicial" id="peso_inicial" class="form-control"
+                                           step="0.01" min="0.01" max="9999999" required>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="precio_compra">Precio Compra <span class="text-danger">*</span></label>
-                                    <input type="number" name="precio_compra" id="precio_compra" class="form-control" step="0.01" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="precio_venta_sugerido">Precio Venta Sugerido</label>
-                                    <input type="number" name="precio_venta_sugerido" id="precio_venta_sugerido" class="form-control" step="0.01">
+                                    <input type="number" name="precio_compra" id="precio_compra" class="form-control"
+                                           step="0.01" min="0.01" max="99999" required>
                                 </div>
                             </div>
                         </div>
@@ -319,7 +329,7 @@
                                     <select name="calidad" id="calidad" class="form-control" required>
                                         <option value="">Seleccionar calidad</option>
                                         @foreach($qualityGrades as $quality)
-                                            <option value="{{ $quality->name }}" title="{{ $quality->description }}">
+                                            <option value="{{ $quality->id }}" title="{{ $quality->description }}">
                                                 {{ $quality->name }}
                                                 @if($quality->caliber_range || $quality->weight_range)
                                                     ({{ $quality->caliber_range }} - {{ $quality->weight_range }})
@@ -542,13 +552,6 @@ $(document).ready(function() {
         },
         columns: [
             {
-                data: 'lot_code',
-                name: 'lot_code',
-                render: function(data, type, row) {
-                    return `<strong class="text-primary">${data}</strong><br><small class="text-muted">${new Date(row.created_at).toLocaleDateString('es-ES')}</small>`;
-                }
-            },
-            {
                 data: 'supplier',
                 name: 'supplier.name',
                 render: function(data, type, row) {
@@ -573,14 +576,6 @@ $(document).ready(function() {
                 }
             },
             {
-                data: 'weight_available',
-                name: 'weight_available',
-                render: function(data) {
-                    const badgeClass = parseFloat(data) > 0 ? 'badge-success' : 'badge-secondary';
-                    return `<span class="badge ${badgeClass}">${parseFloat(data).toFixed(2)} kg</span>`;
-                }
-            },
-            {
                 data: 'quality_grade',
                 name: 'quality_grade',
                 render: function(data) {
@@ -590,18 +585,6 @@ $(document).ready(function() {
                         'Tercera': '<span class="badge badge-danger"><i class="far fa-star"></i> Tercera</span>'
                     };
                     return qualityMap[data] || `<span class="badge badge-secondary">${data}</span>`;
-                }
-            },
-            {
-                data: 'status',
-                name: 'status',
-                render: function(data) {
-                    const statusMap = {
-                        'active': '<span class="badge badge-primary"><i class="fas fa-check-circle"></i> Activo</span>',
-                        'partial': '<span class="badge badge-warning"><i class="fas fa-clock"></i> Parcial</span>',
-                        'sold': '<span class="badge badge-success"><i class="fas fa-handshake"></i> Vendido</span>'
-                    };
-                    return statusMap[data] || `<span class="badge badge-secondary">${data}</span>`;
                 }
             },
             {
@@ -616,6 +599,19 @@ $(document).ready(function() {
                 name: 'total_purchase_cost',
                 render: function(data) {
                     return `<strong class="text-primary">$${parseFloat(data).toFixed(2)}</strong>`;
+                }
+            },
+            {
+                data: 'payment_status',
+                name: 'payment_status',
+                render: function(data, type, row) {
+                    const paymentStatusBadges = {
+                        'paid': '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Pagado</span>',
+                        'partial': '<span class="badge badge-warning"><i class="fas fa-clock"></i> Parcial</span>',
+                        'pending': '<span class="badge badge-danger"><i class="fas fa-exclamation-triangle"></i> Pendiente</span>'
+                    };
+
+                    return paymentStatusBadges[data] || `<span class="badge badge-secondary">${data}</span>`;
                 }
             },
             {
@@ -652,10 +648,18 @@ $(document).ready(function() {
             }
         ],
         language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+            processing: "Procesando...",
+            search: "Buscar:",
+            lengthMenu: "Mostrar _MENU_ registros",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+            infoEmpty: "Mostrando 0 a 0 de 0 registros",
+            paginate: {
+                previous: "Anterior",
+                next: "Siguiente"
+            }
         },
         responsive: true,
-        order: [[2, 'desc']], // Order by harvest_date desc
+        order: [[1, 'desc']], // Order by harvest_date desc
         pageLength: 20,
         lengthMenu: [[2, 10, 20, 50, 100], [2, 10, 20, 50, 100]],
         drawCallback: function() {
@@ -667,14 +671,170 @@ $(document).ready(function() {
 
     // Apply filters when changed
     $('#filterForm select, #filterForm input').on('change', function() {
-        lotsTable.draw();
+        loadLots();
     });
+
+    // Initialize stats on page load
+    updateStats();
 });
 
+function loadLots() {
+    // Reload DataTables data
+    lotsTable.draw();
+
+    // Update statistics in real-time
+    updateStats();
+}
+
 function updateStats() {
-    // Simple stats update - you can enhance this
-    const info = lotsTable.page.info();
-    $('#totalLots').text(info.recordsTotal);
+    console.log('Updating stats...');
+
+    // Add loading indication
+    $('#statsRow').addClass('loading-stats');
+    
+    // Safety timeout to remove loader after 5 seconds
+    const safetyTimeout = setTimeout(() => {
+        $('#statsRow').removeClass('loading-stats');
+        console.warn('Stats update timeout - removing loader');
+    }, 5000);
+
+    // Get current filter values
+    const formData = new URLSearchParams();
+    formData.append('status', $('#filterForm select[name="status"]').val() || '');
+    formData.append('quality', $('#filterForm select[name="quality"]').val() || '');
+    formData.append('supplier_id', $('#filterForm select[name="supplier_id"]').val() || '');
+    formData.append('date_from', $('#filterForm input[name="date_from"]').val() || '');
+    formData.append('date_to', $('#filterForm input[name="date_to"]').val() || '');
+    formData.append('ajax', '1');
+
+    console.log('Fetching stats with params:', formData.toString());
+
+    // Fetch updated stats
+    fetch('{{ route("lots.index") }}?' + formData.toString(), {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        console.log('Stats response status:', response.status);
+        clearTimeout(safetyTimeout); // Clear safety timeout on response
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Stats data received:', data);
+
+        // Remove loading indication first
+        $('#statsRow').removeClass('loading-stats');
+
+        if (data.stats) {
+            // Update main stats with smooth animation
+            updateStatValue('#totalLots', data.stats.total || 0);
+            updateStatValue('#availableWeight', Number(data.stats.available_weight || 0).toLocaleString());
+            updateStatValue('#soldWeight', Number(data.stats.sold_weight || 0).toLocaleString());
+            updateStatValue('#avgPurchasePrice', '$' + Number(data.stats.avg_purchase_price || 0).toFixed(2));
+            updateStatValue('#totalInvestment', '$' + Number(data.stats.total_investment || 0).toLocaleString());
+            updateStatValue('#pendingDebt', '$' + Number(data.stats.pending_debt || 0).toLocaleString());
+
+            // Update quality stats
+            if (data.stats.quality_breakdown) {
+                updateQualityStats(data.stats.quality_breakdown);
+            }
+            
+            console.log('Stats updated successfully');
+        } else {
+            console.error('No stats in response:', data);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating stats:', error);
+        clearTimeout(safetyTimeout); // Clear safety timeout on error
+        $('#statsRow').removeClass('loading-stats');
+
+        // Show error to user
+        toastr.error('Error al actualizar las estadísticas');
+    });
+}
+
+function updateStatValue(selector, newValue) {
+    const element = $(selector);
+    const currentValue = element.text();
+
+    if (currentValue !== newValue.toString()) {
+        element.addClass('stat-updating').text(newValue);
+        setTimeout(() => {
+            element.removeClass('stat-updating');
+        }, 300);
+    }
+}
+
+function updateQualityStats(qualityBreakdown) {
+    const qualityStatsRow = $('#qualityStatsRow');
+
+    // Add animation class to existing cards
+    qualityStatsRow.find('.card').addClass('quality-card-updating');
+
+    setTimeout(() => {
+        qualityStatsRow.empty();
+
+        qualityBreakdown.forEach(function(qualityStats, index) {
+            const cardClass = {
+                'Primeras': 'card-success',
+                'Segunda': 'card-warning',
+                'Tercera': 'card-info',
+                'Cuarta': 'card-primary',
+                'Industrial': 'card-secondary'
+            }[qualityStats.quality_name] || 'card-secondary';
+
+            const cardHtml = `
+                <div class="col-lg-3 col-6">
+                    <div class="card card-outline ${cardClass}" style="animation-delay: ${index * 0.1}s; animation: fadeInUp 0.5s ease forwards;">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-star"></i> ${qualityStats.quality_name}
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="description-block">
+                                        <h5 class="description-header">${qualityStats.lots}</h5>
+                                        <span class="description-text">LOTES</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="description-block">
+                                        <h5 class="description-header">${Number(qualityStats.total_kg).toLocaleString(undefined, {maximumFractionDigits: 0})}</h5>
+                                        <span class="description-text">KG TOTAL</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-6">
+                                    <div class="description-block">
+                                        <h5 class="description-header text-success">$${Number(qualityStats.avg_price).toFixed(2)}</h5>
+                                        <span class="description-text">PRECIO PROM.</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="description-block">
+                                        <h5 class="description-header text-danger">$${Number(qualityStats.total_value).toLocaleString(undefined, {maximumFractionDigits: 0})}</h5>
+                                        <span class="description-text">INVERSIÓN</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            qualityStatsRow.append(cardHtml);
+        });
+    }, 200);
 }
 
 // Wrapper functions for actions to match table calls
@@ -712,15 +872,13 @@ function openEditLotModal(id) {
     })
     .then(data => {
         console.log('Edit data received:', data);
-        console.log('Precio venta sugerido:', data.precio_venta_sugerido);
 
         // Populate form fields
         $('#supplier_id').val(data.supplier_id || '');
         $('#codigo').val(data.codigo || '');
         $('#peso_inicial').val(data.peso_inicial || '');
         $('#precio_compra').val(data.precio_compra || '');
-        $('#precio_venta_sugerido').val(data.precio_venta_sugerido || '');
-        $('#calidad').val(data.calidad || '');
+        $('#calidad').val(data.quality_grade_id || data.calidad || ''); // Try ID first, then name for backward compatibility
         $('#notas').val(data.notas || '');
         $('#fecha_compra').val(data.fecha_compra || '');
 
@@ -732,7 +890,6 @@ function openEditLotModal(id) {
             $('#notas_pago').val(data.latest_payment.notes || '');
         }
 
-        console.log('Form field set with value:', $('#precio_venta_sugerido').val());
 
         // Update statistics after loading data
         setTimeout(updateLotStatistics, 100);
@@ -781,40 +938,76 @@ function openViewLotModal(id) {
     });
 }
 
-function deleteLot(id, codigo) {
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: `¿Deseas eliminar el lote ${codigo}?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`{{ url('lots') }}/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    toastr.success('Lote eliminado correctamente');
-                    lotsTable.draw();
-                } else {
-                    toastr.error(data.message || 'Error al eliminar el lote');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                toastr.error('Error al eliminar el lote');
-            });
+function deleteLot(id, codigo, force = false) {
+    if (!force) {
+        // Primera confirmación
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `¿Deseas eliminar el lote ${codigo}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                performDelete(id, codigo, false);
+            }
+        });
+    } else {
+        performDelete(id, codigo, true);
+    }
+}
+
+function performDelete(id, codigo, force) {
+    const url = force ? `{{ url('lots') }}/${id}?force=1` : `{{ url('lots') }}/${id}`;
+    
+    fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            'Accept': 'application/json'
         }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.warning && !force) {
+            // Mostrar advertencia de déficit
+            Swal.fire({
+                title: '⚠️ ¡ADVERTENCIA DE DÉFICIT!',
+                html: `<div class="text-left">
+                    <p>${data.message}</p>
+                    <hr>
+                    <p><strong>Calidad:</strong> ${data.quality}</p>
+                    <p><strong>Déficit resultante:</strong> <span class="text-danger font-weight-bold">${data.deficit} kg</span></p>
+                    <hr>
+                    <p class="text-danger"><strong>Esto puede causar problemas con las ventas comprometidas.</strong></p>
+                </div>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Eliminar de todos modos',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteLot(id, codigo, true); // Forzar eliminación
+                }
+            });
+        } else if (data.success) {
+            toastr.success('Lote eliminado correctamente');
+            lotsTable.draw();
+            // Actualizar estadísticas inmediatamente
+            updateStats();
+        } else {
+            toastr.error(data.message || 'Error al eliminar el lote');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        toastr.error('Error al eliminar el lote');
     });
 }
 
@@ -971,50 +1164,32 @@ function printLotReport() {
                     <span class="label">Calidad:</span>
                     <span class="value">${lotData.quality}</span>
                 </div>
-                <div class="row">
-                    <span class="label">Estado:</span>
-                    <span class="value">${lotData.status}</span>
-                </div>
             </div>
 
             <div class="section">
-                <div class="center bold">PESOS</div>
+                <div class="center bold">INVENTARIO</div>
                 <div class="row">
-                    <span class="label">Total:</span>
+                    <span class="label">Peso Total:</span>
                     <span class="value">${lotData.totalWeight}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Vendido:</span>
-                    <span class="value">${lotData.soldWeight}</span>
+                    <span class="label">Acopio:</span>
+                    <span class="value">${lotData.quality}</span>
                 </div>
-                <div class="row">
-                    <span class="label">Disponible:</span>
-                    <span class="value">${lotData.availableWeight}</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${lotData.soldPercentage}%"></div>
-                </div>
-                <div class="center">Vendido: ${lotData.soldPercentage}%</div>
+                <div class="separator"></div>
+                <div class="center">Contribuye al inventario total</div>
             </div>
 
             <div class="section">
-                <div class="center bold">FINANZAS</div>
+                <div class="center bold">COMPRA</div>
                 <div class="row">
                     <span class="label">Precio/kg:</span>
                     <span class="value">$${lotData.pricePerKg}</span>
                 </div>
-                <div class="row">
-                    <span class="label">Costo Total:</span>
-                    <span class="value">$${lotData.totalCost}</span>
-                </div>
-                <div class="row">
-                    <span class="label">Ingresos:</span>
-                    <span class="value">$${lotData.revenue}</span>
-                </div>
                 <div class="separator"></div>
                 <div class="row">
-                    <span class="label">GANANCIA ACTUAL:</span>
-                    <span class="value bold">$${lotData.profit}</span>
+                    <span class="label">COSTO TOTAL:</span>
+                    <span class="value bold">$${lotData.totalCost}</span>
                 </div>
             </div>
 
@@ -1045,25 +1220,6 @@ function printLotReport() {
                 ` : ''}
             </div>
 
-            ${lotData.suggestedPrice ? `
-            <div class="section">
-                <div class="center bold">PROYECCION</div>
-                <div class="row">
-                    <span class="label">Precio Sugerido:</span>
-                    <span class="value">$${lotData.suggestedPrice}/kg</span>
-                </div>
-                <div class="row">
-                    <span class="label">Ingresos Potenc.:</span>
-                    <span class="value">$${lotData.potentialRevenue}</span>
-                </div>
-                <div class="separator"></div>
-                <div class="row">
-                    <span class="label">GANANCIA POTENC.:</span>
-                    <span class="value bold">$${lotData.potentialProfit}</span>
-                </div>
-                <div class="center">Margen: ${lotData.potentialMargin}%</div>
-            </div>
-            ` : ''}
 
             ${lotData.notes ? `
             <div class="section">
@@ -1093,18 +1249,7 @@ function extractLotDataFromModal() {
     // Extraer datos del modal actual para el ticket
     const reportContent = document.getElementById('reportContent');
 
-    // Buscar el precio sugerido y datos potenciales
-    const suggestedPriceRow = $(reportContent).find('table:eq(2) tr').filter(function() {
-        return $(this).find('td:first').text().includes('Precio Venta Sugerido');
-    });
-    const potentialRevenueRow = $(reportContent).find('table:eq(2) tr').filter(function() {
-        return $(this).find('td:first').text().includes('Ingresos Potenciales');
-    });
-    const potentialProfitRow = $(reportContent).find('table:eq(2) tr').filter(function() {
-        return $(this).find('td:first').text().includes('Ganancia Potencial');
-    });
-
-    // Extraer datos de pagos (tabla después de métricas financieras)
+    // Extraer datos de pagos (tabla de estado de pagos)
     const paymentTables = $(reportContent).find('table');
     let amountPaid = '0.00';
     let amountOwed = '0.00';
@@ -1146,17 +1291,8 @@ function extractLotDataFromModal() {
         quality: $(reportContent).find('table:first tr:nth-child(4) td:nth-child(2)').text().trim(),
         status: $(reportContent).find('table:first tr:nth-child(5) td:nth-child(2)').text().trim(),
         totalWeight: $(reportContent).find('table:eq(1) tr:nth-child(1) td:nth-child(2)').text().trim(),
-        soldWeight: $(reportContent).find('table:eq(1) tr:nth-child(2) td:nth-child(2)').text().trim(),
-        availableWeight: $(reportContent).find('table:eq(1) tr:nth-child(3) td:nth-child(2)').text().trim(),
-        soldPercentage: $(reportContent).find('table:eq(1) tr:nth-child(4) td:nth-child(2)').text().replace('%', '').trim(),
         pricePerKg: $(reportContent).find('table:eq(2) tr:nth-child(1) td:nth-child(2)').text().replace('$', '').trim(),
-        totalCost: $(reportContent).find('table:eq(2) tr:nth-child(1) td:nth-child(4)').text().replace('$', '').trim(),
-        revenue: $(reportContent).find('table:eq(2) tr:nth-child(2) td:nth-child(2)').text().replace('$', '').trim(),
-        profit: $(reportContent).find('table:eq(2) tr:nth-child(2) td:nth-child(4)').text().replace(/[^0-9.-]/g, '').trim(),
-        suggestedPrice: suggestedPriceRow.length ? suggestedPriceRow.find('td:nth-child(2)').text().replace(/[^0-9.]/g, '').trim() : null,
-        potentialRevenue: potentialRevenueRow.length ? potentialRevenueRow.find('td:nth-child(2)').text().replace(/[^0-9.-]/g, '').trim() : null,
-        potentialProfit: potentialProfitRow.length ? potentialProfitRow.find('td:nth-child(2)').text().replace(/[^0-9.-]/g, '').trim() : null,
-        potentialMargin: potentialProfitRow.length ? potentialProfitRow.find('small').text().replace(/[^0-9.-]/g, '').trim() : null,
+        totalCost: $(reportContent).find('table:eq(2) tr:nth-child(2) td:nth-child(2)').text().replace('$', '').trim(),
         notes: $(reportContent).find('.alert').text().trim() || null,
         // Datos de pagos
         amountPaid: amountPaid,
@@ -1200,6 +1336,8 @@ $('#lotForm').submit(function(e) {
             toastr.success(mode === 'create' ? 'Lote creado correctamente' : 'Lote actualizado correctamente');
             $('#lotModal').modal('hide');
             lotsTable.draw();
+            // Actualizar estadísticas inmediatamente
+            updateStats();
         } else {
             if (data.errors) {
                 Object.keys(data.errors).forEach(key => {
@@ -1217,28 +1355,21 @@ $('#lotForm').submit(function(e) {
     });
 });
 
-// Calculate statistics in real-time
+// Calculate cost statistics in real-time
 function updateLotStatistics() {
     const peso = parseFloat($('#peso_inicial').val()) || 0;
     const precioCompra = parseFloat($('#precio_compra').val()) || 0;
-    const precioVenta = parseFloat($('#precio_venta_sugerido').val()) || 0;
 
     const costoTotal = peso * precioCompra;
-    const ingresoTotal = peso * precioVenta;
-    const ganancia = ingresoTotal - costoTotal;
-    const margen = costoTotal > 0 ? ((ganancia / costoTotal) * 100) : 0;
 
     $('#total-cost').text('$' + costoTotal.toLocaleString('es-MX', {minimumFractionDigits: 2}));
-    $('#profit-amount').text('$' + ganancia.toLocaleString('es-MX', {minimumFractionDigits: 2}));
-    $('#profit-margin').text(margen.toFixed(1) + '% margen');
+    $('#total-weight').text(peso.toFixed(2));
+    $('#price-per-kg').text(precioCompra.toFixed(2));
 
-    // Change color based on profitability - ONLY within the modal
-    const profitBox = $('#lotModal .info-box.bg-success, #lotModal .info-box.bg-danger');
-    if (ganancia < 0) {
-        profitBox.removeClass('bg-success').addClass('bg-danger');
-    } else {
-        profitBox.removeClass('bg-danger').addClass('bg-success');
-    }
+    // Update progress bar as visual indicator
+    const maxCost = 50000; // Adjust based on typical lot costs
+    const percentage = Math.min((costoTotal / maxCost) * 100, 100);
+    //$('.progress-bar').css('width', percentage + '%');
 }
 
 // Toggle sensitive data visibility
@@ -1259,7 +1390,7 @@ function toggleSensitiveData() {
 }
 
 // Bind real-time calculation events
-$(document).on('input', '#peso_inicial, #precio_compra, #precio_venta_sugerido', function() {
+$(document).on('input', '#peso_inicial, #precio_compra', function() {
     updateLotStatistics();
 });
 
@@ -1455,6 +1586,9 @@ $(document).on('submit', '#addPaymentForm', function(e) {
 
             // Refresh the DataTable to show updated payment status
             lotsTable.ajax.reload();
+
+            // Actualizar estadísticas inmediatamente
+            updateStats();
         } else {
             toastr.error(data.message || 'Error al agregar el pago');
         }
@@ -1491,6 +1625,78 @@ $(document).on('submit', '#addPaymentForm', function(e) {
 
 
 
+/* Animaciones para actualizaciones en tiempo real */
+.loading-stats {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.loading-stats .small-box::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 10;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-updating {
+    background-color: #d4edda !important;
+    animation: pulse-green 0.3s ease-in-out;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+@keyframes pulse-green {
+    0% {
+        background-color: #d1ecf1;
+        transform: scale(1);
+    }
+    50% {
+        background-color: #d4edda;
+        transform: scale(1.05);
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+}
+
+/* Efecto visual para las cards de calidad cuando se actualizan */
+.quality-card-updating {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.quality-card-updating .card-header {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
 @media (max-width: 768px) {
     .table-responsive {
         font-size: 0.875rem;
@@ -1501,6 +1707,11 @@ $(document).on('submit', '#addPaymentForm', function(e) {
         font-size: 0.775rem;
     }
 
+    .loading-stats::after {
+        width: 15px;
+        height: 15px;
+        margin: -7.5px 0 0 -7.5px;
+    }
 }
 </style>
 @endpush

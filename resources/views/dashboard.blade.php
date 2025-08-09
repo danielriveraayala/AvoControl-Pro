@@ -8,6 +8,37 @@
 @endsection
 
 @section('content')
+    <!-- Alertas de Déficit de Inventario -->
+    @if(isset($alertasDeficit) && count($alertasDeficit) > 0)
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-ban"></i> ¡ALERTA CRÍTICA DE INVENTARIO!</h5>
+                <p class="mb-2">Se detectaron ventas comprometidas sin inventario suficiente:</p>
+                <ul>
+                    @foreach($alertasDeficit as $alerta)
+                    <li>
+                        <strong>{{ $alerta['calidad'] }}:</strong> 
+                        Déficit de <strong>{{ number_format($alerta['deficit'], 2) }} kg</strong>
+                        (Disponible: {{ number_format($alerta['disponible'], 2) }} kg, 
+                        Vendido: {{ number_format($alerta['comprometido'], 2) }} kg)
+                    </li>
+                    @endforeach
+                </ul>
+                <div class="mt-3">
+                    <a href="{{ route('lots.create') }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-plus"></i> Registrar Lotes
+                    </a>
+                    <a href="{{ route('sales.index') }}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-eye"></i> Revisar Ventas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Métricas Principales -->
     <div class="row">
         <!-- Inventario Total -->
@@ -74,6 +105,78 @@
             </div>
         </div>
     </div>
+
+    <!-- Resumen de Acopio por Calidad -->
+    @if(isset($acopioSummary) && $acopioSummary->count() > 0)
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-success card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-layer-group"></i>
+                        Resumen de Acopio por Calidad
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{{ route('acopio.index') }}" class="btn btn-tool">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="row">
+                        @foreach($acopioSummary as $acopio)
+                            <div class="col-lg-3 col-6">
+                                <div class="text-center p-3">
+                                    @php
+                                        $qualityName = $acopio->qualityGrade ? $acopio->qualityGrade->name : 'Sin calidad';
+                                        $badgeClass = [
+                                            'Primeras' => 'success',
+                                            'Segunda' => 'warning',
+                                            'Tercera' => 'info',
+                                            'Cuarta' => 'primary',
+                                            'Industrial' => 'secondary'
+                                        ][$qualityName] ?? 'secondary';
+                                        
+                                        $iconClass = [
+                                            'Primeras' => 'star',
+                                            'Segunda' => 'star-half-alt',
+                                            'Tercera' => 'star-half',
+                                            'Cuarta' => 'gem',
+                                            'Industrial' => 'cog'
+                                        ][$qualityName] ?? 'circle';
+                                    @endphp
+                                    
+                                    <div class="mb-2">
+                                        <i class="fas fa-{{ $iconClass }} fa-2x text-{{ $badgeClass }}"></i>
+                                    </div>
+                                    <h5 class="badge badge-{{ $badgeClass }} badge-lg mb-2">{{ $qualityName }}</h5>
+                                    
+                                    <div class="text-sm">
+                                        <strong class="d-block">{{ number_format($acopio->peso_disponible, 2) }} kg</strong>
+                                        <small class="text-muted">disponible</small>
+                                    </div>
+                                    
+                                    <div class="text-sm mt-2">
+                                        <span class="text-muted">{{ $acopio->total_lotes }} lotes</span>
+                                        <br><small class="text-success">${{ number_format($acopio->inversion_total, 0) }}</small>
+                                    </div>
+                                    
+                                    <div class="progress mt-2" style="height: 6px;">
+                                        @php
+                                            $percentage = $acopio->peso_total > 0 ? ($acopio->peso_vendido / $acopio->peso_total) * 100 : 0;
+                                        @endphp
+                                        <div class="progress-bar bg-{{ $badgeClass }}" style="width: {{ $percentage }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ number_format($percentage, 1) }}% vendido</small>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Segunda fila de métricas -->
     <div class="row">

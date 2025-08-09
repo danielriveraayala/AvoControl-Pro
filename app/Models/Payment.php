@@ -10,16 +10,18 @@ class Payment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'sale_id',
-        'payment_number',
+        'payment_code',
+        'type',
+        'concept',
+        'payable_type',
+        'payable_id',
         'payment_date',
         'amount',
         'payment_method',
-        'reference_number',
+        'reference',
         'status',
         'notes',
-        'payment_details',
-        'user_id'
+        'created_by'
     ];
 
     protected $casts = [
@@ -30,6 +32,13 @@ class Payment extends Model
         'status' => 'string',
     ];
 
+    // Relación polimórfica para el objeto pagable (Sale o Lot)
+    public function payable()
+    {
+        return $this->morphTo();
+    }
+
+    // Mantener para compatibilidad con versiones anteriores
     public function sale()
     {
         return $this->belongsTo(Sale::class);
@@ -40,18 +49,27 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     protected static function boot()
     {
         parent::boot();
 
         static::saved(function ($payment) {
-            // Actualizar estado de pago de la venta
-            $payment->sale->updatePaymentStatus();
+            // Actualizar estado de pago de la venta (relación polimórfica)
+            if ($payment->payable && method_exists($payment->payable, 'updatePaymentStatus')) {
+                $payment->payable->updatePaymentStatus();
+            }
         });
 
         static::deleted(function ($payment) {
-            // Actualizar estado de pago de la venta
-            $payment->sale->updatePaymentStatus();
+            // Actualizar estado de pago de la venta (relación polimórfica)
+            if ($payment->payable && method_exists($payment->payable, 'updatePaymentStatus')) {
+                $payment->payable->updatePaymentStatus();
+            }
         });
     }
 }

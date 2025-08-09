@@ -21,7 +21,13 @@
       "Bash(git commit:*)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(php:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(mv:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

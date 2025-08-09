@@ -1,245 +1,484 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Registrar Nueva Venta
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <form method="POST" action="{{ route('sales.store') }}" id="saleForm">
-                        @csrf
+@section('title', 'Nueva Venta por Acopio')
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+@section('content')
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">🛒 Nueva Venta por Acopio</h1>
+                <p class="text-muted">Vender por calidad del inventario total</p>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('sales.index') }}">Ventas</a></li>
+                    <li class="breadcrumb-item active">Nueva Venta</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <form method="POST" action="{{ route('sales.store') }}" id="saleForm">
+            @csrf
+
+            <div class="row">
+                <!-- Información General -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-user"></i>
+                                Información General
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            
                             <!-- Cliente -->
-                            <div>
-                                <label for="customer_id" class="block text-sm font-medium text-gray-700">
-                                    Cliente *
-                                </label>
-                                <select name="customer_id" id="customer_id" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <div class="form-group">
+                                <label for="customer_id">Cliente *</label>
+                                <select name="customer_id" id="customer_id" class="form-control select2" required>
                                     <option value="">Seleccione un cliente</option>
                                     @foreach($customers as $customer)
-                                        <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
-                                            {{ $customer->company_name }} - {{ $customer->contact_person }}
+                                        <option value="{{ $customer->id }}" 
+                                               {{ old('customer_id') == $customer->id ? 'selected' : '' }}
+                                               data-phone="{{ $customer->phone }}"
+                                               data-address="{{ $customer->address }}">
+                                            {{ $customer->name }} - {{ $customer->contact_person }}
                                         </option>
                                     @endforeach
                                 </select>
                                 @error('customer_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <span class="text-danger">{{ $message }}</span>
                                 @enderror
+                                <small class="form-text text-muted" id="customer-info"></small>
                             </div>
 
                             <!-- Fecha de Venta -->
-                            <div>
-                                <label for="sale_date" class="block text-sm font-medium text-gray-700">
-                                    Fecha de Venta *
-                                </label>
-                                <input type="date" name="sale_date" id="sale_date" required
-                                    value="{{ old('sale_date', date('Y-m-d')) }}"
-                                    max="{{ date('Y-m-d') }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <div class="form-group">
+                                <label for="sale_date">Fecha de Venta *</label>
+                                <input type="date" name="sale_date" id="sale_date" class="form-control" 
+                                       value="{{ old('sale_date', date('Y-m-d')) }}" 
+                                       max="{{ date('Y-m-d') }}" required>
                                 @error('sale_date')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
 
                             <!-- Fecha de Entrega -->
-                            <div>
-                                <label for="delivery_date" class="block text-sm font-medium text-gray-700">
-                                    Fecha de Entrega (Opcional)
-                                </label>
-                                <input type="date" name="delivery_date" id="delivery_date"
-                                    value="{{ old('delivery_date') }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <div class="form-group">
+                                <label for="delivery_date">Fecha de Entrega</label>
+                                <input type="date" name="delivery_date" id="delivery_date" class="form-control" 
+                                       value="{{ old('delivery_date') }}">
                             </div>
 
                             <!-- Número de Factura -->
-                            <div>
-                                <label for="invoice_number" class="block text-sm font-medium text-gray-700">
-                                    Número de Factura (Opcional)
-                                </label>
-                                <input type="text" name="invoice_number" id="invoice_number"
-                                    value="{{ old('invoice_number') }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <div class="form-group">
+                                <label for="invoice_number">Número de Factura</label>
+                                <input type="text" name="invoice_number" id="invoice_number" class="form-control" 
+                                       value="{{ old('invoice_number') }}" placeholder="Opcional">
+                            </div>
+
+                            <!-- Notas -->
+                            <div class="form-group">
+                                <label for="notes">Notas</label>
+                                <textarea name="notes" id="notes" class="form-control" rows="3" 
+                                         placeholder="Notas adicionales de la venta">{{ old('notes') }}</textarea>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Items de Venta -->
-                        <div class="mb-6">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-medium text-gray-900">Items de Venta</h3>
-                                <button type="button" onclick="addItem()" 
-                                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                    + Agregar Item
+                <!-- Items de Venta -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-layer-group"></i>
+                                Items por Calidad
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-success btn-sm" onclick="addQualityItem()">
+                                    <i class="fas fa-plus"></i> Agregar Calidad
                                 </button>
                             </div>
+                        </div>
+                        <div class="card-body p-0">
+                            
+                            <!-- Inventario Disponible -->
+                            <div class="alert alert-info m-3">
+                                <h5><i class="icon fas fa-info-circle"></i> Inventario Disponible</h5>
+                                <div class="row" id="inventory-summary">
+                                    @foreach($inventario as $inv)
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            @php
+                                                $badgeClass = match($inv->quality_grade) {
+                                                    'Primera' => 'success',
+                                                    'Segunda' => 'warning', 
+                                                    'Tercera' => 'info',
+                                                    'Industrial' => 'secondary',
+                                                    default => 'secondary'
+                                                };
+                                            @endphp
+                                            <span class="badge badge-{{ $badgeClass }} badge-lg d-block mb-1">
+                                                {{ $inv->quality_grade }}
+                                            </span>
+                                            <strong class="d-block">{{ number_format($inv->peso_disponible, 2) }} kg</strong>
+                                            <small class="text-muted">disponible</small>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
 
-                            <div id="items-container">
-                                <!-- Items dinámicos se agregarán aquí -->
+                            <!-- Container de Items -->
+                            <div id="items-container" class="p-3">
+                                <!-- Los items se agregarán aquí dinámicamente -->
+                                <div class="text-center text-muted py-4" id="no-items-message">
+                                    <i class="fas fa-shopping-cart fa-3x mb-2"></i>
+                                    <p>No hay items agregados. Haga clic en "Agregar Calidad" para comenzar.</p>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- Resumen -->
-                        <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                            <div class="grid grid-cols-3 gap-4">
-                                <div class="text-center">
-                                    <p class="text-sm text-gray-600">Peso Total</p>
-                                    <p class="text-2xl font-bold text-gray-900"><span id="totalWeight">0.00</span> kg</p>
+            <!-- Resumen y Botones -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Resumen -->
+                                <div class="col-md-8">
+                                    <div class="row">
+                                        <div class="col-md-3 text-center">
+                                            <div class="description-block border-right">
+                                                <span class="description-percentage text-success">
+                                                    <i class="fas fa-weight"></i>
+                                                </span>
+                                                <h5 class="description-header" id="totalWeight">0.00</h5>
+                                                <span class="description-text">KG TOTAL</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <div class="description-block border-right">
+                                                <span class="description-percentage text-info">
+                                                    <i class="fas fa-layer-group"></i>
+                                                </span>
+                                                <h5 class="description-header" id="totalItems">0</h5>
+                                                <span class="description-text">CALIDADES</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <div class="description-block border-right">
+                                                <span class="description-percentage text-warning">
+                                                    <i class="fas fa-dollar-sign"></i>
+                                                </span>
+                                                <h5 class="description-header" id="totalAmount">$0.00</h5>
+                                                <span class="description-text">MONTO TOTAL</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <div class="description-block">
+                                                <span class="description-percentage text-primary">
+                                                    <i class="fas fa-calculator"></i>
+                                                </span>
+                                                <h5 class="description-header" id="avgPrice">$0.00</h5>
+                                                <span class="description-text">PRECIO PROM.</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="text-center">
-                                    <p class="text-sm text-gray-600">Items</p>
-                                    <p class="text-2xl font-bold text-gray-900"><span id="totalItems">0</span></p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-sm text-gray-600">Monto Total</p>
-                                    <p class="text-2xl font-bold text-green-600">$<span id="totalAmount">0.00</span></p>
+
+                                <!-- Botones -->
+                                <div class="col-md-4">
+                                    <div class="d-flex flex-column h-100 justify-content-center">
+                                        <button type="submit" class="btn btn-success btn-lg mb-2" id="submitBtn" disabled>
+                                            <i class="fas fa-save"></i> Registrar Venta
+                                        </button>
+                                        <a href="{{ route('sales.index') }}" class="btn btn-secondary">
+                                            <i class="fas fa-arrow-left"></i> Cancelar
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- Botones -->
-                        <div class="flex items-center justify-between">
-                            <a href="{{ route('sales.index') }}" 
-                                class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
-                                Cancelar
-                            </a>
-                            <button type="submit" 
-                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                Guardar Venta
-                            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+// Inventario disponible (desde PHP)
+const inventory = @json($inventario->keyBy('quality_grade'));
+
+// Contador de items
+let itemCount = 0;
+
+// Inicializar al cargar la página
+$(document).ready(function() {
+    $('.select2').select2({
+        theme: 'bootstrap4',
+        placeholder: 'Seleccione...',
+        allowClear: true
+    });
+    
+    // Mostrar información del cliente
+    $('#customer_id').change(function() {
+        const option = $(this).find('option:selected');
+        const phone = option.data('phone');
+        const address = option.data('address');
+        
+        let info = '';
+        if (phone) info += `Teléfono: ${phone}`;
+        if (address) info += (info ? ' | ' : '') + `Dirección: ${address}`;
+        
+        $('#customer-info').text(info);
+    });
+
+    // Verificar si se pasó calidad por URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const preSelectedQuality = urlParams.get('calidad');
+    if (preSelectedQuality && inventory[preSelectedQuality]) {
+        addQualityItem(preSelectedQuality);
+    }
+});
+
+function addQualityItem(preSelectedQuality = null) {
+    const container = $('#items-container');
+    const noItemsMsg = $('#no-items-message');
+    
+    // Ocultar mensaje de no items
+    noItemsMsg.hide();
+    
+    itemCount++;
+    
+    // Obtener calidades disponibles (que no estén ya seleccionadas)
+    const usedQualities = [];
+    $('.quality-select').each(function() {
+        if ($(this).val()) {
+            usedQualities.push($(this).val());
+        }
+    });
+    
+    const availableQualities = Object.keys(inventory).filter(q => 
+        !usedQualities.includes(q) && inventory[q].peso_disponible > 0
+    );
+    
+    if (availableQualities.length === 0 && !preSelectedQuality) {
+        toastr.warning('No hay más calidades disponibles para agregar');
+        return;
+    }
+
+    const itemHtml = `
+        <div class="item-row card card-outline card-primary mb-3" id="item-${itemCount}">
+            <div class="card-header">
+                <h3 class="card-title">Item #${itemCount}</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool text-danger" onclick="removeItem(${itemCount})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Calidad *</label>
+                            <select name="items[${itemCount}][quality_grade]" class="form-control quality-select" 
+                                   onchange="updateQualityInfo(${itemCount}, this.value)" required>
+                                <option value="">Seleccione calidad</option>
+                                ${availableQualities.map(quality => `
+                                    <option value="${quality}" 
+                                           ${preSelectedQuality === quality ? 'selected' : ''}
+                                           data-available="${inventory[quality].peso_disponible}">
+                                        ${quality} (${inventory[quality].peso_disponible.toFixed(2)} kg disponible)
+                                    </option>
+                                `).join('')}
+                            </select>
                         </div>
-                    </form>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Peso (kg) *</label>
+                            <input type="number" name="items[${itemCount}][weight]" 
+                                  class="form-control weight-input" 
+                                  min="0.01" step="0.01" 
+                                  onchange="calculateItemTotal(${itemCount})" required>
+                            <small class="form-text text-muted" id="available-${itemCount}"></small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Precio/kg *</label>
+                            <input type="number" name="items[${itemCount}][price_per_kg]" 
+                                  class="form-control price-input" 
+                                  min="0.01" step="0.01" 
+                                  onchange="calculateItemTotal(${itemCount})" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Subtotal</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control subtotal-display" readonly>
+                                <input type="hidden" name="items[${itemCount}][subtotal]" class="subtotal-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <div class="text-center">
+                                <span class="badge badge-secondary" id="status-${itemCount}">Incompleto</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    `;
+    
+    container.append(itemHtml);
+    
+    // Si hay calidad preseleccionada, actualizar información
+    if (preSelectedQuality) {
+        updateQualityInfo(itemCount, preSelectedQuality);
+    }
+    
+    updateSummary();
+}
 
-    @push('scripts')
-    <script>
-        const lots = @json($lots);
-        let itemCount = 0;
+function removeItem(itemId) {
+    $(`#item-${itemId}`).remove();
+    updateSummary();
+    
+    // Mostrar mensaje si no hay items
+    if ($('.item-row').length === 0) {
+        $('#no-items-message').show();
+    }
+}
 
-        function addItem() {
-            const container = document.getElementById('items-container');
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'border border-gray-200 rounded-lg p-4 mb-4';
-            itemDiv.id = `item-${itemCount}`;
-            
-            itemDiv.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Lote *</label>
-                        <select name="items[${itemCount}][lot_id]" required onchange="updateLotInfo(${itemCount})"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                            <option value="">Seleccione un lote</option>
-                            ${lots.map(lot => `
-                                <option value="${lot.id}" data-available="${lot.weight_available}" 
-                                    data-price="${lot.purchase_price_per_kg}" data-quality="${lot.quality_grade}">
-                                    ${lot.lot_code} - ${lot.quality_grade} - ${lot.weight_available} kg disponibles
-                                </option>
-                            `).join('')}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Peso (kg) *</label>
-                        <input type="number" name="items[${itemCount}][weight]" required
-                            step="0.01" min="0.01" max="0"
-                            onchange="updateTotals()"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        <span class="text-xs text-gray-500">Máx: <span id="max-weight-${itemCount}">0</span> kg</span>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Precio/kg *</label>
-                        <input type="number" name="items[${itemCount}][price_per_kg]" required
-                            step="0.01" min="0.01"
-                            onchange="updateTotals()"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    </div>
-                    <div class="flex items-end">
-                        <button type="button" onclick="removeItem(${itemCount})"
-                            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-sm w-full">
-                            Eliminar
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            container.appendChild(itemDiv);
-            itemCount++;
-            updateTotals();
+function updateQualityInfo(itemId, quality) {
+    if (!quality || !inventory[quality]) {
+        $(`#available-${itemId}`).text('');
+        return;
+    }
+    
+    const available = inventory[quality].peso_disponible;
+    $(`#available-${itemId}`).text(`Disponible: ${available.toFixed(2)} kg`);
+    
+    // Actualizar límite máximo del peso
+    $(`#item-${itemId} .weight-input`).attr('max', available);
+    
+    calculateItemTotal(itemId);
+}
+
+function calculateItemTotal(itemId) {
+    const itemRow = $(`#item-${itemId}`);
+    const weight = parseFloat(itemRow.find('.weight-input').val()) || 0;
+    const price = parseFloat(itemRow.find('.price-input').val()) || 0;
+    const quality = itemRow.find('.quality-select').val();
+    
+    // Validar peso disponible
+    if (quality && inventory[quality]) {
+        const available = inventory[quality].peso_disponible;
+        if (weight > available) {
+            toastr.error(`No hay suficiente inventario. Disponible: ${available.toFixed(2)} kg`);
+            itemRow.find('.weight-input').val(available);
+            weight = available;
         }
+    }
+    
+    const subtotal = weight * price;
+    
+    // Actualizar display
+    itemRow.find('.subtotal-display').val(subtotal.toFixed(2));
+    itemRow.find('.subtotal-input').val(subtotal);
+    
+    // Actualizar estado
+    const statusBadge = $(`#status-${itemId}`);
+    if (weight > 0 && price > 0 && quality) {
+        statusBadge.removeClass('badge-secondary').addClass('badge-success').text('Completo');
+    } else {
+        statusBadge.removeClass('badge-success').addClass('badge-secondary').text('Incompleto');
+    }
+    
+    updateSummary();
+}
 
-        function removeItem(id) {
-            const item = document.getElementById(`item-${id}`);
-            if (item) {
-                item.remove();
-                updateTotals();
-            }
+function updateSummary() {
+    let totalWeight = 0;
+    let totalAmount = 0;
+    let totalItems = 0;
+    let allComplete = true;
+    
+    $('.item-row').each(function() {
+        const weight = parseFloat($(this).find('.weight-input').val()) || 0;
+        const price = parseFloat($(this).find('.price-input').val()) || 0;
+        const quality = $(this).find('.quality-select').val();
+        
+        if (weight > 0 && price > 0 && quality) {
+            totalWeight += weight;
+            totalAmount += (weight * price);
+            totalItems++;
+        } else {
+            allComplete = false;
         }
+    });
+    
+    const avgPrice = totalWeight > 0 ? totalAmount / totalWeight : 0;
+    
+    // Actualizar displays
+    $('#totalWeight').text(totalWeight.toFixed(2));
+    $('#totalAmount').text(totalAmount.toLocaleString('es-MX', {minimumFractionDigits: 2}));
+    $('#totalItems').text(totalItems);
+    $('#avgPrice').text('$' + avgPrice.toFixed(2));
+    
+    // Habilitar/deshabilitar botón submit
+    const hasCustomer = $('#customer_id').val();
+    const hasDate = $('#sale_date').val();
+    
+    $('#submitBtn').prop('disabled', !(allComplete && totalItems > 0 && hasCustomer && hasDate));
+}
 
-        function updateLotInfo(itemId) {
-            const select = document.querySelector(`select[name="items[${itemId}][lot_id]"]`);
-            const weightInput = document.querySelector(`input[name="items[${itemId}][weight]"]`);
-            const priceInput = document.querySelector(`input[name="items[${itemId}][price_per_kg]"]`);
-            const maxWeightSpan = document.getElementById(`max-weight-${itemId}`);
-            
-            if (select && select.value) {
-                const option = select.options[select.selectedIndex];
-                const available = parseFloat(option.dataset.available);
-                const price = parseFloat(option.dataset.price);
-                
-                weightInput.max = available;
-                maxWeightSpan.textContent = available.toFixed(2);
-                priceInput.value = (price * 1.3).toFixed(2); // 30% markup default
-            }
-            
-            updateTotals();
-        }
+// Validar al cambiar cliente o fecha
+$('#customer_id, #sale_date').change(updateSummary);
+</script>
 
-        function updateTotals() {
-            let totalWeight = 0;
-            let totalAmount = 0;
-            let itemsCount = 0;
-            
-            const container = document.getElementById('items-container');
-            const items = container.querySelectorAll('[id^="item-"]');
-            
-            items.forEach(item => {
-                const weightInput = item.querySelector('input[name*="[weight]"]');
-                const priceInput = item.querySelector('input[name*="[price_per_kg]"]');
-                
-                if (weightInput && priceInput) {
-                    const weight = parseFloat(weightInput.value) || 0;
-                    const price = parseFloat(priceInput.value) || 0;
-                    
-                    totalWeight += weight;
-                    totalAmount += weight * price;
-                    if (weight > 0) itemsCount++;
-                }
-            });
-            
-            document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
-            document.getElementById('totalItems').textContent = itemsCount;
-            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
+<style>
+.badge-lg {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+}
 
-        // Add first item on load
-        document.addEventListener('DOMContentLoaded', function() {
-            addItem();
-        });
+.description-block {
+    border-right: 1px solid rgba(0,0,0,.125);
+}
 
-        // Validate form before submit
-        document.getElementById('saleForm').addEventListener('submit', function(e) {
-            const items = document.querySelectorAll('[id^="item-"]');
-            if (items.length === 0) {
-                e.preventDefault();
-                alert('Debe agregar al menos un item a la venta');
-                return false;
-            }
-        });
-    </script>
-    @endpush
-</x-app-layout>
+.description-block:last-child {
+    border-right: none;
+}
+
+.item-row {
+    transition: all 0.3s;
+}
+
+.item-row:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,.1);
+}
+</style>
+@endsection

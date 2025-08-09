@@ -9,6 +9,23 @@ class Lot extends Model
 {
     use HasFactory;
 
+    /**
+     * Boot method to handle model events
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Clean up related records when deleting a lot
+        static::deleting(function ($lot) {
+            // Delete related sale allocations
+            $lot->saleAllocations()->delete();
+            
+            // Delete related lot payments
+            $lot->lotPayments()->delete();
+        });
+    }
+
     protected $fillable = [
         'lot_code',
         'supplier_id',
@@ -21,10 +38,11 @@ class Lot extends Model
         'amount_owed',
         'payment_status',
         'quality_grade',
+        'quality_grade_id', // Nueva columna para relación
         'status',
         'weight_sold',
         'weight_available',
-        'metadata'
+        'notes'
     ];
 
     protected $casts = [
@@ -37,7 +55,6 @@ class Lot extends Model
         'weight_available' => 'decimal:2',
         'harvest_date' => 'date',
         'entry_date' => 'datetime',
-        'metadata' => 'array',
     ];
 
     public function supplier()
@@ -45,9 +62,20 @@ class Lot extends Model
         return $this->belongsTo(Supplier::class);
     }
 
-    public function saleItems()
+    /**
+     * Relación con la calidad del lote
+     */
+    public function qualityGrade()
     {
-        return $this->hasMany(SaleItem::class);
+        return $this->belongsTo(QualityGrade::class);
+    }
+
+    /**
+     * Relación con asignaciones de ventas (para trazabilidad)
+     */
+    public function saleAllocations()
+    {
+        return $this->hasMany(SaleLotAllocation::class);
     }
 
     public function payments()
@@ -65,13 +93,14 @@ class Lot extends Model
         return $query->where('status', '!=', 'sold')->where('weight_available', '>', 0);
     }
 
+    /**
+     * Los pesos se actualizan automáticamente desde SaleItem::allocateToLots()
+     * Mantener este método por compatibilidad pero simplificado
+     */
     public function updateWeights()
     {
-        $soldWeight = $this->saleItems()->sum('weight');
-        $this->weight_sold = $soldWeight;
-        $this->weight_available = $this->total_weight - $soldWeight;
-        
-        // Update status based on weights
+        // Los pesos ya se actualizan automáticamente en SaleItem
+        // Solo necesitamos recalcular el estado basado en peso disponible
         if ($this->weight_available <= 0) {
             $this->status = 'sold';
         } elseif ($this->weight_sold > 0) {

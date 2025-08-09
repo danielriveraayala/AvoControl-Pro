@@ -42,7 +42,7 @@ class SaleService
                 'invoice_number' => $data['invoice_number'] ?? null,
                 'total_weight' => $totalWeight,
                 'total_amount' => $totalAmount,
-                'status' => 'pending',
+                'status' => 'draft',
                 'payment_status' => 'pending'
             ]);
             
@@ -91,13 +91,9 @@ class SaleService
         }
         
         return DB::transaction(function () use ($sale) {
-            // Restore lot quantities
+            // Restore lot quantities using the revert allocations method
             foreach ($sale->saleItems as $item) {
-                $lot = $item->lot;
-                $lot->weight_sold -= $item->weight;
-                $lot->weight_available += $item->weight;
-                $lot->status = $lot->weight_sold == 0 ? 'active' : 'partial';
-                $lot->save();
+                $item->revertAllocations();
             }
             
             // Update customer balance
@@ -119,7 +115,8 @@ class SaleService
         // Calculate profit
         $totalCost = 0;
         foreach ($sale->saleItems as $item) {
-            $totalCost += $item->weight * $item->lot->purchase_price_per_kg;
+            // Calculate cost based on lot allocations
+            $totalCost += $item->allocations->sum('allocated_cost');
         }
         
         $profit = $sale->total_amount - $totalCost;
@@ -153,7 +150,7 @@ class SaleService
     public function getSalesByPeriod($startDate, $endDate)
     {
         return Sale::whereBetween('sale_date', [$startDate, $endDate])
-            ->with(['customer', 'saleItems.lot'])
+            ->with(['customer', 'saleItems.allocations.lot'])
             ->orderBy('sale_date', 'desc')
             ->get();
     }
@@ -161,8 +158,8 @@ class SaleService
     public function getPendingSales()
     {
         return Sale::where('payment_status', '!=', 'paid')
-            ->orWhere('status', 'pending')
-            ->with(['customer', 'saleItems.lot'])
+            ->orWhere('status', 'draft')
+            ->with(['customer', 'saleItems.allocations.lot'])
             ->orderBy('sale_date', 'desc')
             ->get();
     }

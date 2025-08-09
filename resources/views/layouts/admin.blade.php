@@ -240,48 +240,51 @@
                         </a>
                     </li>
 
-                    <!-- Inventario -->
-                    <li class="nav-item {{ request()->routeIs('lots.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('lots.*') ? 'active' : '' }}">
+                    <!-- Gestión de Lotes -->
+                    <li class="nav-item">
+                        <a href="{{ route('lots.index') }}" class="nav-link {{ request()->routeIs('lots.index') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-boxes"></i>
+                            <p>Gestión de Lotes</p>
+                        </a>
+                    </li>
+
+                    <!-- Acopio -->
+                    <li class="nav-item {{ request()->routeIs('acopio.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('acopio.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-layer-group"></i>
                             <p>
-                                Inventario
+                                Acopio
                                 <i class="right fas fa-angle-left"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="{{ route('lots.index') }}" class="nav-link {{ request()->routeIs('lots.index') ? 'active' : '' }}">
+                                <a href="{{ route('acopio.index') }}" class="nav-link {{ request()->routeIs('acopio.index') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Gestión de Lotes</p>
+                                    <p>Inventario por Calidad</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('acopio.movimientos') }}" class="nav-link {{ request()->routeIs('acopio.movimientos') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Movimientos</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('acopio.reporte') }}" class="nav-link {{ request()->routeIs('acopio.reporte') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Reportes</p>
                                 </a>
                             </li>
                         </ul>
                     </li>
 
                     <!-- Ventas -->
-                    <li class="nav-item {{ request()->routeIs('sales.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('sales.*') ? 'active' : '' }}">
+                    <li class="nav-item">
+                        <a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-shopping-cart"></i>
-                            <p>
-                                Ventas
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
+                            <p>Ventas</p>
                         </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Lista de Ventas</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('sales.create') }}" class="nav-link {{ request()->routeIs('sales.create') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Nueva Venta</p>
-                                </a>
-                            </li>
-                        </ul>
                     </li>
 
                     <!-- Clientes -->

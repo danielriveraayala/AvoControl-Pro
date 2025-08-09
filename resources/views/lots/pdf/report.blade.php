@@ -143,57 +143,30 @@
                             <span class="badge badge-{{ $badgeClass }}">{{ $lot->quality_grade }}</span>
                         </td>
                     </tr>
-                    <tr>
-                        <td><strong>Estado:</strong></td>
-                        <td>
-                            @php
-                                $statusClass = match($lot->status) {
-                                    'disponible' => 'success',
-                                    'vendido_parcial' => 'warning',
-                                    'vendido' => 'info',
-                                    'cancelado' => 'danger',
-                                    'active' => 'success',
-                                    'partial' => 'warning',
-                                    'sold' => 'info',
-                                    default => 'secondary'
-                                };
-                                $statusText = match($lot->status) {
-                                    'disponible' => 'Disponible',
-                                    'vendido_parcial' => 'Vendido Parcial',
-                                    'vendido' => 'Vendido',
-                                    'cancelado' => 'Cancelado',
-                                    'active' => 'Activo',
-                                    'partial' => 'Parcial',
-                                    'sold' => 'Vendido',
-                                    default => $lot->status
-                                };
-                            @endphp
-                            <span class="badge badge-{{ $statusClass }}">{{ $statusText }}</span>
-                        </td>
-                    </tr>
                 </table>
             </div>
         </div>
 
         <div class="column">
             <div class="section">
-                <h3>Métricas de Peso</h3>
+                <h3>Información de Inventario</h3>
                 <table>
                     <tr>
                         <td><strong>Peso Total:</strong></td>
-                        <td>{{ number_format($metrics['weight_metrics']['total'], 2) }} kg</td>
+                        <td>{{ number_format($lot->total_weight, 2) }} kg</td>
                     </tr>
                     <tr>
-                        <td><strong>Peso Vendido:</strong></td>
-                        <td>{{ number_format($metrics['weight_metrics']['sold'], 2) }} kg</td>
+                        <td><strong>Contribuye al Acopio:</strong></td>
+                        <td>
+                            <span class="badge badge-success">{{ $lot->quality_grade }}</span>
+                        </td>
                     </tr>
                     <tr>
-                        <td><strong>Peso Disponible:</strong></td>
-                        <td>{{ number_format($metrics['weight_metrics']['available'], 2) }} kg</td>
-                    </tr>
-                    <tr>
-                        <td><strong>% Vendido:</strong></td>
-                        <td>{{ number_format($metrics['weight_metrics']['sold_percentage'], 1) }}%</td>
+                        <td colspan="2">
+                            <small style="color: #6c757d;">
+                                Este lote forma parte del inventario total para ventas por calidad
+                            </small>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -201,32 +174,21 @@
     </div>
 
     <div class="section">
-        <h3>Métricas Financieras</h3>
+        <h3>Información de Compra</h3>
         <table>
             <tr>
                 <td><strong>Precio Compra/kg:</strong></td>
                 <td>${{ number_format($lot->purchase_price_per_kg, 2) }}</td>
                 <td><strong>Costo Total Compra:</strong></td>
-                <td>${{ number_format($metrics['financial_metrics']['purchase_cost'], 2) }}</td>
+                <td><strong>${{ number_format($lot->total_purchase_cost, 2) }}</strong></td>
             </tr>
             <tr>
-                <td><strong>Ingresos Ventas:</strong></td>
-                <td>${{ number_format($metrics['financial_metrics']['revenue'], 2) }}</td>
-                <td><strong>Ganancia:</strong></td>
-                <td class="{{ $metrics['financial_metrics']['profit'] >= 0 ? 'text-success' : 'text-danger' }}">
-                    <strong>${{ number_format($metrics['financial_metrics']['profit'], 2) }}</strong>
+                <td colspan="4">
+                    <small style="color: #6c757d;">
+                        Las ganancias se calculan por acopio total, no por lote individual
+                    </small>
                 </td>
             </tr>
-            @php
-                $metadata = is_array($lot->metadata) ? $lot->metadata : json_decode($lot->metadata ?? '{}', true);
-            @endphp
-            @if(isset($metadata['precio_venta_sugerido']) && $metadata['precio_venta_sugerido'])
-            <tr>
-                <td><strong>Precio Venta Sugerido:</strong></td>
-                <td>${{ number_format($metadata['precio_venta_sugerido'], 2) }}</td>
-                <td colspan="2"></td>
-            </tr>
-            @endif
         </table>
     </div>
 
@@ -325,53 +287,15 @@
     </div>
     @endif
 
-    @php
-        $notes = $metadata['notas'] ?? null;
-    @endphp
-    @if($notes)
+    @if($lot->notes)
     <div class="section">
         <h3>Notas</h3>
         <div class="notes-box">
-            {{ $notes }}
+            {{ $lot->notes }}
         </div>
     </div>
     @endif
 
-    @if($lot->saleItems->count() > 0)
-    <div class="section">
-        <h3>Historial de Ventas</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Cliente</th>
-                    <th>Peso Vendido</th>
-                    <th>Precio/kg</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($lot->saleItems as $item)
-                <tr>
-                    <td>{{ $item->sale->sale_date->format('d/m/Y') }}</td>
-                    <td>{{ $item->sale->customer->name }}</td>
-                    <td>{{ number_format($item->weight, 2) }} kg</td>
-                    <td>${{ number_format($item->price_per_kg, 2) }}</td>
-                    <td>${{ number_format($item->subtotal, 2) }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr style="font-weight: bold; background-color: #f8f9fa;">
-                    <td colspan="2"><strong>Totales:</strong></td>
-                    <td><strong>{{ number_format($lot->saleItems->sum('weight'), 2) }} kg</strong></td>
-                    <td>-</td>
-                    <td><strong>${{ number_format($lot->saleItems->sum('subtotal'), 2) }}</strong></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-    @endif
 
     <div class="footer">
         <p>AvoControl Pro - Sistema de Gestión de Aguacates</p>

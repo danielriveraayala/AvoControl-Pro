@@ -17,7 +17,7 @@
                             <label for="supplier_id" class="block text-sm font-medium text-gray-700">
                                 Proveedor *
                             </label>
-                            <select name="supplier_id" id="supplier_id" required
+                            <select name="supplier_id" id="supplier_id"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('supplier_id') border-red-500 @enderror">
                                 <option value="">Seleccione un proveedor</option>
                                 @foreach($suppliers as $supplier)
@@ -36,7 +36,7 @@
                             <label for="harvest_date" class="block text-sm font-medium text-gray-700">
                                 Fecha de Cosecha *
                             </label>
-                            <input type="date" name="harvest_date" id="harvest_date" required
+                            <input type="date" name="harvest_date" id="harvest_date"
                                 value="{{ old('harvest_date') }}"
                                 max="{{ date('Y-m-d') }}"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('harvest_date') border-red-500 @enderror">
@@ -50,9 +50,8 @@
                             <label for="entry_date" class="block text-sm font-medium text-gray-700">
                                 Fecha de Entrada *
                             </label>
-                            <input type="datetime-local" name="entry_date" id="entry_date" required
+                            <input type="datetime-local" name="entry_date" id="entry_date"
                                 value="{{ old('entry_date', date('Y-m-d\TH:i')) }}"
-                                max="{{ date('Y-m-d\TH:i') }}"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('entry_date') border-red-500 @enderror">
                             @error('entry_date')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -64,12 +63,17 @@
                             <label for="quality_grade" class="block text-sm font-medium text-gray-700">
                                 Grado de Calidad *
                             </label>
-                            <select name="quality_grade" id="quality_grade" required
+                            <select name="quality_grade" id="quality_grade"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('quality_grade') border-red-500 @enderror">
                                 <option value="">Seleccione la calidad</option>
-                                <option value="Primera" {{ old('quality_grade') == 'Primera' ? 'selected' : '' }}>Primera</option>
-                                <option value="Segunda" {{ old('quality_grade') == 'Segunda' ? 'selected' : '' }}>Segunda</option>
-                                <option value="Tercera" {{ old('quality_grade') == 'Tercera' ? 'selected' : '' }}>Tercera</option>
+                                @foreach($qualityGrades as $grade)
+                                    <option value="{{ $grade->name }}" {{ old('quality_grade') == $grade->name ? 'selected' : '' }}>
+                                        {{ $grade->name }}
+                                        @if($grade->description)
+                                            - {{ $grade->description }}
+                                        @endif
+                                    </option>
+                                @endforeach
                             </select>
                             @error('quality_grade')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -81,7 +85,7 @@
                             <label for="total_weight" class="block text-sm font-medium text-gray-700">
                                 Peso Total (kg) *
                             </label>
-                            <input type="number" name="total_weight" id="total_weight" required
+                            <input type="number" name="total_weight" id="total_weight"
                                 value="{{ old('total_weight') }}"
                                 step="0.01" min="0.01"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('total_weight') border-red-500 @enderror"
@@ -96,7 +100,7 @@
                             <label for="purchase_price_per_kg" class="block text-sm font-medium text-gray-700">
                                 Precio por Kg ($) *
                             </label>
-                            <input type="number" name="purchase_price_per_kg" id="purchase_price_per_kg" required
+                            <input type="number" name="purchase_price_per_kg" id="purchase_price_per_kg"
                                 value="{{ old('purchase_price_per_kg') }}"
                                 step="0.01" min="0.01"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('purchase_price_per_kg') border-red-500 @enderror"
