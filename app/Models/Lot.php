@@ -129,4 +129,23 @@ class Lot extends Model
         
         $this->save();
     }
+
+    /**
+     * Update payment status for new polymorphic payment system
+     * (Following Sales pattern)
+     */
+    public function updatePaymentStatus()
+    {
+        $totalPaid = $this->payments()->sum('amount');
+        
+        if ($totalPaid >= $this->total_purchase_cost) {
+            $this->payment_status = 'paid';
+        } elseif ($totalPaid > 0) {
+            $this->payment_status = 'partial';
+        } else {
+            $this->payment_status = 'pending';
+        }
+        
+        $this->save();
+    }
 }

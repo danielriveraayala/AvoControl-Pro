@@ -340,4 +340,112 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+
+    public function storeLotPayment(Request $request)
+    {
+        try {
+            \Log::info('StoreLotPayment called', $request->all());
+
+            $validated = $request->validate([
+                'lot_id' => 'required|exists:lots,id',
+                'amount' => 'required|numeric|min:0.01',
+                'payment_date' => 'required|date',
+                'payment_method' => 'required|in:cash,transfer,check,card,credit',
+                'reference_number' => 'nullable|string|max:255',
+                'notes' => 'nullable|string|max:1000'
+            ]);
+
+            \Log::info('Validation passed', $validated);
+
+            $lot = \App\Models\Lot::findOrFail($validated['lot_id']);
+            \Log::info('Lot found', ['lot_id' => $lot->id]);
+            
+            // Check remaining balance from both payment systems
+            $polymorphicPayments = $lot->payments->sum('amount');
+            $lotPayments = $lot->lotPayments->sum('amount');
+            $totalPaid = $polymorphicPayments + $lotPayments;
+            $remainingBalance = $lot->total_purchase_cost - $totalPaid;
+            
+            \Log::info('Balance check', [
+                'total_purchase_cost' => $lot->total_purchase_cost,
+                'total_paid' => $totalPaid,
+                'remaining_balance' => $remainingBalance,
+                'requested_amount' => $validated['amount']
+            ]);
+            
+            if ($validated['amount'] > $remainingBalance) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El monto excede el saldo pendiente de $' . number_format($remainingBalance, 2)
+                ]);
+            }
+
+            DB::transaction(function () use ($lot, $validated) {
+                // Generate payment code
+                $lastPayment = Payment::whereDate('created_at', today())->count();
+                $paymentCode = 'PAY-' . date('Ymd') . '-' . str_pad($lastPayment + 1, 3, '0', STR_PAD_LEFT);
+
+                \Log::info('Creating payment', [
+                    'payment_code' => $paymentCode,
+                    'lot_id' => $lot->id,
+                    'amount' => $validated['amount']
+                ]);
+
+                // Create payment using morphMany relationship
+                $payment = $lot->payments()->create([
+                    'payment_code' => $paymentCode,
+                    'type' => 'expense',
+                    'concept' => 'lot_purchase',
+                    'amount' => $validated['amount'],
+                    'payment_date' => $validated['payment_date'],
+                    'payment_method' => $validated['payment_method'],
+                    'reference' => $validated['reference_number'],
+                    'notes' => $validated['notes'],
+                    'created_by' => auth()->id() ?? 1
+                ]);
+
+                \Log::info('Payment created successfully', ['payment_id' => $payment->id]);
+
+                // Update lot payment status - payments() already includes the new payment
+                $newTotalPaid = $lot->payments()->sum('amount');
+                
+                \Log::info('Payment status update', [
+                    'total_purchase_cost' => $lot->total_purchase_cost,
+                    'new_total_paid' => $newTotalPaid,
+                    'payment_status' => $newTotalPaid >= $lot->total_purchase_cost ? 'paid' : 'partial'
+                ]);
+            
+                if ($newTotalPaid >= $lot->total_purchase_cost) {
+                    $lot->payment_status = 'paid';
+                } else {
+                    $lot->payment_status = 'partial';
+                }
+                
+                $lot->save();
+
+                // Update supplier balance
+                if ($lot->supplier) {
+                    $lot->supplier->balance_owed -= $validated['amount'];
+                    $lot->supplier->save();
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pago registrado exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in storeLotPayment', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar el pago: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

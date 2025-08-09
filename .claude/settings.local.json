@@ -27,7 +27,8 @@
       "Bash(curl:*)",
       "Bash(mv:*)",
       "Bash(find:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }

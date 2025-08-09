@@ -659,4 +659,61 @@ class LotController extends Controller
             ], 422);
         }
     }
+
+    // ========================================
+    // NEW PAYMENT SYSTEM METHODS (Following Sales Pattern)
+    // ========================================
+    
+    public function paymentTimeline(Lot $lot)
+    {
+        try {
+            // Load both payment systems: polymorphic payments + legacy lot payments
+            $lot->load([
+                'supplier', 
+                'payments.createdBy', 
+                'lotPayments.paidByUser'
+            ]);
+            
+            $html = view('lots.partials.payment-timeline', compact('lot'))->render();
+            
+            return response()->json([
+                'success' => true,
+                'html' => $html
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in lot payment timeline', ['error' => $e->getMessage(), 'lot_id' => $lot->id]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar timeline: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function paymentForm(Lot $lot)
+    {
+        try {
+            $lot->load(['supplier', 'payments', 'lotPayments']);
+            
+            // Calculate total paid from both payment systems
+            $polymorphicPayments = $lot->payments->sum('amount');
+            $lotPayments = $lot->lotPayments->sum('amount');
+            $totalPaid = $polymorphicPayments + $lotPayments;
+            $remainingBalance = $lot->total_purchase_cost - $totalPaid;
+            
+            $html = view('lots.partials.payment-form', compact('lot', 'remainingBalance'))->render();
+            
+            return response()->json([
+                'success' => true,
+                'html' => $html
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in lot payment form', ['error' => $e->getMessage(), 'lot_id' => $lot->id]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar formulario: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

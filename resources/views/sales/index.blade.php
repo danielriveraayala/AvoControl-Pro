@@ -387,7 +387,7 @@ $(document).ready(function() {
 
     // Initialize DataTable
     initializeSalesTable();
-    
+
     // Debug: Test CSRF token
     console.log('CSRF Token on load:', getCSRFToken());
 });
@@ -564,7 +564,7 @@ function initializeSalesTable() {
                 orderable: false,
                 render: function(data, type, row) {
                     let html = '<div class="btn-group btn-group-sm">';
-                    
+
                     console.log('Rendering actions for row:', row); // Debug log
 
                     html += `<button type="button" class="btn btn-info" onclick="showSaleDetails(${row.id})" data-toggle="tooltip" title="Ver detalles">
@@ -740,7 +740,7 @@ function editSale(saleId) {
 
 function changeStatus(saleId, newStatus) {
     let title, text, confirmButtonText, confirmButtonClass;
-    
+
     switch(newStatus) {
         case 'confirmed':
             title = '¿Confirmar venta?';
@@ -761,7 +761,7 @@ function changeStatus(saleId, newStatus) {
             confirmButtonClass = 'danger';
             break;
     }
-    
+
     Swal.fire({
         title: title,
         text: text,
@@ -800,7 +800,7 @@ function updateSaleStatus(saleId, newStatus) {
         },
         error: function(xhr, status, error) {
             console.error('Error in updateSaleStatus:', error);
-            
+
             if (xhr.status === 401 || xhr.responseText.includes('login')) {
                 Swal.fire({
                     title: 'Sesión Expirada',
@@ -812,7 +812,7 @@ function updateSaleStatus(saleId, newStatus) {
                 });
                 return;
             }
-            
+
             toastr.error('Error de conexión');
         }
     });
@@ -820,11 +820,11 @@ function updateSaleStatus(saleId, newStatus) {
 
 function registerPayment(saleId, fromTimeline = false) {
     console.log('Opening payment modal for sale ID:', saleId);
-    
+
     // Si viene del timeline, cerrar el modal del timeline primero
     if (fromTimeline || $('#paymentTimelineModal').hasClass('show')) {
         $('#paymentTimelineModal').modal('hide');
-        
+
         // Esperar a que se cierre el modal del timeline antes de abrir el de pagos
         setTimeout(() => {
             $('#paymentModal').modal('show');
@@ -873,9 +873,9 @@ function loadPaymentForm(saleId) {
 function savePayment() {
     const form = $('#paymentForm')[0];
     const formData = new FormData(form);
-    
+
     $('#savePaymentBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Guardando...');
-    
+
     $.ajax({
         url: '{{ url('payments/sale-payment') }}',
         method: 'POST',
@@ -899,7 +899,7 @@ function savePayment() {
         },
         error: function(xhr, status, error) {
             console.error('Error in savePayment:', error);
-            
+
             if (xhr.status === 401 || xhr.responseText.includes('login')) {
                 Swal.fire({
                     title: 'Sesión Expirada',
@@ -911,7 +911,7 @@ function savePayment() {
                 });
                 return;
             }
-            
+
             toastr.error('Error de conexión');
         },
         complete: function() {
@@ -964,9 +964,9 @@ function updateSale() {
     const form = $('#editSaleForm')[0];
     const formData = new FormData(form);
     const saleId = formData.get('sale_id');
-    
+
     $('#updateSaleBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Actualizando...');
-    
+
     $.ajax({
         url: `{{ url('sales') }}/${saleId}/update-modal`,
         method: 'POST',
@@ -990,7 +990,7 @@ function updateSale() {
         },
         error: function(xhr, status, error) {
             console.error('Error in updateSale:', error);
-            
+
             if (xhr.status === 401 || xhr.responseText.includes('login')) {
                 Swal.fire({
                     title: 'Sesión Expirada',
@@ -1002,7 +1002,7 @@ function updateSale() {
                 });
                 return;
             }
-            
+
             toastr.error('Error de conexión');
         },
         complete: function() {
@@ -1042,7 +1042,7 @@ function deleteSale(saleId) {
                 },
                 error: function(xhr, status, error) {
                     console.error('Error in deleteSale:', error);
-                    
+
                     if (xhr.status === 401 || xhr.responseText.includes('login')) {
                         Swal.fire({
                             title: 'Sesión Expirada',
@@ -1054,7 +1054,7 @@ function deleteSale(saleId) {
                         });
                         return;
                     }
-                    
+
                     toastr.error('Error de conexión');
                 }
             });

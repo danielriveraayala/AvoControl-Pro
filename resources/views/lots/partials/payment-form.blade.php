@@ -1,24 +1,32 @@
-<form id="paymentForm">
-    <input type="hidden" name="sale_id" value="{{ $sale->id }}">
-    <input type="hidden" name="payment_type" value="customer">
+@php
+    // Calculate combined balance from both payment systems
+    $polymorphicPayments = $lot->payments->sum('amount');
+    $lotPayments = $lot->lotPayments->sum('amount');
+    $totalPaid = $polymorphicPayments + $lotPayments;
+    $remainingBalance = $lot->total_purchase_cost - $totalPaid;
+@endphp
 
-    <!-- Información de la Venta -->
+<form id="lotPaymentForm">
+    <input type="hidden" name="lot_id" value="{{ $lot->id }}">
+    <input type="hidden" name="payment_type" value="supplier">
+
+    <!-- Información del Lote -->
     <div class="row mb-3">
         <div class="col-12">
             <div class="card bg-light">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
-                            <strong>Venta:</strong><br>
-                            <span class="text-primary">{{ $sale->sale_code }}</span>
+                            <strong>Lote:</strong><br>
+                            <span class="text-primary">{{ $lot->lot_code }}</span>
                         </div>
                         <div class="col-md-3">
-                            <strong>Cliente:</strong><br>
-                            {{ $sale->customer->name }}
+                            <strong>Proveedor:</strong><br>
+                            {{ $lot->supplier->name }}
                         </div>
                         <div class="col-md-3">
-                            <strong>Total Venta:</strong><br>
-                            <span class="text-success">${{ number_format($sale->total_amount, 2) }}</span>
+                            <strong>Total Compra:</strong><br>
+                            <span class="text-success">${{ number_format($lot->total_purchase_cost, 2) }}</span>
                         </div>
                         <div class="col-md-3">
                             <strong>Saldo Pendiente:</strong><br>
@@ -31,7 +39,7 @@
     </div>
 
     <!-- Historial de Pagos Existentes -->
-    @if($sale->payments->count() > 0)
+    @if($lot->payments->count() > 0 || $lot->lotPayments->count() > 0)
     <div class="row mb-3">
         <div class="col-12">
             <div class="card">
@@ -53,23 +61,60 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($sale->payments as $payment)
+                                @php
+                                    // Combine both payment systems
+                                    $allPayments = collect();
+
+                                    // Add polymorphic payments
+                                    foreach($lot->payments as $payment) {
+                                        $allPayments->push([
+                                            'payment_date' => $payment->payment_date,
+                                            'payment_method' => $payment->payment_method,
+                                            'reference' => $payment->reference,
+                                            'amount' => $payment->amount,
+                                            'type' => 'polymorphic'
+                                        ]);
+                                    }
+
+                                    // Add legacy payments
+                                    foreach($lot->lotPayments as $payment) {
+                                        $allPayments->push([
+                                            'payment_date' => $payment->payment_date,
+                                            'payment_method' => $payment->payment_type,
+                                            'reference' => null,
+                                            'amount' => $payment->amount,
+                                            'type' => 'legacy'
+                                        ]);
+                                    }
+
+                                    // Sort by payment date
+                                    $allPayments = $allPayments->sortByDesc('payment_date');
+
+                                    $methodLabels = [
+                                        'cash' => 'Efectivo',
+                                        'efectivo' => 'Efectivo',
+                                        'transfer' => 'Transferencia',
+                                        'transferencia' => 'Transferencia',
+                                        'check' => 'Cheque',
+                                        'cheque' => 'Cheque',
+                                        'card' => 'Tarjeta',
+                                        'credit' => 'Crédito',
+                                        'deposito' => 'Depósito',
+                                        'otro' => 'Otro'
+                                    ];
+                                @endphp
+                                
+                                @foreach($allPayments as $payment)
                                 <tr>
-                                    <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($payment['payment_date'])->format('d/m/Y') }}</td>
                                     <td>
-                                        @php
-                                            $methodLabels = [
-                                                'cash' => 'Efectivo',
-                                                'transfer' => 'Transferencia',
-                                                'check' => 'Cheque',
-                                                'card' => 'Tarjeta',
-                                                'credit' => 'Crédito'
-                                            ];
-                                        @endphp
-                                        <span class="badge badge-info">{{ $methodLabels[$payment->payment_method] ?? ucfirst($payment->payment_method) }}</span>
+                                        <span class="badge badge-info">{{ $methodLabels[$payment['payment_method']] ?? ucfirst($payment['payment_method']) }}</span>
+                                        @if($payment['type'] == 'legacy')
+                                            <small class="badge badge-secondary">LEGACY</small>
+                                        @endif
                                     </td>
-                                    <td>{{ $payment->reference ?? '-' }}</td>
-                                    <td><strong>${{ number_format($payment->amount, 2) }}</strong></td>
+                                    <td>{{ $payment['reference'] ?? '-' }}</td>
+                                    <td><strong>${{ number_format($payment['amount'], 2) }}</strong></td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -154,19 +199,19 @@
                     <label class="form-label">Montos de Acceso Rápido:</label>
                     <div class="btn-group d-block" role="group">
                         <button type="button" class="btn btn-outline-primary btn-sm"
-                                onclick="setPaymentAmount({{ $remainingBalance * 0.25 }})">
+                                onclick="setLotPaymentAmount({{ $remainingBalance * 0.25 }})">
                             25% (${{ number_format($remainingBalance * 0.25, 2) }})
                         </button>
                         <button type="button" class="btn btn-outline-primary btn-sm"
-                                onclick="setPaymentAmount({{ $remainingBalance * 0.50 }})">
+                                onclick="setLotPaymentAmount({{ $remainingBalance * 0.50 }})">
                             50% (${{ number_format($remainingBalance * 0.50, 2) }})
                         </button>
                         <button type="button" class="btn btn-outline-primary btn-sm"
-                                onclick="setPaymentAmount({{ $remainingBalance * 0.75 }})">
+                                onclick="setLotPaymentAmount({{ $remainingBalance * 0.75 }})">
                             75% (${{ number_format($remainingBalance * 0.75, 2) }})
                         </button>
                         <button type="button" class="btn btn-outline-success btn-sm"
-                                onclick="setPaymentAmount({{ $remainingBalance }})">
+                                onclick="setLotPaymentAmount({{ $remainingBalance }})">
                             Total (${{ number_format($remainingBalance, 2) }})
                         </button>
                     </div>
@@ -177,7 +222,7 @@
 </form>
 
 <script>
-function setPaymentAmount(amount) {
+function setLotPaymentAmount(amount) {
     document.getElementById('amount').value = amount.toFixed(2);
 }
 </script>

@@ -50,6 +50,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('lots/{lot}/pdf', [LotController::class, 'downloadPDF'])->name('lots.pdf');
     Route::get('lots/{lot}/payments', [LotController::class, 'payments'])->name('lots.payments');
     Route::post('lots/{lot}/payments', [LotController::class, 'addPayment'])->name('lots.payments.add');
+    Route::get('lots/{lot}/payment-timeline', [LotController::class, 'paymentTimeline'])->name('lots.payment-timeline');
+    Route::get('lots/{lot}/payment-form', [LotController::class, 'paymentForm'])->name('lots.payment-form');
     
     // Sales AJAX routes
     Route::group(['prefix' => 'sales'], function() {
@@ -71,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('lots/{lot}/store', [PaymentController::class, 'storeLotPayment'])->name('payments.lot.store');
         Route::get('cash-flow', [PaymentController::class, 'dailyCashFlow'])->name('payments.cash-flow');
         Route::post('sale-payment', [PaymentController::class, 'storeSalePayment'])->name('payments.store-sale-payment');
+        Route::post('lot-payment', [PaymentController::class, 'storeLotPayment'])->name('payments.store-lot-payment');
     });
     
     // Configuration routes

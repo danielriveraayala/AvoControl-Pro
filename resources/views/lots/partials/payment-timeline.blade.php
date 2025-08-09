@@ -1,6 +1,9 @@
 @php
-    $totalAmount = $sale->total_amount;
-    $totalPaid = $sale->payments->sum('amount');
+    $totalAmount = $lot->total_purchase_cost;
+    // Combine both payment systems: polymorphic payments + old lot_payments
+    $polymorphicPayments = $lot->payments->sum('amount');
+    $lotPayments = $lot->lotPayments->sum('amount');
+    $totalPaid = $polymorphicPayments + $lotPayments;
     $remainingBalance = $totalAmount - $totalPaid;
     $paidPercentage = $totalAmount > 0 ? ($totalPaid / $totalAmount) * 100 : 0;
 @endphp
@@ -11,7 +14,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-3 text-center">
-                    <h5 class="text-muted mb-1">Total Venta</h5>
+                    <h5 class="text-muted mb-1">Total Compra</h5>
                     <h3 class="text-primary">${{ number_format($totalAmount, 2) }}</h3>
                 </div>
                 <div class="col-md-3 text-center">
@@ -24,9 +27,9 @@
                 </div>
                 <div class="col-md-3 text-center">
                     <h5 class="text-muted mb-1">Estado</h5>
-                    @if($sale->payment_status == 'paid')
+                    @if($lot->payment_status == 'paid')
                         <h3><span class="badge badge-success">PAGADO</span></h3>
-                    @elseif($sale->payment_status == 'partial')
+                    @elseif($lot->payment_status == 'partial')
                         <h3><span class="badge badge-warning">PARCIAL</span></h3>
                     @else
                         <h3><span class="badge badge-danger">PENDIENTE</span></h3>
@@ -56,75 +59,126 @@
             </h3>
             @if($remainingBalance > 0)
                 <div class="card-tools">
-                    <button type="button" class="btn btn-sm btn-success" onclick="registerPayment({{ $sale->id }}, true)">
+                    <button type="button" class="btn btn-sm btn-success" onclick="registerLotPayment({{ $lot->id }}, true)">
                         <i class="fas fa-plus"></i> Registrar Nuevo Pago
                     </button>
                 </div>
             @endif
         </div>
         <div class="card-body">
-            @if($sale->payments->count() > 0)
+            @if($lot->payments->count() > 0 || $lot->lotPayments->count() > 0)
                 <div class="timeline">
                     <!-- Timeline Item Start -->
                     <div class="time-label">
-                        <span class="bg-primary">Inicio de Venta</span>
+                        <span class="bg-primary">Inicio de Compra</span>
                     </div>
 
                     <div>
                         <i class="fas fa-shopping-cart bg-primary"></i>
                         <div class="timeline-item">
                             <span class="time">
-                                <i class="fas fa-clock"></i> {{ $sale->sale_date->format('d/m/Y H:i') }}
+                                <i class="fas fa-clock"></i> {{ $lot->harvest_date->format('d/m/Y H:i') }}
                             </span>
                             <h3 class="timeline-header">
-                                Venta Registrada
+                                Lote Registrado
                             </h3>
                             <div class="timeline-body">
-                                <strong>Código:</strong> {{ $sale->sale_code }}<br>
-                                <strong>Cliente:</strong> {{ $sale->customer->name }}<br>
-                                <strong>Monto Total:</strong> ${{ number_format($sale->total_amount, 2) }}
+                                <strong>Código:</strong> {{ $lot->lot_code }}<br>
+                                <strong>Proveedor:</strong> {{ $lot->supplier->name }}<br>
+                                <strong>Monto Total:</strong> ${{ number_format($lot->total_purchase_cost, 2) }}
                             </div>
                         </div>
                     </div>
 
                     @php
                         $accumulatedAmount = 0;
+                        // Combine and sort all payments by date
+                        $allPayments = collect();
+
+                        // Add polymorphic payments
+                        foreach($lot->payments as $payment) {
+                            $allPayments->push([
+                                'type' => 'polymorphic',
+                                'id' => $payment->id,
+                                'amount' => $payment->amount,
+                                'payment_date' => $payment->payment_date,
+                                'payment_method' => $payment->payment_method,
+                                'payment_code' => $payment->payment_code,
+                                'reference' => $payment->reference,
+                                'notes' => $payment->notes,
+                                'created_at' => $payment->created_at,
+                                'createdBy' => $payment->createdBy
+                            ]);
+                        }
+
+                        // Add old lot payments
+                        foreach($lot->lotPayments as $payment) {
+                            $allPayments->push([
+                                'type' => 'legacy',
+                                'id' => $payment->id,
+                                'amount' => $payment->amount,
+                                'payment_date' => $payment->payment_date,
+                                'payment_method' => $payment->payment_type, // Map payment_type to payment_method
+                                'payment_code' => 'LEGACY-' . str_pad($payment->id, 3, '0', STR_PAD_LEFT),
+                                'reference' => null,
+                                'notes' => $payment->notes,
+                                'created_at' => $payment->created_at,
+                                'createdBy' => $payment->paidByUser ?? null
+                            ]);
+                        }
+
+                        // Sort all payments by payment_date
+                        $allPayments = $allPayments->sortBy('payment_date');
                     @endphp
 
-                    @foreach($sale->payments->sortBy('payment_date') as $payment)
+                    @foreach($allPayments as $payment)
                         @php
-                            $accumulatedAmount += $payment->amount;
+                            $accumulatedAmount += $payment['amount'];
                             $percentageAtTime = ($accumulatedAmount / $totalAmount) * 100;
                             $isLastPayment = $accumulatedAmount >= $totalAmount;
 
+                            // Handle different payment method names between systems
                             $methodIcons = [
                                 'cash' => 'fa-money-bill-wave',
+                                'efectivo' => 'fa-money-bill-wave',
                                 'transfer' => 'fa-exchange-alt',
+                                'transferencia' => 'fa-exchange-alt',
                                 'check' => 'fa-money-check',
+                                'cheque' => 'fa-money-check',
                                 'card' => 'fa-credit-card',
-                                'credit' => 'fa-handshake'
+                                'credit' => 'fa-handshake',
+                                'deposito' => 'fa-university',
+                                'otro' => 'fa-question-circle'
                             ];
 
                             $methodLabels = [
                                 'cash' => 'Efectivo',
+                                'efectivo' => 'Efectivo',
                                 'transfer' => 'Transferencia',
+                                'transferencia' => 'Transferencia',
                                 'check' => 'Cheque',
+                                'cheque' => 'Cheque',
                                 'card' => 'Tarjeta',
-                                'credit' => 'Crédito'
+                                'credit' => 'Crédito',
+                                'deposito' => 'Depósito',
+                                'otro' => 'Otro'
                             ];
 
-                            $icon = $methodIcons[$payment->payment_method] ?? 'fa-dollar-sign';
-                            $methodLabel = $methodLabels[$payment->payment_method] ?? ucfirst($payment->payment_method);
+                            $icon = $methodIcons[$payment['payment_method']] ?? 'fa-dollar-sign';
+                            $methodLabel = $methodLabels[$payment['payment_method']] ?? ucfirst($payment['payment_method']);
                         @endphp
 
                         <div>
                             <i class="fas {{ $icon }} bg-{{ $isLastPayment ? 'success' : 'warning' }}"></i>
                             <div class="timeline-item">
                                 <span class="time">
-                                    <i class="fas fa-clock"></i> {{ $payment->payment_date->format('d/m/Y H:i') }}
+                                    <i class="fas fa-clock"></i> {{ \Carbon\Carbon::parse($payment['payment_date'])->format('d/m/Y H:i') }}
                                 </span>
                                 <h3 class="timeline-header">
                                     Pago #{{ $loop->iteration }} - {{ $methodLabel }}
+                                    @if($payment['type'] == 'legacy')
+                                        <span class="badge badge-secondary ml-2">LEGACY</span>
+                                    @endif
                                     @if($isLastPayment)
                                         <span class="badge badge-success ml-2">COMPLETADO</span>
                                     @else
@@ -134,13 +188,13 @@
                                 <div class="timeline-body">
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <strong>Código:</strong> {{ $payment->payment_code }}<br>
-                                            <strong>Monto:</strong> <span class="text-success font-weight-bold">${{ number_format($payment->amount, 2) }}</span><br>
-                                            @if($payment->reference)
-                                                <strong>Referencia:</strong> {{ $payment->reference }}<br>
+                                            <strong>Código:</strong> {{ $payment['payment_code'] }}<br>
+                                            <strong>Monto:</strong> <span class="text-success font-weight-bold">${{ number_format($payment['amount'], 2) }}</span><br>
+                                            @if($payment['reference'])
+                                                <strong>Referencia:</strong> {{ $payment['reference'] }}<br>
                                             @endif
-                                            @if($payment->notes)
-                                                <strong>Notas:</strong> {{ $payment->notes }}<br>
+                                            @if($payment['notes'])
+                                                <strong>Notas:</strong> {{ $payment['notes'] }}<br>
                                             @endif
                                         </div>
                                         <div class="col-md-6">
@@ -156,11 +210,19 @@
                                     </div>
                                 </div>
                                 <div class="timeline-footer">
-                                    @if($payment->createdBy)
-                                        <small class="text-muted">Registrado por: {{ $payment->createdBy->name }}</small>
+                                    @if($payment['createdBy'])
+                                        @php
+                                            $userName = 'Usuario';
+                                            if (is_object($payment['createdBy']) && isset($payment['createdBy']->name)) {
+                                                $userName = $payment['createdBy']->name;
+                                            } elseif (is_array($payment['createdBy']) && isset($payment['createdBy']['name'])) {
+                                                $userName = $payment['createdBy']['name'];
+                                            }
+                                        @endphp
+                                        <small class="text-muted">Registrado por: {{ $userName }}</small>
                                     @endif
-                                    @if($payment->created_at != $payment->payment_date)
-                                        <small class="text-muted ml-2">| Ingresado: {{ $payment->created_at->format('d/m/Y H:i') }}</small>
+                                    @if(\Carbon\Carbon::parse($payment['created_at'])->format('Y-m-d') != \Carbon\Carbon::parse($payment['payment_date'])->format('Y-m-d'))
+                                        <small class="text-muted ml-2">| Ingresado: {{ \Carbon\Carbon::parse($payment['created_at'])->format('d/m/Y H:i') }}</small>
                                     @endif
                                 </div>
                             </div>
@@ -168,10 +230,10 @@
                     @endforeach
 
                     <!-- Final del Timeline -->
-                    @if($sale->payment_status == 'paid')
+                    @if($lot->payment_status == 'paid')
                         <div class="time-label">
                             <span class="bg-success">
-                                <i class="fas fa-check"></i> Venta Pagada Completamente
+                                <i class="fas fa-check"></i> Lote Pagado Completamente
                             </span>
                         </div>
                     @else
@@ -191,8 +253,8 @@
                 <div class="text-center py-5">
                     <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
                     <h4 class="mt-3">No hay pagos registrados</h4>
-                    <p class="text-muted">Esta venta aún no tiene ningún pago registrado.</p>
-                    <button type="button" class="btn btn-success mt-3" onclick="registerPayment({{ $sale->id }}, true)">
+                    <p class="text-muted">Este lote aún no tiene ningún pago registrado al proveedor.</p>
+                    <button type="button" class="btn btn-success mt-3" onclick="registerLotPayment({{ $lot->id }}, true)">
                         <i class="fas fa-plus"></i> Registrar Primer Pago
                     </button>
                 </div>
