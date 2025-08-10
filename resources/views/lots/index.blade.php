@@ -181,23 +181,25 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table id="lotsTable" class="table table-bordered table-hover">
-                        <thead>
-                        <tr>
-                            <th>Proveedor</th>
-                            <th>Fecha Cosecha</th>
-                            <th>Peso Total</th>
-                            <th>Calidad</th>
-                            <th>Precio/kg</th>
-                            <th>Valor Total</th>
-                            <th>Estado Pago</th>
-                            <th>Acciones</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <!-- DataTables will populate this -->
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table id="lotsTable" class="table table-bordered table-hover table-striped">
+                            <thead>
+                            <tr>
+                                <th>Proveedor</th>
+                                <th>Fecha Compra</th>
+                                <th>Peso Total</th>
+                                <th>Calidad</th>
+                                <th>Precio/kg</th>
+                                <th>Valor Total</th>
+                                <th>Estado Pago</th>
+                                <th>Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- DataTables will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -207,19 +209,15 @@
     <div class="row" id="qualityStatsRow">
         @if(isset($stats['quality_breakdown']) && count($stats['quality_breakdown']) > 0)
             @foreach($stats['quality_breakdown'] as $qualityStats)
+                @php
+                    $qualityColor = $qualityStats['quality_color'] ?? '#6c757d';
+                @endphp
                 <div class="col-lg-3 col-6">
-                    <div class="card card-outline
-                        @switch($qualityStats['quality_name'])
-                            @case('Primeras') card-success @break
-                            @case('Segunda') card-warning @break
-                            @case('Tercera') card-info @break
-                            @case('Cuarta') card-primary @break
-                            @default card-secondary
-                        @endswitch
-                    ">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-star"></i> {{ $qualityStats['quality_name'] }}
+                    <div class="card card-outline" style="border-color: {{ $qualityColor }};">
+                        <div class="card-header"
+                             style="background-color: {{ $qualityColor }}20; border-bottom-color: {{ $qualityColor }};">
+                            <h3 class="card-title" style="color: {{ $qualityColor }};">
+                                {{ $qualityStats['quality_name'] }}
                             </h3>
                         </div>
                         <div class="card-body">
@@ -575,13 +573,28 @@
                     {
                         data: 'quality_grade',
                         name: 'quality_grade',
-                        render: function (data) {
-                            const qualityMap = {
-                                'Primera': '<span class="badge badge-success"><i class="fas fa-star"></i> Primera</span>',
-                                'Segunda': '<span class="badge badge-warning"><i class="fas fa-star-half-alt"></i> Segunda</span>',
-                                'Tercera': '<span class="badge badge-danger"><i class="far fa-star"></i> Tercera</span>'
-                            };
-                            return qualityMap[data] || `<span class="badge badge-secondary">${data}</span>`;
+                        render: function (data, type, row) {
+                            // Debug to see what we're receiving
+                            console.log('Quality data:', data, 'Row:', row);
+
+                            // data should be the quality name string
+                            let qualityName = 'Sin calidad';
+
+                            // Check if data is an object (shouldn't be, but just in case)
+                            if (typeof data === 'object' && data !== null) {
+                                qualityName = data.name || data.quality_grade || 'Sin calidad';
+                            } else if (typeof data === 'string') {
+                                qualityName = data;
+                            }
+
+                            // Get the color from the related qualityGrade object
+                            let qualityColor = '#6c757d'; // default gray
+
+                            if (row.quality_grade_obj && row.quality_grade_obj.color) {
+                                qualityColor = row.quality_grade_obj.color;
+                            }
+
+                            return `<span class="badge" style="background-color: ${qualityColor}; color: white;">${qualityName}</span>`;
                         }
                     },
                     {
@@ -779,20 +792,14 @@
                 qualityStatsRow.empty();
 
                 qualityBreakdown.forEach(function (qualityStats, index) {
-                    const cardClass = {
-                        'Primeras': 'card-success',
-                        'Segunda': 'card-warning',
-                        'Tercera': 'card-info',
-                        'Cuarta': 'card-primary',
-                        'Industrial': 'card-secondary'
-                    }[qualityStats.quality_name] || 'card-secondary';
+                    const qualityColor = qualityStats.quality_color || '#6c757d';
 
                     const cardHtml = `
                 <div class="col-lg-3 col-6">
-                    <div class="card card-outline ${cardClass}" style="animation-delay: ${index * 0.1}s; animation: fadeInUp 0.5s ease forwards;">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-star"></i> ${qualityStats.quality_name}
+                    <div class="card card-outline" style="border-color: ${qualityColor}; animation-delay: ${index * 0.1}s; animation: fadeInUp 0.5s ease forwards;">
+                        <div class="card-header" style="background-color: ${qualityColor}20; border-bottom-color: ${qualityColor};">
+                            <h3 class="card-title" style="color: ${qualityColor};">
+                                ${qualityStats.quality_name}
                             </h3>
                         </div>
                         <div class="card-body">
@@ -1260,7 +1267,7 @@
                 if (firstRowText.includes('Total a Pagar')) {
                     // Monto Pagado está en la segunda fila, segunda columna
                     amountPaid = table.find('tr:nth-child(2) td:nth-child(2)').text().replace(/[^0-9.,]/g, '').replace(',', '').trim() || '0.00';
-                    // Saldo Pendiente está en la tercera fila, segunda columna  
+                    // Saldo Pendiente está en la tercera fila, segunda columna
                     amountOwed = table.find('tr:nth-child(3) td:nth-child(2)').text().replace(/[^0-9.,]/g, '').replace(',', '').trim() || '0.00';
                     // Estado del pago está en la cuarta fila
                     const statusBadge = table.find('tr:nth-child(4) .badge').first().text().trim();

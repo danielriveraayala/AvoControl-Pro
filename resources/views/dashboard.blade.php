@@ -39,6 +39,36 @@
     </div>
     @endif
 
+    <!-- Alertas de Poco Inventario -->
+    @if(isset($alertasPocaExistencia) && count($alertasPocaExistencia) > 0)
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-exclamation-triangle"></i> ⚠️ INVENTARIO BAJO</h5>
+                <p class="mb-2">Las siguientes calidades tienen inventario bajo (≤20% del total):</p>
+                <ul>
+                    @foreach($alertasPocaExistencia as $alerta)
+                    <li>
+                        <strong>{{ $alerta['calidad'] }}:</strong> 
+                        Solo queda el <strong>{{ $alerta['porcentaje_disponible'] }}%</strong> del inventario total
+                        ({{ number_format($alerta['disponible'], 2) }} kg de {{ number_format($alerta['total'], 2) }} kg)
+                    </li>
+                    @endforeach
+                </ul>
+                <div class="mt-3">
+                    <a href="{{ route('lots.create') }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-plus"></i> Registrar Lotes
+                    </a>
+                    <a href="{{ route('acopio.index') }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-boxes"></i> Ver Inventario
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Métricas Principales -->
     <div class="row">
         <!-- Inventario Total -->
@@ -129,27 +159,10 @@
                                 <div class="text-center p-3">
                                     @php
                                         $qualityName = $acopio->qualityGrade ? $acopio->qualityGrade->name : 'Sin calidad';
-                                        $badgeClass = [
-                                            'Primeras' => 'success',
-                                            'Segunda' => 'warning',
-                                            'Tercera' => 'info',
-                                            'Cuarta' => 'primary',
-                                            'Industrial' => 'secondary'
-                                        ][$qualityName] ?? 'secondary';
-                                        
-                                        $iconClass = [
-                                            'Primeras' => 'star',
-                                            'Segunda' => 'star-half-alt',
-                                            'Tercera' => 'star-half',
-                                            'Cuarta' => 'gem',
-                                            'Industrial' => 'cog'
-                                        ][$qualityName] ?? 'circle';
+                                        $qualityColor = $acopio->qualityGrade ? $acopio->qualityGrade->color : '#6c757d';
                                     @endphp
                                     
-                                    <div class="mb-2">
-                                        <i class="fas fa-{{ $iconClass }} fa-2x text-{{ $badgeClass }}"></i>
-                                    </div>
-                                    <h5 class="badge badge-{{ $badgeClass }} badge-lg mb-2">{{ $qualityName }}</h5>
+                                    <h5 class="badge badge-lg mb-2" style="background-color: {{ $qualityColor }}; color: white;">{{ $qualityName }}</h5>
                                     
                                     <div class="text-sm">
                                         <strong class="d-block">{{ number_format($acopio->peso_disponible, 2) }} kg</strong>
@@ -165,7 +178,7 @@
                                         @php
                                             $percentage = $acopio->peso_total > 0 ? ($acopio->peso_vendido / $acopio->peso_total) * 100 : 0;
                                         @endphp
-                                        <div class="progress-bar bg-{{ $badgeClass }}" style="width: {{ $percentage }}%"></div>
+                                        <div class="progress-bar" style="width: {{ $percentage }}%; background-color: {{ $qualityColor }};"></div>
                                     </div>
                                     <small class="text-muted">{{ number_format($percentage, 1) }}% vendido</small>
                                 </div>
@@ -389,19 +402,21 @@ $(function () {
     // Quality Distribution Chart
     const qualityData = @json($metrics['inventory']['quality_distribution'] ?? []);
     
-    if (Object.keys(qualityData).length > 0) {
+    if (qualityData.length > 0) {
         const ctx = document.getElementById('qualityChart').getContext('2d');
+        
+        // Extract labels, data and colors from the structured array
+        const labels = qualityData.map(item => item.name);
+        const data = qualityData.map(item => item.weight);
+        const colors = qualityData.map(item => item.color);
+        
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: Object.keys(qualityData),
+                labels: labels,
                 datasets: [{
-                    data: Object.values(qualityData),
-                    backgroundColor: [
-                        '#28a745',  // Verde para Primera
-                        '#ffc107',  // Amarillo para Segunda
-                        '#dc3545'   // Rojo para Tercera
-                    ]
+                    data: data,
+                    backgroundColor: colors
                 }]
             },
             options: {

@@ -42,8 +42,10 @@ class ReportService
                 ->select('quality_grade_id', DB::raw('SUM(weight_available) as weight'))
                 ->groupBy('quality_grade_id')
                 ->get()
-                ->mapWithKeys(fn($item) => [
-                    $item->qualityGrade ? $item->qualityGrade->name : 'Sin calidad' => $item->weight
+                ->map(fn($item) => [
+                    'name' => $item->qualityGrade ? $item->qualityGrade->name : 'Sin calidad',
+                    'weight' => $item->weight,
+                    'color' => $item->qualityGrade ? $item->qualityGrade->color : '#6c757d'
                 ])
                 ->toArray(),
             'oldest_lot_days' => Lot::where('status', '!=', 'sold')

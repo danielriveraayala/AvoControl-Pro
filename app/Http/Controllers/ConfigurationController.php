@@ -43,12 +43,18 @@ class ConfigurationController extends Controller
             'weight_min' => 'nullable|integer|min:1',
             'weight_max' => 'nullable|integer|min:1',
             'description' => 'nullable|string|max:500',
+            'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/i',
             'sort_order' => 'nullable|integer|min:0'
         ]);
 
         // Set default sort_order if not provided
         if (!isset($validated['sort_order']) || $validated['sort_order'] === null || $validated['sort_order'] === '') {
             $validated['sort_order'] = QualityGrade::max('sort_order') + 1;
+        }
+        
+        // Normalize color to lowercase
+        if (isset($validated['color'])) {
+            $validated['color'] = strtolower($validated['color']);
         }
 
         QualityGrade::create($validated);
@@ -69,6 +75,7 @@ class ConfigurationController extends Controller
             'weight_min' => 'nullable|integer|min:1',
             'weight_max' => 'nullable|integer|min:1',
             'description' => 'nullable|string|max:500',
+            'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/i',
             'sort_order' => 'nullable|integer|min:0',
             'active' => 'boolean'
         ]);
@@ -76,6 +83,11 @@ class ConfigurationController extends Controller
         // Set default sort_order if not provided
         if (!isset($validated['sort_order']) || $validated['sort_order'] === null || $validated['sort_order'] === '') {
             $validated['sort_order'] = $qualityGrade->sort_order ?? 0;
+        }
+        
+        // Normalize color to lowercase
+        if (isset($validated['color'])) {
+            $validated['color'] = strtolower($validated['color']);
         }
 
         $qualityGrade->update($validated);

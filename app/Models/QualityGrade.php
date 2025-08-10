@@ -16,6 +16,7 @@ class QualityGrade extends Model
         'weight_min',
         'weight_max',
         'description',
+        'color',
         'active',
         'sort_order'
     ];

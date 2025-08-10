@@ -154,6 +154,34 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="color">Color <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="color" name="color" id="color" class="form-control form-control-color" 
+                                               value="#6c757d" required>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-palette"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Color para identificar visualmente esta calidad</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Vista Previa del Color</label>
+                                    <div class="d-flex align-items-center">
+                                        <div id="colorPreview" class="color-preview me-3" 
+                                             style="width: 40px; height: 40px; background-color: #6c757d; border-radius: 8px; border: 2px solid #ddd;"></div>
+                                        <span id="colorValue" class="text-muted">#6c757d</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row" id="activeRow" style="display: none;">
                             <div class="col-12">
                                 <div class="form-group">
@@ -189,6 +217,11 @@
             setTimeout(() => {
                 initializeQualityTable();
             }, 200);
+
+            // Color picker event handler
+            $('#color').on('input change', function() {
+                updateColorPreview($(this).val());
+            });
         });
 
         function initializeQualityTable() {
@@ -292,12 +325,22 @@
                 });
         }
 
+        function updateColorPreview(color) {
+            $('#colorPreview').css('background-color', color);
+            $('#colorValue').text(color);
+        }
+
         function openCreateQualityModal() {
             $('#qualityModalTitle').text('Nueva Calidad');
             $('#qualityForm')[0].reset();
             $('#qualityForm').attr('data-mode', 'create');
             $('#qualityForm').attr('data-id', '');
             $('#activeRow').hide();
+            
+            // Reset color to default
+            $('#color').val('#6c757d');
+            updateColorPreview('#6c757d');
+            
             $('#qualityModal').modal('show');
         }
 
@@ -323,7 +366,11 @@
                     $('#weight_max').val(data.weight_max);
                     $('#description').val(data.description);
                     $('#sort_order').val(data.sort_order);
+                    $('#color').val(data.color || '#6c757d');
                     $('#active').prop('checked', data.active);
+
+                    // Update color preview
+                    updateColorPreview(data.color || '#6c757d');
 
                     $('#qualityModal').modal('show');
                 })
@@ -391,6 +438,9 @@
             } else {
                 formData.set('active', '1');
             }
+            
+            // Debug: Log the color value being sent
+            console.log('Color value being sent:', formData.get('color'));
 
             fetch(url, {
                 method: 'POST',
@@ -401,7 +451,12 @@
                 },
                 body: formData
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(err));
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         toastr.success(mode === 'create' ? 'Calidad creada correctamente' : 'Calidad actualizada correctamente');
@@ -418,8 +473,15 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    toastr.error('Error al guardar la calidad');
+                    console.error('Error completo:', error);
+                    if (error.errors) {
+                        Object.keys(error.errors).forEach(key => {
+                            console.error(`Error en campo ${key}:`, error.errors[key]);
+                            toastr.error(`${key}: ${error.errors[key][0]}`);
+                        });
+                    } else {
+                        toastr.error(error.message || 'Error al guardar la calidad');
+                    }
                 });
         });
     </script>

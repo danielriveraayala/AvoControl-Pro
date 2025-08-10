@@ -12,7 +12,7 @@ class LotController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lot::with(['supplier', 'saleAllocations']);
+        $query = Lot::with(['supplier', 'saleAllocations', 'qualityGrade']);
 
         // Filters - Only apply if values are not null/empty
         if ($request->filled('status')) {
@@ -85,6 +85,13 @@ class LotController extends Controller
             $start = $request->start ?? 0;
             $length = $request->length ?? 10;
             $lots = $query->skip($start)->take($length)->get();
+            
+            // Add quality grade object for each lot
+            $lots = $lots->map(function($lot) {
+                // Add the qualityGrade relation as a separate property for DataTables
+                $lot->quality_grade_obj = $lot->qualityGrade;
+                return $lot;
+            });
             
             return response()->json([
                 'draw' => intval($request->draw),
@@ -168,6 +175,7 @@ class LotController extends Controller
             if ($stat->qualityGrade) {
                 $qualityBreakdown[] = [
                     'quality_name' => $stat->qualityGrade->name,
+                    'quality_color' => $stat->qualityGrade->color ?: '#6c757d',
                     'lots' => $stat->lots,
                     'total_kg' => $stat->total_kg ?: 0,
                     'avg_price' => $stat->avg_price ?: 0,

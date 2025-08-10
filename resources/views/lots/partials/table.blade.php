@@ -47,7 +47,7 @@
                             @endif
                         @else
                             <span class="text-muted">
-                                <i class="fas fa-user-secret"></i> 🕶️ Anónimo
+                                🕶️ Anónimo
                             </span>
                         @endif
                     </div>
@@ -62,42 +62,23 @@
                 <br><small class="text-muted">Contribuye al acopio</small>
             </td>
             <td>
-                @switch($lot->quality_grade)
-                    @case('Primera')
-                        <span class="badge badge-success badge-quality">
-                            <i class="fas fa-star"></i> Primera
-                        </span>
-                        @break
-                    @case('Segunda')
-                        <span class="badge badge-warning badge-quality">
-                            <i class="fas fa-star-half-alt"></i> Segunda
-                        </span>
-                        @break
-                    @case('Tercera')
-                        <span class="badge badge-danger badge-quality">
-                            <i class="far fa-star"></i> Tercera
-                        </span>
-                        @break
-                    @default
-                        <span class="badge badge-secondary">{{ $lot->quality_grade }}</span>
-                @endswitch
+                @php
+                    $qualityColor = $lot->qualityGrade ? $lot->qualityGrade->color : '#6c757d';
+                @endphp
+                <span class="badge badge-quality" style="background-color: {{ $qualityColor }}; color: white;">
+                    {{ $lot->quality_grade }}
+                </span>
             </td>
             <td>
                 @switch($lot->status)
                     @case('active')
-                        <span class="badge badge-primary">
-                            <i class="fas fa-check-circle"></i> Activo
-                        </span>
+                        <span class="badge badge-primary">Activo</span>
                         @break
                     @case('partial')
-                        <span class="badge badge-warning">
-                            <i class="fas fa-clock"></i> Parcial
-                        </span>
+                        <span class="badge badge-warning">Parcial</span>
                         @break
                     @case('sold')
-                        <span class="badge badge-success">
-                            <i class="fas fa-handshake"></i> Vendido
-                        </span>
+                        <span class="badge badge-success">Vendido</span>
                         @break
                     @default
                         <span class="badge badge-secondary">{{ ucfirst($lot->status) }}</span>

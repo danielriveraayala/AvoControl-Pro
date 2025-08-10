@@ -117,15 +117,10 @@
                                     <div class="col-md-3">
                                         <div class="text-center">
                                             @php
-                                                $badgeClass = match($inv->quality_grade) {
-                                                    'Primera' => 'success',
-                                                    'Segunda' => 'warning', 
-                                                    'Tercera' => 'info',
-                                                    'Industrial' => 'secondary',
-                                                    default => 'secondary'
-                                                };
+                                                $qualityGrade = \App\Models\QualityGrade::where('name', $inv->quality_grade)->first();
+                                                $qualityColor = $qualityGrade ? $qualityGrade->color : '#6c757d';
                                             @endphp
-                                            <span class="badge badge-{{ $badgeClass }} badge-lg d-block mb-1">
+                                            <span class="badge badge-lg d-block mb-1" style="background-color: {{ $qualityColor }}; color: white;">
                                                 {{ $inv->quality_grade }}
                                             </span>
                                             <strong class="d-block">{{ number_format($inv->peso_disponible, 2) }} kg</strong>

@@ -83,7 +83,11 @@
                                 @foreach($sale->saleItems as $item)
                                 <tr>
                                     <td>
-                                        <span class="badge badge-primary">{{ $item->quality_grade }}</span>
+                                        @php
+                                            $qualityGrade = \App\Models\QualityGrade::where('name', $item->quality_grade)->first();
+                                            $qualityColor = $qualityGrade ? $qualityGrade->color : '#6c757d';
+                                        @endphp
+                                        <span class="badge" style="background-color: {{ $qualityColor }}; color: white;">{{ $item->quality_grade }}</span>
                                     </td>
                                     <td>{{ number_format($item->weight, 2) }} kg</td>
                                     <td>${{ number_format($item->price_per_kg, 2) }}</td>

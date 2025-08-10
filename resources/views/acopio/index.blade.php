@@ -24,7 +24,7 @@
                         @foreach($alertas as $alerta)
                         <li>
                             <strong>{{ $alerta['calidad'] }}:</strong>
-                            Déficit de <strong class="text-danger">{{ number_format($alerta['deficit'], 2) }} kg</strong>
+                            Déficit de <strong">{{ number_format($alerta['deficit'], 2) }} kg</strong>
                             (Disponible: {{ number_format($alerta['disponible'], 2) }} kg,
                             Comprometido: {{ number_format($alerta['comprometido'], 2) }} kg)
                         </li>
@@ -32,6 +32,32 @@
                     </ul>
                     <hr>
                     <p class="mb-0"><strong>Acción requerida:</strong> Registre nuevos lotes o cancele ventas para resolver el déficit.</p>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Alertas de Poca Existencia -->
+        @if(isset($alertasPocaExistencia) && count($alertasPocaExistencia) > 0)
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <h5><i class="icon fas fa-exclamation-circle"></i> ⚠️ Inventario Bajo Detectado</h5>
+                    <p class="mb-2">Las siguientes calidades tienen inventario bajo (≤20% del total):</p>
+                    <ul class="mb-0">
+                        @foreach($alertasPocaExistencia as $alerta)
+                        <li>
+                            <strong>{{ $alerta['calidad'] }}:</strong>
+                            Solo queda el <strong>{{ $alerta['porcentaje_disponible'] }}%</strong> del inventario total
+                            ({{ number_format($alerta['disponible'], 2) }} kg de {{ number_format($alerta['total'], 2) }} kg)
+                        </li>
+                        @endforeach
+                    </ul>
+                    <hr>
+                    <p class="mb-0"><strong>Recomendación:</strong> Considere registrar más lotes de estas calidades para mantener un inventario adecuado.</p>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -128,17 +154,10 @@
                                         <td>
                                             @php
                                                 $qualityName = $item->qualityGrade ? $item->qualityGrade->name : 'Sin calidad';
-                                                $badgeClass = match($qualityName) {
-                                                    'Primeras' => 'success',
-                                                    'Segunda' => 'warning',
-                                                    'Tercera' => 'info',
-                                                    'Cuarta' => 'primary',
-                                                    'Industrial' => 'secondary',
-                                                    default => 'secondary'
-                                                };
+                                                $qualityColor = $item->qualityGrade ? $item->qualityGrade->color : '#6c757d';
                                             @endphp
-                                            <span class="badge badge-{{ $badgeClass }} badge-lg">
-                                                <i class="fas fa-star"></i> {{ $qualityName }}
+                                            <span class="badge badge-lg" style="background-color: {{ $qualityColor }}; color: white;">
+                                                {{ $qualityName }}
                                             </span>
                                         </td>
                                         <td>
@@ -240,71 +259,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Movimientos Recientes -->
-        @if($movimientos->isNotEmpty())
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-history"></i>
-                            Movimientos Recientes (Últimos 30 días)
-                        </h3>
-                        <div class="card-tools">
-                            <a href="{{ route('acopio.movimientos') }}" class="btn btn-sm btn-primary">
-                                Ver Todos
-                            </a>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive" style="max-height: 400px;">
-                            <table class="table table-sm table-striped">
-                                <thead class="sticky-top bg-light">
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Calidad</th>
-                                        <th>Cliente</th>
-                                        <th>Peso</th>
-                                        <th>Lote Origen</th>
-                                        <th>Precio</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($movimientos as $mov)
-                                    <tr>
-                                        <td>
-                                            <small>{{ $mov->created_at->format('d/m/Y H:i') }}</small>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-sm badge-secondary">
-                                                {{ $mov->lot->qualityGrade ? $mov->lot->qualityGrade->name : 'Sin calidad' }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <strong>{{ $mov->saleItem->sale->customer->name }}</strong>
-                                        </td>
-                                        <td>
-                                            <strong>{{ number_format($mov->allocated_weight, 2) }} kg</strong>
-                                        </td>
-                                        <td>
-                                            <code>{{ $mov->lot->lot_code }}</code>
-                                        </td>
-                                        <td>
-                                            <span class="text-success">
-                                                ${{ number_format($mov->saleItem->price_per_kg, 2) }}/kg
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
 
     </div>
 </div>

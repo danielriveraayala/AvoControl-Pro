@@ -32,15 +32,10 @@ $('#reportModalTitle').text('Reporte del Lote {{ $lot->lot_code }}');
                         <td><strong>Calidad:</strong></td>
                         <td>
                             @php
-                                $badgeClass = match($lot->quality_grade) {
-                                    'Primera' => 'success',
-                                    'Segunda' => 'warning',
-                                    'Tercera' => 'info',
-                                    'Industrial' => 'secondary',
-                                    default => 'secondary'
-                                };
+                                $qualityGrade = \App\Models\QualityGrade::where('name', $lot->quality_grade)->first();
+                                $qualityColor = $qualityGrade ? $qualityGrade->color : '#6c757d';
                             @endphp
-                            <span class="badge badge-{{ $badgeClass }}">{{ $lot->quality_grade }}</span>
+                            <span class="badge" style="background-color: {{ $qualityColor }}; color: white;">{{ $lot->quality_grade }}</span>
                         </td>
                     </tr>
                 </table>
@@ -57,7 +52,11 @@ $('#reportModalTitle').text('Reporte del Lote {{ $lot->lot_code }}');
                     <tr>
                         <td><strong>Contribuye al Acopio:</strong></td>
                         <td>
-                            <span class="badge badge-success">{{ $lot->quality_grade }}</span>
+                            @php
+                                $qualityGrade = \App\Models\QualityGrade::where('name', $lot->quality_grade)->first();
+                                $qualityColor = $qualityGrade ? $qualityGrade->color : '#6c757d';
+                            @endphp
+                            <span class="badge" style="background-color: {{ $qualityColor }}; color: white;">{{ $lot->quality_grade }}</span>
                             <small class="text-muted d-block">Este lote forma parte del inventario total para ventas por calidad</small>
                         </td>
                     </tr>

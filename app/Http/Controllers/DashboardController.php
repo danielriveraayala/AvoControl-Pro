@@ -72,20 +72,46 @@ class DashboardController extends Controller
             ->keyBy('quality_grade');
             
         $alertasDeficit = [];
+        $alertasPocaExistencia = [];
+        
         foreach ($acopioSummary as $item) {
             $qualityName = $item->qualityGrade ? $item->qualityGrade->name : 'Sin calidad';
             $pesoDisponible = $item->peso_disponible ?? 0;
             $pesoComprometido = $ventasComprometidas->get($qualityName)->cantidad_vendida ?? 0;
+            $pesoTotal = $item->peso_total ?? 0;
             
-            $balanceReal = $pesoDisponible - $pesoComprometido;
+            // DÉFICIT REAL: Solo cuando las ventas superan el inventario total (< 0%)
+            // Si pesoDisponible = 0 pero pesoComprometido <= pesoTotal, NO es déficit
+            $deficit = $pesoComprometido - $pesoTotal; // Cambio clave: comparar con peso total, no disponible
             
-            if ($balanceReal < 0) {
+            if ($deficit > 0) {
                 $alertasDeficit[] = [
+                    'tipo' => 'deficit',
                     'calidad' => $qualityName,
-                    'deficit' => abs($balanceReal),
+                    'deficit' => $deficit,
                     'disponible' => $pesoDisponible,
-                    'comprometido' => $pesoComprometido
+                    'comprometido' => $pesoComprometido,
+                    'total' => $pesoTotal,
+                    'porcentaje_disponible' => 0
                 ];
+            }
+            // ALERTA DE POCO INVENTARIO: Entre 0.1% y 20% del inventario total disponible
+            // Pero NO mostrar alerta si está exactamente en 0% (vendido completamente)
+            elseif ($pesoTotal > 0) {
+                $porcentajeDisponible = ($pesoDisponible / $pesoTotal) * 100;
+                
+                // Marcar alerta si está entre 0.1% y 20% del inventario total
+                // 0% exacto no genera alerta (está completamente vendido, es normal)
+                if ($porcentajeDisponible > 0 && $porcentajeDisponible <= 20) {
+                    $alertasPocaExistencia[] = [
+                        'tipo' => 'poco_stock',
+                        'calidad' => $qualityName,
+                        'disponible' => $pesoDisponible,
+                        'total' => $pesoTotal,
+                        'porcentaje_disponible' => round($porcentajeDisponible, 1),
+                        'comprometido' => $pesoComprometido
+                    ];
+                }
             }
         }
 
@@ -95,7 +121,8 @@ class DashboardController extends Controller
             'acopioSummary', 
             'recentMovements', 
             'qualityDistribution',
-            'alertasDeficit'
+            'alertasDeficit',
+            'alertasPocaExistencia'
         ));
     }
 }
