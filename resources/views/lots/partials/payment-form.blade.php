@@ -1,8 +1,6 @@
 @php
-    // Calculate combined balance from both payment systems
-    $polymorphicPayments = $lot->payments->sum('amount');
-    $lotPayments = $lot->lotPayments->sum('amount');
-    $totalPaid = $polymorphicPayments + $lotPayments;
+    // Calculate balance from polymorphic payment system only
+    $totalPaid = $lot->payments->sum('amount');
     $remainingBalance = $lot->total_purchase_cost - $totalPaid;
 @endphp
 
@@ -39,7 +37,7 @@
     </div>
 
     <!-- Historial de Pagos Existentes -->
-    @if($lot->payments->count() > 0 || $lot->lotPayments->count() > 0)
+    @if($lot->payments->count() > 0)
     <div class="row mb-3">
         <div class="col-12">
             <div class="card">
@@ -62,59 +60,23 @@
                             </thead>
                             <tbody>
                                 @php
-                                    // Combine both payment systems
-                                    $allPayments = collect();
-
-                                    // Add polymorphic payments
-                                    foreach($lot->payments as $payment) {
-                                        $allPayments->push([
-                                            'payment_date' => $payment->payment_date,
-                                            'payment_method' => $payment->payment_method,
-                                            'reference' => $payment->reference,
-                                            'amount' => $payment->amount,
-                                            'type' => 'polymorphic'
-                                        ]);
-                                    }
-
-                                    // Add legacy payments
-                                    foreach($lot->lotPayments as $payment) {
-                                        $allPayments->push([
-                                            'payment_date' => $payment->payment_date,
-                                            'payment_method' => $payment->payment_type,
-                                            'reference' => null,
-                                            'amount' => $payment->amount,
-                                            'type' => 'legacy'
-                                        ]);
-                                    }
-
-                                    // Sort by payment date
-                                    $allPayments = $allPayments->sortByDesc('payment_date');
-
                                     $methodLabels = [
                                         'cash' => 'Efectivo',
-                                        'efectivo' => 'Efectivo',
                                         'transfer' => 'Transferencia',
-                                        'transferencia' => 'Transferencia',
                                         'check' => 'Cheque',
-                                        'cheque' => 'Cheque',
                                         'card' => 'Tarjeta',
-                                        'credit' => 'Crédito',
-                                        'deposito' => 'Depósito',
-                                        'otro' => 'Otro'
+                                        'credit' => 'Crédito'
                                     ];
                                 @endphp
                                 
-                                @foreach($allPayments as $payment)
+                                @foreach($lot->payments->sortByDesc('payment_date') as $payment)
                                 <tr>
-                                    <td>{{ \Carbon\Carbon::parse($payment['payment_date'])->format('d/m/Y') }}</td>
+                                    <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
                                     <td>
-                                        <span class="badge badge-info">{{ $methodLabels[$payment['payment_method']] ?? ucfirst($payment['payment_method']) }}</span>
-                                        @if($payment['type'] == 'legacy')
-                                            <small class="badge badge-secondary">LEGACY</small>
-                                        @endif
+                                        <span class="badge badge-info">{{ $methodLabels[$payment->payment_method] ?? ucfirst($payment->payment_method) }}</span>
                                     </td>
-                                    <td>{{ $payment['reference'] ?? '-' }}</td>
-                                    <td><strong>${{ number_format($payment['amount'], 2) }}</strong></td>
+                                    <td>{{ $payment->reference ?? '-' }}</td>
+                                    <td><strong>${{ number_format($payment->amount, 2) }}</strong></td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -225,4 +187,60 @@
 function setLotPaymentAmount(amount) {
     document.getElementById('amount').value = amount.toFixed(2);
 }
+
+$(document).ready(function() {
+    $('#lotPaymentForm').on('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const submitBtn = $('#saveLotPaymentBtn');
+
+        // Disable submit button
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Procesando...');
+
+        fetch('{{ route("payments.store-lot-payment") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                toastr.success(data.message);
+                $('#lotPaymentModal').modal('hide');
+
+                // Reload table and update timeline if open
+                if (typeof reloadTable === 'function') {
+                    reloadTable();
+                } else if (typeof lotsTable !== 'undefined') {
+                    lotsTable.ajax.reload();
+                }
+
+                // Update statistics in real-time
+                if (typeof updateStats === 'function') {
+                    updateStats();
+                }
+
+                // If timeline modal is open, refresh it
+                if ($('#lotPaymentTimelineModal').hasClass('show')) {
+                    openLotPaymentTimeline(formData.get('lot_id'));
+                }
+            } else {
+                toastr.error(data.message || 'Error al registrar el pago');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastr.error('Error de conexión al registrar el pago');
+        })
+        .finally(() => {
+            // Re-enable submit button
+            submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Registrar Pago');
+        });
+    });
+});
 </script>

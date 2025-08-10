@@ -91,7 +91,7 @@
                         $accumulatedAmount = 0;
                     @endphp
 
-                    @foreach($sale->payments->sortBy('payment_date') as $payment)
+                    @foreach($sale->payments->sortBy([['payment_date', 'asc'], ['created_at', 'asc']]) as $payment)
                         @php
                             $accumulatedAmount += $payment->amount;
                             $percentageAtTime = ($accumulatedAmount / $totalAmount) * 100;

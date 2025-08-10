@@ -21,8 +21,8 @@ class Lot extends Model
             // Delete related sale allocations
             $lot->saleAllocations()->delete();
             
-            // Delete related lot payments
-            $lot->lotPayments()->delete();
+            // Delete related lot payments (now using polymorphic system)
+            $lot->payments()->delete();
         });
     }
 
@@ -83,10 +83,6 @@ class Lot extends Model
         return $this->morphMany(Payment::class, 'payable');
     }
 
-    public function lotPayments()
-    {
-        return $this->hasMany(LotPayment::class)->orderBy('payment_date', 'desc');
-    }
 
     public function scopeAvailable($query)
     {
@@ -114,7 +110,7 @@ class Lot extends Model
 
     public function updatePaymentAmounts()
     {
-        $totalPaid = $this->lotPayments()->sum('amount');
+        $totalPaid = $this->payments()->sum('amount');
         $this->amount_paid = $totalPaid;
         $this->amount_owed = $this->total_purchase_cost - $totalPaid;
         

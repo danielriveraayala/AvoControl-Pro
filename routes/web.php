@@ -52,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('lots/{lot}/payments', [LotController::class, 'addPayment'])->name('lots.payments.add');
     Route::get('lots/{lot}/payment-timeline', [LotController::class, 'paymentTimeline'])->name('lots.payment-timeline');
     Route::get('lots/{lot}/payment-form', [LotController::class, 'paymentForm'])->name('lots.payment-form');
+    Route::get('lots/{lot}/debug-payments', [LotController::class, 'debugPayments'])->name('lots.debug-payments');
     
     // Sales AJAX routes
     Route::group(['prefix' => 'sales'], function() {

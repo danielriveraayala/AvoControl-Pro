@@ -136,47 +136,6 @@ class PaymentController extends Controller
         return view('payments.create-lot', compact('lot', 'pendingAmount', 'totalPaid'));
     }
 
-    public function storeLotPayment(Request $request, Lot $lot)
-    {
-        $totalPaid = $lot->payments()->where('type', 'expense')->sum('amount');
-        $pendingAmount = $lot->total_purchase_cost - $totalPaid;
-
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:0.01|max:' . $pendingAmount,
-            'payment_date' => 'required|date',
-            'payment_method' => 'required|in:cash,transfer,check,credit',
-            'reference' => 'nullable|string|max:255',
-            'notes' => 'nullable|string'
-        ]);
-
-        DB::transaction(function () use ($lot, $validated) {
-            // Generate payment code
-            $lastPayment = Payment::whereDate('created_at', today())->count();
-            $paymentCode = 'PAY-' . date('Ymd') . '-' . str_pad($lastPayment + 1, 3, '0', STR_PAD_LEFT);
-
-            // Create payment
-            Payment::create([
-                'payment_code' => $paymentCode,
-                'type' => 'expense',
-                'concept' => 'lot_purchase',
-                'payable_type' => Lot::class,
-                'payable_id' => $lot->id,
-                'amount' => $validated['amount'],
-                'payment_date' => $validated['payment_date'],
-                'payment_method' => $validated['payment_method'],
-                'reference' => $validated['reference'] ?? null,
-                'notes' => $validated['notes'] ?? null,
-                'created_by' => auth()->id()
-            ]);
-
-            // Update supplier balance
-            $lot->supplier->balance_owed -= $validated['amount'];
-            $lot->supplier->save();
-        });
-
-        return redirect()->route('lots.show', $lot)
-            ->with('success', 'Pago registrado exitosamente');
-    }
 
     public function show(Payment $payment)
     {
@@ -284,12 +243,18 @@ class PaymentController extends Controller
                 ]);
 
                 // Create payment using morphMany relationship
+                // If payment_date is just a date (no time), add current time
+                $paymentDateTime = $validated['payment_date'];
+                if (strlen($paymentDateTime) === 10) { // Only date format (Y-m-d)
+                    $paymentDateTime = $validated['payment_date'] . ' ' . now()->format('H:i:s');
+                }
+                
                 $payment = $sale->payments()->create([
                     'payment_code' => $paymentCode,
                     'type' => 'income',
                     'concept' => 'sale_payment',
                     'amount' => $validated['amount'],
-                    'payment_date' => $validated['payment_date'],
+                    'payment_date' => $paymentDateTime,
                     'payment_method' => $validated['payment_method'],
                     'reference' => $validated['reference_number'],
                     'notes' => $validated['notes'],
@@ -360,10 +325,8 @@ class PaymentController extends Controller
             $lot = \App\Models\Lot::findOrFail($validated['lot_id']);
             \Log::info('Lot found', ['lot_id' => $lot->id]);
             
-            // Check remaining balance from both payment systems
-            $polymorphicPayments = $lot->payments->sum('amount');
-            $lotPayments = $lot->lotPayments->sum('amount');
-            $totalPaid = $polymorphicPayments + $lotPayments;
+            // Check remaining balance from polymorphic system only
+            $totalPaid = $lot->payments->sum('amount');
             $remainingBalance = $lot->total_purchase_cost - $totalPaid;
             
             \Log::info('Balance check', [
@@ -392,12 +355,18 @@ class PaymentController extends Controller
                 ]);
 
                 // Create payment using morphMany relationship
+                // If payment_date is just a date (no time), add current time
+                $paymentDateTime = $validated['payment_date'];
+                if (strlen($paymentDateTime) === 10) { // Only date format (Y-m-d)
+                    $paymentDateTime = $validated['payment_date'] . ' ' . now()->format('H:i:s');
+                }
+                
                 $payment = $lot->payments()->create([
                     'payment_code' => $paymentCode,
                     'type' => 'expense',
                     'concept' => 'lot_purchase',
                     'amount' => $validated['amount'],
-                    'payment_date' => $validated['payment_date'],
+                    'payment_date' => $paymentDateTime,
                     'payment_method' => $validated['payment_method'],
                     'reference' => $validated['reference_number'],
                     'notes' => $validated['notes'],
@@ -406,7 +375,7 @@ class PaymentController extends Controller
 
                 \Log::info('Payment created successfully', ['payment_id' => $payment->id]);
 
-                // Update lot payment status - payments() already includes the new payment
+                // Update lot payment status - polymorphic system only
                 $newTotalPaid = $lot->payments()->sum('amount');
                 
                 \Log::info('Payment status update', [
@@ -417,8 +386,10 @@ class PaymentController extends Controller
             
                 if ($newTotalPaid >= $lot->total_purchase_cost) {
                     $lot->payment_status = 'paid';
-                } else {
+                } elseif ($newTotalPaid > 0) {
                     $lot->payment_status = 'partial';
+                } else {
+                    $lot->payment_status = 'pending';
                 }
                 
                 $lot->save();

@@ -560,7 +560,7 @@ class LotController extends Controller
 
     public function report(Request $request, Lot $lot)
     {
-        $lot->load(['supplier', 'payments', 'lotPayments.paidByUser', 'saleAllocations']);
+        $lot->load(['supplier', 'payments.createdBy', 'saleAllocations']);
 
         if ($request->wantsJson()) {
             try {
@@ -578,7 +578,7 @@ class LotController extends Controller
 
     public function downloadPDF(Lot $lot)
     {
-        $lot->load(['supplier', 'payments', 'lotPayments.paidByUser', 'saleAllocations']);
+        $lot->load(['supplier', 'payments.createdBy', 'saleAllocations']);
 
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('lots.pdf.report', compact('lot'));
@@ -588,30 +588,49 @@ class LotController extends Controller
 
     public function payments(Request $request, Lot $lot)
     {
-        $lot->load(['lotPayments.paidByUser', 'supplier']);
+        // Load only polymorphic payment system
+        $lot->load(['payments.createdBy', 'supplier']);
         
         if ($request->wantsJson()) {
+            // Use only polymorphic payments
+            $allPayments = collect();
+            
+            // Add polymorphic payments
+            foreach($lot->payments as $payment) {
+                $allPayments->push([
+                    'id' => $payment->id,
+                    'type' => 'polymorphic',
+                    'amount' => $payment->amount,
+                    'payment_date' => $payment->payment_date->format('Y-m-d'),
+                    'payment_method' => $payment->payment_method,
+                    'notes' => $payment->notes,
+                    'paid_by' => $payment->createdBy ? $payment->createdBy->name : 'Sistema',
+                    'created_at' => $payment->created_at->format('d/m/Y H:i'),
+                    'reference' => $payment->reference
+                ]);
+            }
+            
+            // Sort by payment date, then by created_at
+            $allPayments = $allPayments->sortBy([
+                ['payment_date', 'asc'],
+                ['created_at', 'asc']
+            ])->values();
+            
+            // Calculate totals from polymorphic system only
+            $totalPaid = $lot->payments->sum('amount');
+            $remainingBalance = $lot->total_purchase_cost - $totalPaid;
+            
             return response()->json([
                 'lot' => [
                     'id' => $lot->id,
                     'lot_code' => $lot->lot_code,
                     'total_purchase_cost' => $lot->total_purchase_cost,
-                    'amount_paid' => $lot->amount_paid,
-                    'amount_owed' => $lot->amount_owed,
-                    'payment_status' => $lot->payment_status,
+                    'amount_paid' => $totalPaid,
+                    'amount_owed' => $remainingBalance,
+                    'payment_status' => $remainingBalance <= 0 ? 'paid' : ($totalPaid > 0 ? 'partial' : 'pending'),
                     'supplier_name' => $lot->supplier ? $lot->supplier->name : 'Sin proveedor'
                 ],
-                'payments' => $lot->lotPayments->map(function($payment) {
-                    return [
-                        'id' => $payment->id,
-                        'amount' => $payment->amount,
-                        'payment_date' => $payment->payment_date->format('Y-m-d'),
-                        'payment_type' => $payment->payment_type,
-                        'notes' => $payment->notes,
-                        'paid_by' => $payment->paidByUser ? $payment->paidByUser->name : 'Sistema',
-                        'created_at' => $payment->created_at->format('d/m/Y H:i')
-                    ];
-                })
+                'payments' => $allPayments
             ]);
         }
     }
@@ -658,6 +677,60 @@ class LotController extends Controller
                 'message' => 'Error al agregar el pago: ' . $e->getMessage()
             ], 422);
         }
+    }
+
+    // ========================================  
+    // DEBUG METHOD - TEMPORARY
+    // ========================================
+    
+    public function debugPayments(Lot $lot)
+    {
+        $legacyPayments = $lot->lotPayments;
+        $legacyTotal = $legacyPayments->sum('amount');
+        
+        $polyPayments = $lot->payments;  
+        $polyTotal = $polyPayments->sum('amount');
+        
+        $totalPaid = $legacyTotal + $polyTotal;
+        $remaining = $lot->total_purchase_cost - $totalPaid;
+        
+        return response()->json([
+            'lot_info' => [
+                'id' => $lot->id,
+                'lot_code' => $lot->lot_code,
+                'total_cost' => $lot->total_purchase_cost,
+                'current_status' => $lot->payment_status
+            ],
+            'legacy_payments' => [
+                'count' => $legacyPayments->count(),
+                'total' => $legacyTotal,
+                'payments' => $legacyPayments->map(function($p) {
+                    return [
+                        'id' => $p->id,
+                        'amount' => $p->amount,
+                        'date' => $p->payment_date,
+                        'type' => $p->payment_type
+                    ];
+                })
+            ],
+            'polymorphic_payments' => [
+                'count' => $polyPayments->count(),  
+                'total' => $polyTotal,
+                'payments' => $polyPayments->map(function($p) {
+                    return [
+                        'id' => $p->id,
+                        'amount' => $p->amount,
+                        'date' => $p->payment_date,
+                        'method' => $p->payment_method
+                    ];
+                })
+            ],
+            'summary' => [
+                'total_paid' => $totalPaid,
+                'remaining_balance' => $remaining,
+                'should_be_status' => $remaining <= 0 ? 'paid' : ($totalPaid > 0 ? 'partial' : 'pending')
+            ]
+        ]);
     }
 
     // ========================================

@@ -1,9 +1,7 @@
 @php
     $totalAmount = $lot->total_purchase_cost;
-    // Combine both payment systems: polymorphic payments + old lot_payments
-    $polymorphicPayments = $lot->payments->sum('amount');
-    $lotPayments = $lot->lotPayments->sum('amount');
-    $totalPaid = $polymorphicPayments + $lotPayments;
+    // Use only polymorphic payment system
+    $totalPaid = $lot->payments->sum('amount');
     $remainingBalance = $totalAmount - $totalPaid;
     $paidPercentage = $totalAmount > 0 ? ($totalPaid / $totalAmount) * 100 : 0;
 @endphp
@@ -66,7 +64,7 @@
             @endif
         </div>
         <div class="card-body">
-            @if($lot->payments->count() > 0 || $lot->lotPayments->count() > 0)
+            @if($lot->payments->count() > 0)
                 <div class="timeline">
                     <!-- Timeline Item Start -->
                     <div class="time-label">
@@ -92,93 +90,47 @@
 
                     @php
                         $accumulatedAmount = 0;
-                        // Combine and sort all payments by date
-                        $allPayments = collect();
-
-                        // Add polymorphic payments
-                        foreach($lot->payments as $payment) {
-                            $allPayments->push([
-                                'type' => 'polymorphic',
-                                'id' => $payment->id,
-                                'amount' => $payment->amount,
-                                'payment_date' => $payment->payment_date,
-                                'payment_method' => $payment->payment_method,
-                                'payment_code' => $payment->payment_code,
-                                'reference' => $payment->reference,
-                                'notes' => $payment->notes,
-                                'created_at' => $payment->created_at,
-                                'createdBy' => $payment->createdBy
-                            ]);
-                        }
-
-                        // Add old lot payments
-                        foreach($lot->lotPayments as $payment) {
-                            $allPayments->push([
-                                'type' => 'legacy',
-                                'id' => $payment->id,
-                                'amount' => $payment->amount,
-                                'payment_date' => $payment->payment_date,
-                                'payment_method' => $payment->payment_type, // Map payment_type to payment_method
-                                'payment_code' => 'LEGACY-' . str_pad($payment->id, 3, '0', STR_PAD_LEFT),
-                                'reference' => null,
-                                'notes' => $payment->notes,
-                                'created_at' => $payment->created_at,
-                                'createdBy' => $payment->paidByUser ?? null
-                            ]);
-                        }
-
-                        // Sort all payments by payment_date
-                        $allPayments = $allPayments->sortBy('payment_date');
+                        // Use only polymorphic payments, sorted by date
+                        $allPayments = $lot->payments->sortBy([
+                            ['payment_date', 'asc'],
+                            ['created_at', 'asc']
+                        ]);
                     @endphp
 
                     @foreach($allPayments as $payment)
                         @php
-                            $accumulatedAmount += $payment['amount'];
+                            $accumulatedAmount += $payment->amount;
                             $percentageAtTime = ($accumulatedAmount / $totalAmount) * 100;
                             $isLastPayment = $accumulatedAmount >= $totalAmount;
 
-                            // Handle different payment method names between systems
                             $methodIcons = [
                                 'cash' => 'fa-money-bill-wave',
-                                'efectivo' => 'fa-money-bill-wave',
                                 'transfer' => 'fa-exchange-alt',
-                                'transferencia' => 'fa-exchange-alt',
                                 'check' => 'fa-money-check',
-                                'cheque' => 'fa-money-check',
                                 'card' => 'fa-credit-card',
-                                'credit' => 'fa-handshake',
-                                'deposito' => 'fa-university',
-                                'otro' => 'fa-question-circle'
+                                'credit' => 'fa-handshake'
                             ];
 
                             $methodLabels = [
                                 'cash' => 'Efectivo',
-                                'efectivo' => 'Efectivo',
                                 'transfer' => 'Transferencia',
-                                'transferencia' => 'Transferencia',
                                 'check' => 'Cheque',
-                                'cheque' => 'Cheque',
                                 'card' => 'Tarjeta',
-                                'credit' => 'Crédito',
-                                'deposito' => 'Depósito',
-                                'otro' => 'Otro'
+                                'credit' => 'Crédito'
                             ];
 
-                            $icon = $methodIcons[$payment['payment_method']] ?? 'fa-dollar-sign';
-                            $methodLabel = $methodLabels[$payment['payment_method']] ?? ucfirst($payment['payment_method']);
+                            $icon = $methodIcons[$payment->payment_method] ?? 'fa-dollar-sign';
+                            $methodLabel = $methodLabels[$payment->payment_method] ?? ucfirst($payment->payment_method);
                         @endphp
 
                         <div>
                             <i class="fas {{ $icon }} bg-{{ $isLastPayment ? 'success' : 'warning' }}"></i>
                             <div class="timeline-item">
                                 <span class="time">
-                                    <i class="fas fa-clock"></i> {{ \Carbon\Carbon::parse($payment['payment_date'])->format('d/m/Y H:i') }}
+                                    <i class="fas fa-clock"></i> {{ $payment->payment_date->format('d/m/Y H:i') }}
                                 </span>
                                 <h3 class="timeline-header">
                                     Pago #{{ $loop->iteration }} - {{ $methodLabel }}
-                                    @if($payment['type'] == 'legacy')
-                                        <span class="badge badge-secondary ml-2">LEGACY</span>
-                                    @endif
                                     @if($isLastPayment)
                                         <span class="badge badge-success ml-2">COMPLETADO</span>
                                     @else
@@ -188,13 +140,13 @@
                                 <div class="timeline-body">
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <strong>Código:</strong> {{ $payment['payment_code'] }}<br>
-                                            <strong>Monto:</strong> <span class="text-success font-weight-bold">${{ number_format($payment['amount'], 2) }}</span><br>
-                                            @if($payment['reference'])
-                                                <strong>Referencia:</strong> {{ $payment['reference'] }}<br>
+                                            <strong>Código:</strong> {{ $payment->payment_code }}<br>
+                                            <strong>Monto:</strong> <span class="text-success font-weight-bold">${{ number_format($payment->amount, 2) }}</span><br>
+                                            @if($payment->reference)
+                                                <strong>Referencia:</strong> {{ $payment->reference }}<br>
                                             @endif
-                                            @if($payment['notes'])
-                                                <strong>Notas:</strong> {{ $payment['notes'] }}<br>
+                                            @if($payment->notes)
+                                                <strong>Notas:</strong> {{ $payment->notes }}<br>
                                             @endif
                                         </div>
                                         <div class="col-md-6">
@@ -210,19 +162,11 @@
                                     </div>
                                 </div>
                                 <div class="timeline-footer">
-                                    @if($payment['createdBy'])
-                                        @php
-                                            $userName = 'Usuario';
-                                            if (is_object($payment['createdBy']) && isset($payment['createdBy']->name)) {
-                                                $userName = $payment['createdBy']->name;
-                                            } elseif (is_array($payment['createdBy']) && isset($payment['createdBy']['name'])) {
-                                                $userName = $payment['createdBy']['name'];
-                                            }
-                                        @endphp
-                                        <small class="text-muted">Registrado por: {{ $userName }}</small>
+                                    @if($payment->createdBy)
+                                        <small class="text-muted">Registrado por: {{ $payment->createdBy->name }}</small>
                                     @endif
-                                    @if(\Carbon\Carbon::parse($payment['created_at'])->format('Y-m-d') != \Carbon\Carbon::parse($payment['payment_date'])->format('Y-m-d'))
-                                        <small class="text-muted ml-2">| Ingresado: {{ \Carbon\Carbon::parse($payment['created_at'])->format('d/m/Y H:i') }}</small>
+                                    @if($payment->created_at->format('Y-m-d') != $payment->payment_date->format('Y-m-d'))
+                                        <small class="text-muted ml-2">| Ingresado: {{ $payment->created_at->format('d/m/Y H:i') }}</small>
                                     @endif
                                 </div>
                             </div>
