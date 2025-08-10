@@ -9,15 +9,85 @@
 @endsection
 
 @section('content')
+    <!-- Estadísticas Principales -->
+    <div class="row" id="statsRow">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3 id="totalLots">{{ $stats['total'] ?? 0 }}</h3>
+                    <p>Total Lotes</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3 id="availableWeight">{{ number_format($stats['available_weight'] ?? 0, 0) }}</h3>
+                    <p>kg Disponibles</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-weight-hanging"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3 id="soldWeight">{{ number_format($stats['sold_weight'] ?? 0, 0) }}</h3>
+                    <p>kg Vendidos</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-primary">
+                <div class="inner">
+                    <h3 id="avgPurchasePrice">${{ number_format($stats['avg_purchase_price'] ?? 0, 2) }}</h3>
+                    <p>Precio Promedio Compra</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-secondary">
+                <div class="inner">
+                    <h3 id="totalInvestment">${{ number_format($stats['total_investment'] ?? 0, 0) }}</h3>
+                    <p>Inversión Total</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3 id="pendingDebt">${{ number_format($stats['pending_debt'] ?? 0, 0) }}</h3>
+                    <p>Saldo Pendiente</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Filtros -->
     <div class="row">
         <div class="col-12">
-            <div class="card card-primary card-outline">
+            <div class="card card-primary card-outline collapsed-card">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-filter"></i> Filtros</h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                            <i class="fas fa-minus"></i>
+                            <i class="fas fa-plus"></i>
                         </button>
                     </div>
                 </div>
@@ -97,72 +167,37 @@
             </div>
         </div>
     </div>
-
-    <!-- Estadísticas Principales -->
-    <div class="row" id="statsRow">
-        <div class="col-lg-4 col-6">
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3 id="totalLots">{{ $stats['total'] ?? 0 }}</h3>
-                    <p>Total Lotes</p>
+    <!-- Tabla de Lotes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-table"></i> Lista de Lotes</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-success" data-toggle="modal"
+                                data-target="#lotModal" onclick="openCreateLotModal()">
+                            <i class="fas fa-plus"></i> Nuevo Lote
+                        </button>
+                    </div>
                 </div>
-                <div class="icon">
-                    <i class="fas fa-boxes"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3 id="availableWeight">{{ number_format($stats['available_weight'] ?? 0, 0) }}</h3>
-                    <p>kg Disponibles</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-weight-hanging"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3 id="soldWeight">{{ number_format($stats['sold_weight'] ?? 0, 0) }}</h3>
-                    <p>kg Vendidos</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-shipping-fast"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">
-            <div class="small-box bg-primary">
-                <div class="inner">
-                    <h3 id="avgPurchasePrice">${{ number_format($stats['avg_purchase_price'] ?? 0, 2) }}</h3>
-                    <p>Precio Promedio Compra</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-hand-holding-usd"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">
-            <div class="small-box bg-secondary">
-                <div class="inner">
-                    <h3 id="totalInvestment">${{ number_format($stats['total_investment'] ?? 0, 0) }}</h3>
-                    <p>Inversión Total</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-coins"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3 id="pendingDebt">${{ number_format($stats['pending_debt'] ?? 0, 0) }}</h3>
-                    <p>Saldo Pendiente</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-exclamation-circle"></i>
+                <div class="card-body">
+                    <table id="lotsTable" class="table table-bordered table-hover">
+                        <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Fecha Cosecha</th>
+                            <th>Peso Total</th>
+                            <th>Calidad</th>
+                            <th>Precio/kg</th>
+                            <th>Valor Total</th>
+                            <th>Estado Pago</th>
+                            <th>Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- DataTables will populate this -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -223,41 +258,6 @@
                 </div>
             @endforeach
         @endif
-    </div>
-
-    <!-- Tabla de Lotes -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-table"></i> Lista de Lotes</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <table id="lotsTable" class="table table-bordered table-hover">
-                        <thead>
-                        <tr>
-                            <th>Proveedor</th>
-                            <th>Fecha Cosecha</th>
-                            <th>Peso Total</th>
-                            <th>Calidad</th>
-                            <th>Precio/kg</th>
-                            <th>Valor Total</th>
-                            <th>Estado Pago</th>
-                            <th>Acciones</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <!-- DataTables will populate this -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Create/Edit Lot Modal -->
@@ -1212,7 +1212,7 @@
                 <div style="font-size: 10px; margin-top: 5px;">
                     <div class="center">Último Pago:</div>
                     <div>${lotData.latestPayment.date} - $${lotData.latestPayment.amount}</div>
-                    <div>${lotData.latestPayment.type} - ${lotData.latestPayment.notes || ''}</div>
+                    <div>${lotData.latestPayment.type} - ${lotData.latestPayment.user || 'Sistema'}</div>
                 </div>
                 ` : ''}
             </div>
@@ -1258,9 +1258,12 @@
                 const table = $(this);
                 const firstRowText = table.find('tr:first td:first').text();
                 if (firstRowText.includes('Total a Pagar')) {
-                    amountPaid = table.find('tr:first td:nth-child(4)').text().replace(/[^0-9.]/g, '').trim() || '0.00';
-                    amountOwed = table.find('tr:last td:nth-child(2)').text().replace(/[^0-9.]/g, '').trim() || '0.00';
-                    const statusBadge = table.find('.badge').first().text().trim();
+                    // Monto Pagado está en la segunda fila, segunda columna
+                    amountPaid = table.find('tr:nth-child(2) td:nth-child(2)').text().replace(/[^0-9.,]/g, '').replace(',', '').trim() || '0.00';
+                    // Saldo Pendiente está en la tercera fila, segunda columna  
+                    amountOwed = table.find('tr:nth-child(3) td:nth-child(2)').text().replace(/[^0-9.,]/g, '').replace(',', '').trim() || '0.00';
+                    // Estado del pago está en la cuarta fila
+                    const statusBadge = table.find('tr:nth-child(4) .badge').first().text().trim();
                     paymentStatus = statusBadge.toUpperCase();
                 }
             });
@@ -1275,9 +1278,9 @@
                 if (lastPaymentRow.length > 0) {
                     latestPayment = {
                         date: lastPaymentRow.find('td:first').text().trim(),
-                        amount: lastPaymentRow.find('td:nth-child(2)').text().replace(/[^0-9.]/g, '').trim(),
-                        type: lastPaymentRow.find('td:nth-child(3)').text().trim(),
-                        notes: lastPaymentRow.find('td:nth-child(5)').text().trim()
+                        amount: lastPaymentRow.find('td:nth-child(2)').text().replace(/[^0-9.,]/g, '').replace(',', '').trim(),
+                        type: lastPaymentRow.find('td:nth-child(3) .badge').text().trim(),
+                        user: lastPaymentRow.find('td:nth-child(5)').text().trim()
                     };
                 }
             }

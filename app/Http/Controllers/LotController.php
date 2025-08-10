@@ -326,11 +326,11 @@ class LotController extends Controller
 
     public function show(Request $request, Lot $lot)
     {
-        $lot->load(['supplier', 'saleAllocations.saleItem.sale.customer', 'payments', 'lotPayments']);
+        $lot->load(['supplier', 'saleAllocations.saleItem.sale.customer', 'payments']);
         
         if ($request->wantsJson()) {
             // Get latest payment for pre-filling form
-            $latestPayment = $lot->lotPayments->first();
+            $latestPayment = $lot->payments->sortByDesc('payment_date')->first();
             
             $response = [
                 'id' => $lot->id,
@@ -525,8 +525,8 @@ class LotController extends Controller
                 }
                 
                 // Delete any lot payments
-                if ($lot->lotPayments) {
-                    $lot->lotPayments()->delete();
+                if ($lot->payments) {
+                    $lot->payments()->delete();
                 }
                 
                 // Update supplier balance only if supplier exists
@@ -560,12 +560,22 @@ class LotController extends Controller
 
     public function report(Request $request, Lot $lot)
     {
-        $lot->load(['supplier', 'payments.createdBy', 'saleAllocations']);
+        // Ensure payment amounts are up to date before showing report
+        $lot->updatePaymentAmounts();
+        
+        // Reload the lot with fresh data and relationships
+        $lot = $lot->fresh(['supplier', 'payments.createdBy', 'saleAllocations']);
 
         if ($request->wantsJson()) {
             try {
                 $html = view('lots.partials.report', compact('lot'))->render();
-                \Log::info('Report HTML generated successfully', ['lot_id' => $lot->id, 'html_length' => strlen($html)]);
+                \Log::info('Report HTML generated successfully', [
+                    'lot_id' => $lot->id, 
+                    'html_length' => strlen($html),
+                    'amount_paid' => $lot->amount_paid,
+                    'amount_owed' => $lot->amount_owed,
+                    'payments_count' => $lot->payments->count()
+                ]);
                 return response()->json(['html' => $html, 'success' => true]);
             } catch (\Exception $e) {
                 \Log::error('Error generating report HTML: ' . $e->getMessage(), ['lot_id' => $lot->id]);
@@ -578,7 +588,11 @@ class LotController extends Controller
 
     public function downloadPDF(Lot $lot)
     {
-        $lot->load(['supplier', 'payments.createdBy', 'saleAllocations']);
+        // Ensure payment amounts are up to date before generating PDF
+        $lot->updatePaymentAmounts();
+        
+        // Reload with fresh data
+        $lot = $lot->fresh(['supplier', 'payments.createdBy', 'saleAllocations']);
 
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('lots.pdf.report', compact('lot'));
@@ -685,13 +699,11 @@ class LotController extends Controller
     
     public function debugPayments(Lot $lot)
     {
-        $legacyPayments = $lot->lotPayments;
-        $legacyTotal = $legacyPayments->sum('amount');
-        
+        // Only polymorphic payments exist now
         $polyPayments = $lot->payments;  
         $polyTotal = $polyPayments->sum('amount');
         
-        $totalPaid = $legacyTotal + $polyTotal;
+        $totalPaid = $polyTotal;
         $remaining = $lot->total_purchase_cost - $totalPaid;
         
         return response()->json([
@@ -700,18 +712,6 @@ class LotController extends Controller
                 'lot_code' => $lot->lot_code,
                 'total_cost' => $lot->total_purchase_cost,
                 'current_status' => $lot->payment_status
-            ],
-            'legacy_payments' => [
-                'count' => $legacyPayments->count(),
-                'total' => $legacyTotal,
-                'payments' => $legacyPayments->map(function($p) {
-                    return [
-                        'id' => $p->id,
-                        'amount' => $p->amount,
-                        'date' => $p->payment_date,
-                        'type' => $p->payment_type
-                    ];
-                })
             ],
             'polymorphic_payments' => [
                 'count' => $polyPayments->count(),  
@@ -740,12 +740,8 @@ class LotController extends Controller
     public function paymentTimeline(Lot $lot)
     {
         try {
-            // Load both payment systems: polymorphic payments + legacy lot payments
-            $lot->load([
-                'supplier', 
-                'payments.createdBy', 
-                'lotPayments.paidByUser'
-            ]);
+            // Load only polymorphic payment system
+            $lot->load(['supplier', 'payments.createdBy']);
             
             $html = view('lots.partials.payment-timeline', compact('lot'))->render();
             
@@ -766,12 +762,10 @@ class LotController extends Controller
     public function paymentForm(Lot $lot)
     {
         try {
-            $lot->load(['supplier', 'payments', 'lotPayments']);
+            $lot->load(['supplier', 'payments']);
             
-            // Calculate total paid from both payment systems
-            $polymorphicPayments = $lot->payments->sum('amount');
-            $lotPayments = $lot->lotPayments->sum('amount');
-            $totalPaid = $polymorphicPayments + $lotPayments;
+            // Calculate total paid from polymorphic system only
+            $totalPaid = $lot->payments->sum('amount');
             $remainingBalance = $lot->total_purchase_cost - $totalPaid;
             
             $html = view('lots.partials.payment-form', compact('lot', 'remainingBalance'))->render();

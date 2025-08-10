@@ -228,53 +228,60 @@
         </table>
     </div>
 
-    @if($lot->lotPayments && $lot->lotPayments->count() > 0)
+    @if($lot->payments && $lot->payments->count() > 0)
     <div class="section">
         <h3>Historial de Pagos</h3>
         <table>
             <thead>
                 <tr>
+                    <th>Código</th>
                     <th>Fecha</th>
                     <th>Monto</th>
-                    <th>Tipo de Pago</th>
+                    <th>Método</th>
+                    <th>Referencia</th>
                     <th>Registrado por</th>
                     <th>Notas</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($lot->lotPayments->sortBy('payment_date') as $payment)
+                @foreach($lot->payments->sortBy(['payment_date', 'created_at']) as $payment)
                 <tr>
-                    <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
+                    <td><small>{{ $payment->payment_code }}</small></td>
+                    <td>{{ $payment->payment_date->format('d/m/Y H:i') }}</td>
                     <td class="text-success"><strong>${{ number_format($payment->amount, 2) }}</strong></td>
                     <td>
                         @php
-                            $paymentTypeClass = match($payment->payment_type) {
-                                'efectivo' => 'success',
-                                'transferencia' => 'info',
-                                'cheque' => 'warning',
-                                'deposito' => 'primary',
-                                default => 'secondary'
-                            };
-                            $paymentTypeText = match($payment->payment_type) {
-                                'efectivo' => 'Efectivo',
-                                'transferencia' => 'Transferencia',
-                                'cheque' => 'Cheque',
-                                'deposito' => 'Depósito',
-                                default => ucfirst($payment->payment_type)
-                            };
+                            $methodLabels = [
+                                'cash' => 'Efectivo',
+                                'transfer' => 'Transferencia',
+                                'check' => 'Cheque',
+                                'card' => 'Tarjeta',
+                                'credit' => 'Crédito'
+                            ];
+                            $methodClasses = [
+                                'cash' => 'success',
+                                'transfer' => 'info',
+                                'check' => 'warning',
+                                'card' => 'primary',
+                                'credit' => 'secondary'
+                            ];
                         @endphp
-                        <span class="badge badge-{{ $paymentTypeClass }}">{{ $paymentTypeText }}</span>
+                        <span class="badge badge-{{ $methodClasses[$payment->payment_method] ?? 'secondary' }}">
+                            {{ $methodLabels[$payment->payment_method] ?? ucfirst($payment->payment_method) }}
+                        </span>
                     </td>
-                    <td>{{ $payment->paidByUser ? $payment->paidByUser->name : 'Sistema' }}</td>
+                    <td>{{ $payment->reference ?: '-' }}</td>
+                    <td>{{ $payment->createdBy ? $payment->createdBy->name : 'Sistema' }}</td>
                     <td>{{ $payment->notes ?: '-' }}</td>
                 </tr>
                 @endforeach
             </tbody>
             <tfoot>
                 <tr style="font-weight: bold; background-color: #f8f9fa;">
-                    <td><strong>Total Pagado:</strong></td>
-                    <td class="text-success"><strong>${{ number_format($lot->lotPayments->sum('amount'), 2) }}</strong></td>
-                    <td colspan="3">
+                    <td><strong>Total:</strong></td>
+                    <td><strong>{{ $lot->payments->count() }} pagos</strong></td>
+                    <td class="text-success"><strong>${{ number_format($lot->payments->sum('amount'), 2) }}</strong></td>
+                    <td colspan="4">
                         <strong>Saldo Restante: 
                             <span class="{{ ($lot->amount_owed ?? 0) > 0 ? 'text-danger' : 'text-success' }}">
                                 ${{ number_format($lot->amount_owed ?? 0, 2) }}
@@ -284,6 +291,13 @@
                 </tr>
             </tfoot>
         </table>
+    </div>
+    @else
+    <div class="section">
+        <h3>Historial de Pagos</h3>
+        <p style="color: #6c757d; font-style: italic; text-align: center; padding: 20px;">
+            💳 No hay pagos registrados para este lote
+        </p>
     </div>
     @endif
 

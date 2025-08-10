@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Acopio de Aguacate')
-@section('page-title', 'Acopio de Aguacate')
+@section('title', 'Inventario por Calidad')
+@section('page-title', 'Inventario por Calidad')
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
@@ -23,9 +23,9 @@
                     <ul class="mb-0">
                         @foreach($alertas as $alerta)
                         <li>
-                            <strong>{{ $alerta['calidad'] }}:</strong> 
+                            <strong>{{ $alerta['calidad'] }}:</strong>
                             Déficit de <strong class="text-danger">{{ number_format($alerta['deficit'], 2) }} kg</strong>
-                            (Disponible: {{ number_format($alerta['disponible'], 2) }} kg, 
+                            (Disponible: {{ number_format($alerta['disponible'], 2) }} kg,
                             Comprometido: {{ number_format($alerta['comprometido'], 2) }} kg)
                         </li>
                         @endforeach
@@ -88,14 +88,14 @@
             </div>
         </div>
 
-        <!-- Inventario por Calidad -->
+        <!-- Acopio de Aguacate -->
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-layer-group"></i>
-                            Inventario por Calidad
+                            Acopio de Aguacate
                         </h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-sm btn-info" onclick="refreshAcopio()">
@@ -115,7 +115,6 @@
                                         <th>Lotes</th>
                                         <th>Peso Total</th>
                                         <th>Peso Disponible</th>
-                                        <th>Balance Real</th>
                                         <th>% Disponible</th>
                                         <th>Precio Promedio</th>
                                         <th>Valor Total</th>
@@ -131,7 +130,7 @@
                                                 $qualityName = $item->qualityGrade ? $item->qualityGrade->name : 'Sin calidad';
                                                 $badgeClass = match($qualityName) {
                                                     'Primeras' => 'success',
-                                                    'Segunda' => 'warning', 
+                                                    'Segunda' => 'warning',
                                                     'Tercera' => 'info',
                                                     'Cuarta' => 'primary',
                                                     'Industrial' => 'secondary',
@@ -150,28 +149,23 @@
                                             <strong>{{ number_format($item->peso_total, 2) }} kg</strong>
                                         </td>
                                         <td>
-                                            <strong>{{ number_format($item->peso_disponible, 2) }} kg</strong>
-                                            @if($item->peso_vendido > 0)
-                                                <small class="text-muted d-block">
-                                                    Vendido: {{ number_format($item->peso_vendido, 2) }} kg
-                                                </small>
-                                            @endif
-                                        </td>
-                                        <td>
                                             @if(isset($item->tiene_deficit) && $item->tiene_deficit)
                                                 <strong class="text-danger">
                                                     <i class="fas fa-exclamation-triangle"></i>
-                                                    -{{ number_format(abs($item->balance_real), 2) }} kg
+                                                    {{ number_format($item->peso_disponible, 2) }} kg
                                                 </strong>
                                                 <small class="text-danger d-block">
-                                                    DÉFICIT
+                                                    DÉFICIT: {{ number_format($item->peso_comprometido - $item->peso_disponible, 2) }} kg
                                                 </small>
                                             @else
-                                                <strong class="text-success">
-                                                    {{ number_format($item->balance_real ?? $item->peso_disponible, 2) }} kg
-                                                </strong>
-                                                @if(isset($item->peso_comprometido) && $item->peso_comprometido > 0)
+                                                <strong>{{ number_format($item->peso_disponible, 2) }} kg</strong>
+                                                @if($item->peso_vendido > 0)
                                                     <small class="text-muted d-block">
+                                                        Vendido: {{ number_format($item->peso_vendido, 2) }} kg
+                                                    </small>
+                                                @endif
+                                                @if(isset($item->peso_comprometido) && $item->peso_comprometido > 0 && $item->peso_comprometido != $item->peso_vendido)
+                                                    <small class="text-info d-block">
                                                         Comprometido: {{ number_format($item->peso_comprometido, 2) }} kg
                                                     </small>
                                                 @endif
@@ -227,7 +221,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="9" class="text-center py-4">
+                                        <td colspan="8" class="text-center py-4">
                                             <div class="text-muted">
                                                 <i class="fas fa-inbox fa-3x mb-3"></i>
                                                 <h4>No hay inventario disponible</h4>

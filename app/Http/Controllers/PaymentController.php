@@ -375,24 +375,15 @@ class PaymentController extends Controller
 
                 \Log::info('Payment created successfully', ['payment_id' => $payment->id]);
 
-                // Update lot payment status - polymorphic system only
-                $newTotalPaid = $lot->payments()->sum('amount');
+                // Update lot payment amounts and status using the model method
+                $lot->updatePaymentAmounts();
                 
-                \Log::info('Payment status update', [
-                    'total_purchase_cost' => $lot->total_purchase_cost,
-                    'new_total_paid' => $newTotalPaid,
-                    'payment_status' => $newTotalPaid >= $lot->total_purchase_cost ? 'paid' : 'partial'
+                \Log::info('Payment status updated', [
+                    'lot_id' => $lot->id,
+                    'amount_paid' => $lot->amount_paid,
+                    'amount_owed' => $lot->amount_owed,
+                    'payment_status' => $lot->payment_status
                 ]);
-            
-                if ($newTotalPaid >= $lot->total_purchase_cost) {
-                    $lot->payment_status = 'paid';
-                } elseif ($newTotalPaid > 0) {
-                    $lot->payment_status = 'partial';
-                } else {
-                    $lot->payment_status = 'pending';
-                }
-                
-                $lot->save();
 
                 // Update supplier balance
                 if ($lot->supplier) {

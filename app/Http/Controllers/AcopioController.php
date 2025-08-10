@@ -46,17 +46,21 @@ class AcopioController extends Controller
             $pesoDisponible = $item->peso_disponible ?? 0;
             $pesoComprometido = $ventasComprometidas->get($qualityName)->cantidad_vendida ?? 0;
             
-            // Calcular balance real (inventario - ventas comprometidas)
-            $balanceReal = $pesoDisponible - $pesoComprometido;
+            // El balance real ES el peso disponible (ya descontadas las ventas)
+            // El peso comprometido se usa solo para verificar consistencia
+            $balanceReal = $pesoDisponible;
             
             $item->peso_comprometido = $pesoComprometido;
             $item->balance_real = $balanceReal;
-            $item->tiene_deficit = $balanceReal < 0;
             
-            if ($balanceReal < 0) {
+            // Déficit ocurre cuando hay más ventas comprometidas que peso disponible
+            $deficit = $pesoComprometido - $pesoDisponible;
+            $item->tiene_deficit = $deficit > 0;
+            
+            if ($deficit > 0) {
                 $alertas[] = [
                     'calidad' => $qualityName,
-                    'deficit' => abs($balanceReal),
+                    'deficit' => $deficit,
                     'disponible' => $pesoDisponible,
                     'comprometido' => $pesoComprometido
                 ];

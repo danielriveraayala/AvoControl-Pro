@@ -82,7 +82,7 @@
                             </h3>
                             <div class="timeline-body">
                                 <strong>Código:</strong> {{ $lot->lot_code }}<br>
-                                <strong>Proveedor:</strong> {{ $lot->supplier->name }}<br>
+                                <strong>Proveedor:</strong> {{ $lot->supplier ? $lot->supplier->name : 'Lote anónimo' }}<br>
                                 <strong>Monto Total:</strong> ${{ number_format($lot->total_purchase_cost, 2) }}
                             </div>
                         </div>

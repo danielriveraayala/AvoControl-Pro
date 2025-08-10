@@ -20,7 +20,7 @@
                         </div>
                         <div class="col-md-3">
                             <strong>Proveedor:</strong><br>
-                            {{ $lot->supplier->name }}
+                            {{ $lot->supplier ? $lot->supplier->name : 'Sin proveedor' }}
                         </div>
                         <div class="col-md-3">
                             <strong>Total Compra:</strong><br>
