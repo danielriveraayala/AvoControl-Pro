@@ -26,7 +26,6 @@ Route::get('/', function () {
 });
 
 
-
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -41,7 +40,6 @@ Route::middleware(['auth'])->group(function () {
     // Acopio routes
     Route::get('acopio', [AcopioController::class, 'index'])->name('acopio.index');
     Route::get('acopio/{quality}', [AcopioController::class, 'show'])->name('acopio.show');
-    Route::get('acopio-movimientos', [AcopioController::class, 'movimientos'])->name('acopio.movimientos');
     Route::get('acopio-reporte', [AcopioController::class, 'reporte'])->name('acopio.reporte');
     
     

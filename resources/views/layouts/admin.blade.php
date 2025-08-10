@@ -265,12 +265,6 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('acopio.movimientos') }}" class="nav-link {{ request()->routeIs('acopio.movimientos') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Movimientos</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
                                 <a href="{{ route('acopio.reporte') }}" class="nav-link {{ request()->routeIs('acopio.reporte') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Reportes</p>

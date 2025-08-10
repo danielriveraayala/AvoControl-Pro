@@ -7,6 +7,10 @@ use App\Models\QualityGrade;
 use App\Models\SaleLotAllocation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AcopioReportExport;
+use App\Services\ChartImageService;
 
 class AcopioController extends Controller
 {
@@ -72,13 +76,13 @@ class AcopioController extends Controller
                 ];
             }
             // ALERTA DE POCO INVENTARIO: Entre 0% y 20% del inventario total disponible
-            // Pero NO mostrar alerta si está exactamente en 0% (vendido completamente)
+            // Incluir 0% porque si vendes todo YA NO TIENES NADA QUE VENDER
             elseif ($pesoTotal > 0) {
                 $porcentajeDisponible = ($pesoDisponible / $pesoTotal) * 100;
                 
-                // Marcar alerta si está entre 0.1% y 20% del inventario total
-                // 0% exacto no genera alerta (está completamente vendido, es normal)
-                if ($porcentajeDisponible > 0 && $porcentajeDisponible <= 20) {
+                // Marcar alerta si está entre 0% y 20% del inventario total
+                // 0% también genera alerta (no tienes nada que vender)
+                if ($porcentajeDisponible >= 0 && $porcentajeDisponible <= 20) {
                     $alertasPocaExistencia[] = [
                         'tipo' => 'poco_stock',
                         'calidad' => $qualityName,
@@ -156,202 +160,6 @@ class AcopioController extends Controller
         return view('acopio.show', compact('lotes', 'stats', 'quality'));
     }
 
-    public function movimientos(Request $request)
-    {
-        // Handle DataTables AJAX requests
-        if ($request->ajax()) {
-            try {
-                \Log::info('Movimientos AJAX request', [
-                    'has_draw' => $request->has('draw'),
-                    'draw' => $request->get('draw'),
-                    'start' => $request->get('start'),
-                    'length' => $request->get('length'),
-                    'filters' => [
-                        'quality_grade' => $request->get('quality_grade'),
-                        'date_from' => $request->get('date_from'),
-                        'date_to' => $request->get('date_to')
-                    ]
-                ]);
-            
-            // Obtener fechas de filtro - usar rango más amplio por defecto
-            $fechaInicio = $request->get('date_from', now()->subDays(90)->format('Y-m-d'));
-            $fechaFin = $request->get('date_to', now()->format('Y-m-d'));
-            
-            \Log::info('Fechas de filtro para movimientos', [
-                'fecha_inicio' => $fechaInicio,
-                'fecha_fin' => $fechaFin
-            ]);
-            
-            // Entradas (lotes ingresados) - incluir todos los lotes si no hay filtro específico
-            $entradas = Lot::with(['supplier', 'qualityGrade'])
-                ->where('quality_grade_id', '!=', null)
-                ->where('status', '!=', 'cancelled');
-                
-            // Aplicar filtro de fecha solo si se especifica
-            if ($request->filled('date_from') || $request->filled('date_to')) {
-                $entradas->whereBetween('entry_date', [$fechaInicio, $fechaFin]);
-            } else {
-                // Si no hay filtro de fecha, mostrar últimos 90 días
-                $entradas->where('entry_date', '>=', now()->subDays(90));
-            }
-                
-            // Salidas (ventas realizadas)
-            $salidas = SaleLotAllocation::with(['lot.qualityGrade', 'saleItem.sale.customer']);
-                
-            // Aplicar filtro de fecha para salidas también
-            if ($request->filled('date_from') || $request->filled('date_to')) {
-                $salidas->whereHas('saleItem.sale', function($query) use ($fechaInicio, $fechaFin) {
-                    $query->whereBetween('sale_date', [$fechaInicio, $fechaFin]);
-                });
-            } else {
-                // Si no hay filtro de fecha, mostrar últimos 90 días
-                $salidas->whereHas('saleItem.sale', function($query) {
-                    $query->where('sale_date', '>=', now()->subDays(90));
-                });
-            }
-            
-            $salidas->orderBy('created_at', 'desc');
-
-            // Aplicar filtros de calidad
-            if ($request->filled('quality_grade')) {
-                $qualityGradeRecord = \App\Models\QualityGrade::where('name', $request->quality_grade)->first();
-                if ($qualityGradeRecord) {
-                    $entradas->where('quality_grade_id', $qualityGradeRecord->id);
-                    $salidas->whereHas('lot', function($q) use ($qualityGradeRecord) {
-                        $q->where('quality_grade_id', $qualityGradeRecord->id);
-                    });
-                }
-            }
-
-            // Combinar movimientos
-            $movimientos = collect();
-            
-            // Agregar entradas
-            $lotesEncontrados = $entradas->get();
-            \Log::info('Lotes encontrados para movimientos', [
-                'count' => $lotesEncontrados->count(),
-                'lotes_ids' => $lotesEncontrados->pluck('id')->toArray()
-            ]);
-            
-            foreach ($lotesEncontrados as $lote) {
-                $movimientos->push([
-                    'id' => 'entrada_' . $lote->id,
-                    'tipo' => 'entrada',
-                    'fecha' => $lote->entry_date,
-                    'calidad' => $lote->qualityGrade ? $lote->qualityGrade->name : 'Sin calidad',
-                    'peso' => $lote->total_weight,
-                    'referencia' => $lote->supplier ? $lote->supplier->name : 'Sin proveedor',
-                    'descripcion' => "Ingreso de lote - {$lote->lot_code}",
-                    'costo_unitario' => $lote->purchase_price_per_kg,
-                    'valor_total' => $lote->total_purchase_cost,
-                    'created_at' => $lote->created_at,
-                    'fecha_sort' => $lote->entry_date
-                ]);
-            }
-            
-            // Agregar salidas (agrupadas por venta y calidad)
-            $ventasAgrupadas = $salidas->get()
-                ->groupBy(function($allocation) {
-                    return $allocation->saleItem->sale->id . '_' . ($allocation->lot->qualityGrade ? $allocation->lot->qualityGrade->name : 'sin_calidad');
-                });
-                
-            foreach ($ventasAgrupadas as $grupo => $allocations) {
-                $primeraAllocation = $allocations->first();
-                $pesoTotal = $allocations->sum('allocated_weight');
-                $valorTotal = $allocations->sum(function($alloc) {
-                    return $alloc->allocated_weight * $alloc->saleItem->price_per_kg;
-                });
-                
-                $movimientos->push([
-                    'id' => 'salida_' . $grupo,
-                    'tipo' => 'salida',
-                    'fecha' => $primeraAllocation->saleItem->sale->sale_date,
-                    'calidad' => $primeraAllocation->lot->qualityGrade ? $primeraAllocation->lot->qualityGrade->name : 'Sin calidad',
-                    'peso' => $pesoTotal,
-                    'referencia' => $primeraAllocation->saleItem->sale->customer ? $primeraAllocation->saleItem->sale->customer->name : 'Sin cliente',
-                    'descripcion' => "Venta - " . ($primeraAllocation->saleItem->sale->sale_code ?? $primeraAllocation->saleItem->sale->invoice_number ?? 'S/N'),
-                    'costo_unitario' => $primeraAllocation->saleItem->price_per_kg,
-                    'valor_total' => $valorTotal,
-                    'created_at' => $primeraAllocation->created_at,
-                    'fecha_sort' => $primeraAllocation->saleItem->sale->sale_date
-                ]);
-            }
-            
-            // Ordenar por fecha
-            $movimientos = $movimientos->sortByDesc('fecha_sort')->values();
-            
-            \Log::info('Movimientos procesados', [
-                'total_movimientos' => $movimientos->count(),
-                'entradas_count' => $entradas->count(),
-                'salidas_groups' => count($ventasAgrupadas)
-            ]);
-            
-            // Aplicar búsqueda
-            $search = $request->get('search');
-            $searchValue = is_array($search) ? ($search['value'] ?? '') : '';
-            if (!empty($searchValue)) {
-                $movimientos = $movimientos->filter(function($item) use ($searchValue) {
-                    return stripos($item['descripcion'], $searchValue) !== false ||
-                           stripos($item['referencia'], $searchValue) !== false ||
-                           stripos($item['calidad'], $searchValue) !== false;
-                });
-            }
-            
-            $totalRecords = $movimientos->count();
-            
-            // Aplicar paginación
-            $start = $request->get('start', 0);
-            $length = $request->get('length', 50);
-            $movimientosPaginados = $movimientos->slice($start, $length)->values();
-            
-            // Format data for better compatibility
-            $formattedData = $movimientosPaginados->map(function($movimiento) {
-                return [
-                    'fecha' => is_string($movimiento['fecha']) ? $movimiento['fecha'] : $movimiento['fecha']->format('Y-m-d'),
-                    'tipo' => $movimiento['tipo'],
-                    'descripcion' => $movimiento['descripcion'],
-                    'calidad' => $movimiento['calidad'],
-                    'referencia' => $movimiento['referencia'],
-                    'peso' => (float) $movimiento['peso'],
-                    'costo_unitario' => (float) $movimiento['costo_unitario'],
-                    'valor_total' => (float) $movimiento['valor_total']
-                ];
-            });
-            
-            $response = [
-                'draw' => intval($request->get('draw', 1)),
-                'recordsTotal' => $totalRecords,
-                'recordsFiltered' => $totalRecords,
-                'data' => $formattedData
-            ];
-            
-            \Log::info('Returning DataTables response', [
-                'draw' => $response['draw'],
-                'recordsTotal' => $response['recordsTotal'],
-                'data_count' => count($response['data'])
-            ]);
-            
-            return response()->json($response);
-            
-            } catch (\Exception $e) {
-                \Log::error('Error in acopio movimientos', [
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ]);
-                
-                return response()->json([
-                    'draw' => intval($request->get('draw', 1)),
-                    'recordsTotal' => 0,
-                    'recordsFiltered' => 0,
-                    'data' => [],
-                    'error' => $e->getMessage()
-                ], 500);
-            }
-        }
-
-        return view('acopio.movimientos');
-    }
 
     public function reporte(Request $request)
     {
@@ -399,19 +207,177 @@ class AcopioController extends Controller
             $ventasPorCalidad[$qualityName]->push($allocation);
         }
 
+        // Obtener ventas mensuales por calidad (desde enero 2025 hasta mes actual)
+        $ventasMensuales = SaleLotAllocation::with(['lot.qualityGrade', 'saleItem.sale'])
+            ->whereHas('saleItem.sale', function($query) {
+                $query->where('sale_date', '>=', '2025-01-01')
+                      ->where('sale_date', '<=', now()->endOfMonth())
+                      ->where('status', '!=', 'cancelled');
+            })
+            ->whereHas('lot', function($query) {
+                $query->where('quality_grade_id', '!=', null);
+            })
+            ->get()
+            ->groupBy(function($allocation) {
+                return $allocation->saleItem->sale->sale_date->format('Y-m');
+            })
+            ->map(function($monthAllocations) {
+                return $monthAllocations->groupBy(function($allocation) {
+                    return $allocation->lot->qualityGrade ? $allocation->lot->qualityGrade->name : 'Sin calidad';
+                })->map(function($qualityAllocations) {
+                    return $qualityAllocations->sum(function($allocation) {
+                        return $allocation->allocated_weight * $allocation->saleItem->price_per_kg;
+                    });
+                });
+            });
+
         $reporte = [
             'periodo' => [
                 'inicio' => $fechaInicio,
                 'fin' => $fechaFin
             ],
             'resumen' => $resumen,
-            'ventas' => $ventasPorCalidad
+            'ventas' => $ventasPorCalidad,
+            'ventas_mensuales' => $ventasMensuales
         ];
+
+        // Obtener colores de calidades para la vista
+        $qualityColors = \App\Models\QualityGrade::where('active', true)
+            ->get()
+            ->keyBy('name')
+            ->map(function($quality) {
+                return $quality->color ?: '#6c757d';
+            })
+            ->toArray();
+
+        // Manejar exportaciones
+        if ($request->has('export')) {
+            $format = $request->get('export');
+            
+            if ($format === 'pdf') {
+                // Generate charts for PDF
+                $chartService = new ChartImageService();
+                $charts = [];
+                
+                // Pie chart for ingresos
+                if ($reporte['resumen']->count() > 0) {
+                    $ingresosData = $reporte['resumen']->pluck('inversion_total')->map(function($value) {
+                        return is_numeric($value) ? floatval($value) : 0;
+                    })->toArray();
+                    
+                    $ingresosLabels = $reporte['resumen']->map(function($item) {
+                        return $item->qualityGrade ? $item->qualityGrade->name : 'Sin calidad';
+                    })->toArray();
+                    
+                    $ingresosColors = $reporte['resumen']->map(function($item) {
+                        return $item->qualityGrade ? $item->qualityGrade->color : '#6c757d';
+                    })->toArray();
+                    
+                    // Only generate chart if we have valid data
+                    if (array_sum($ingresosData) > 0) {
+                        $charts['ingresos'] = $chartService->generatePieChart(
+                            $ingresosData, 
+                            $ingresosLabels, 
+                            $ingresosColors, 
+                            'Distribución de Inversiones por Calidad'
+                        );
+                    }
+                }
+                
+                // Pie chart for ventas
+                if (is_array($reporte['ventas']) && count($reporte['ventas']) > 0) {
+                    $ventasData = [];
+                    $ventasLabels = [];
+                    $ventasColors = [];
+                    
+                    foreach ($reporte['ventas'] as $calidad => $ventas) {
+                        $ingresos = $ventas->sum(function($item) {
+                            return $item->allocated_weight * $item->saleItem->price_per_kg;
+                        });
+                        
+                        // Ensure numeric conversion and positive values
+                        $ingresosNumeric = is_numeric($ingresos) ? floatval($ingresos) : 0;
+                        
+                        if ($ingresosNumeric > 0) {
+                            $ventasData[] = $ingresosNumeric;
+                            $ventasLabels[] = strval($calidad);
+                            $ventasColors[] = $qualityColors[$calidad] ?? '#6c757d';
+                        }
+                    }
+                    
+                    if (!empty($ventasData) && array_sum($ventasData) > 0) {
+                        $charts['ventas'] = $chartService->generatePieChart(
+                            $ventasData, 
+                            $ventasLabels, 
+                            $ventasColors, 
+                            'Distribución de Ventas por Calidad'
+                        );
+                    }
+                }
+                
+                // Pie chart for ventas mensuales (using pie chart since bar chart needs fixing)
+                if (isset($reporte['ventas_mensuales']) && count($reporte['ventas_mensuales']) > 0) {
+                    // Calculate total sales per quality for the year
+                    $calidades = \App\Models\QualityGrade::where('active', true)->orderBy('name')->get();
+                    $ventasMensualesData = [];
+                    $ventasMensualesLabels = [];
+                    $ventasMensualesColors = [];
+                    
+                    foreach ($calidades as $calidad) {
+                        $totalVentasCalidad = 0;
+                        
+                        // Sum all months for this quality
+                        foreach ($reporte['ventas_mensuales'] as $mes => $ventasMes) {
+                            $ventaMes = $ventasMes[$calidad->name] ?? 0;
+                            $totalVentasCalidad += is_numeric($ventaMes) ? floatval($ventaMes) : 0;
+                        }
+                        
+                        if ($totalVentasCalidad > 0) {
+                            $ventasMensualesData[] = $totalVentasCalidad;
+                            $ventasMensualesLabels[] = $calidad->name;
+                            $ventasMensualesColors[] = $calidad->color ?: '#6c757d';
+                        }
+                    }
+                    
+                    if (!empty($ventasMensualesData) && array_sum($ventasMensualesData) > 0) {
+                        $charts['mensuales'] = $chartService->generatePieChart(
+                            $ventasMensualesData, 
+                            $ventasMensualesLabels, 
+                            $ventasMensualesColors, 
+                            'Ventas por Calidad - ' . date('Y')
+                        );
+                    }
+                }
+                
+                // Convert absolute paths to data URLs for PDF embedding
+                $chartsForPdf = [];
+                foreach ($charts as $key => $chartPath) {
+                    if ($chartPath && file_exists($chartPath)) {
+                        $imageData = base64_encode(file_get_contents($chartPath));
+                        $chartsForPdf[$key] = 'data:image/png;base64,' . $imageData;
+                        
+                        // Clean up temp file after encoding
+                        unlink($chartPath);
+                    }
+                }
+                
+                $pdf = PDF::loadView('acopio.pdf.reporte', compact('reporte', 'qualityColors', 'charts', 'chartsForPdf'));
+                $pdf->setOptions(['isPhpEnabled' => true, 'isRemoteEnabled' => true]);
+                return $pdf->download('reporte-acopio-' . \Carbon\Carbon::parse($fechaInicio)->format('Y-m-d') . '-' . \Carbon\Carbon::parse($fechaFin)->format('Y-m-d') . '.pdf');
+            }
+            
+            if ($format === 'excel') {
+                return Excel::download(
+                    new AcopioReportExport($reporte, $fechaInicio, $fechaFin),
+                    'reporte-acopio-' . \Carbon\Carbon::parse($fechaInicio)->format('Y-m-d') . '-' . \Carbon\Carbon::parse($fechaFin)->format('Y-m-d') . '.xlsx'
+                );
+            }
+        }
 
         if ($request->wantsJson()) {
             return response()->json($reporte);
         }
 
-        return view('acopio.reporte', compact('reporte'));
+        return view('acopio.reporte', compact('reporte', 'qualityColors'));
     }
 }

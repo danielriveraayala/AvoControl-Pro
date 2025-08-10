@@ -95,14 +95,14 @@ class DashboardController extends Controller
                     'porcentaje_disponible' => 0
                 ];
             }
-            // ALERTA DE POCO INVENTARIO: Entre 0.1% y 20% del inventario total disponible
-            // Pero NO mostrar alerta si está exactamente en 0% (vendido completamente)
+            // ALERTA DE POCO INVENTARIO: Entre 0% y 20% del inventario total disponible
+            // Incluir 0% porque si vendes todo YA NO TIENES NADA QUE VENDER
             elseif ($pesoTotal > 0) {
                 $porcentajeDisponible = ($pesoDisponible / $pesoTotal) * 100;
                 
-                // Marcar alerta si está entre 0.1% y 20% del inventario total
-                // 0% exacto no genera alerta (está completamente vendido, es normal)
-                if ($porcentajeDisponible > 0 && $porcentajeDisponible <= 20) {
+                // Marcar alerta si está entre 0% y 20% del inventario total
+                // 0% también genera alerta (no tienes nada que vender)
+                if ($porcentajeDisponible >= 0 && $porcentajeDisponible <= 20) {
                     $alertasPocaExistencia[] = [
                         'tipo' => 'poco_stock',
                         'calidad' => $qualityName,

@@ -28,7 +28,8 @@
       "Bash(mv:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   }

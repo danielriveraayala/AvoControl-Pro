@@ -19,9 +19,9 @@
                 <ul>
                     @foreach($alertasDeficit as $alerta)
                     <li>
-                        <strong>{{ $alerta['calidad'] }}:</strong> 
+                        <strong>{{ $alerta['calidad'] }}:</strong>
                         Déficit de <strong>{{ number_format($alerta['deficit'], 2) }} kg</strong>
-                        (Disponible: {{ number_format($alerta['disponible'], 2) }} kg, 
+                        (Disponible: {{ number_format($alerta['disponible'], 2) }} kg,
                         Vendido: {{ number_format($alerta['comprometido'], 2) }} kg)
                     </li>
                     @endforeach
@@ -50,14 +50,14 @@
                 <ul>
                     @foreach($alertasPocaExistencia as $alerta)
                     <li>
-                        <strong>{{ $alerta['calidad'] }}:</strong> 
+                        <strong>{{ $alerta['calidad'] }}:</strong>
                         Solo queda el <strong>{{ $alerta['porcentaje_disponible'] }}%</strong> del inventario total
                         ({{ number_format($alerta['disponible'], 2) }} kg de {{ number_format($alerta['total'], 2) }} kg)
                     </li>
                     @endforeach
                 </ul>
                 <div class="mt-3">
-                    <a href="{{ route('lots.create') }}" class="btn btn-sm btn-success">
+                    <a href="{{ route('lots.index') }}" class="btn btn-sm btn-success">
                         <i class="fas fa-plus"></i> Registrar Lotes
                     </a>
                     <a href="{{ route('acopio.index') }}" class="btn btn-sm btn-info">
@@ -161,19 +161,19 @@
                                         $qualityName = $acopio->qualityGrade ? $acopio->qualityGrade->name : 'Sin calidad';
                                         $qualityColor = $acopio->qualityGrade ? $acopio->qualityGrade->color : '#6c757d';
                                     @endphp
-                                    
+
                                     <h5 class="badge badge-lg mb-2" style="background-color: {{ $qualityColor }}; color: white;">{{ $qualityName }}</h5>
-                                    
+
                                     <div class="text-sm">
                                         <strong class="d-block">{{ number_format($acopio->peso_disponible, 2) }} kg</strong>
                                         <small class="text-muted">disponible</small>
                                     </div>
-                                    
+
                                     <div class="text-sm mt-2">
                                         <span class="text-muted">{{ $acopio->total_lotes }} lotes</span>
                                         <br><small class="text-success">${{ number_format($acopio->inversion_total, 0) }}</small>
                                     </div>
-                                    
+
                                     <div class="progress mt-2" style="height: 6px;">
                                         @php
                                             $percentage = $acopio->peso_total > 0 ? ($acopio->peso_vendido / $acopio->peso_total) * 100 : 0;
@@ -270,7 +270,7 @@
                         @foreach($metrics['alerts'] as $alert)
                         <div class="alert alert-{{ $alert['type'] == 'danger' ? 'danger' : ($alert['type'] == 'warning' ? 'warning' : 'info') }} alert-dismissible">
                             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                            <h5><i class="icon fas fa-{{ $alert['type'] == 'danger' ? 'ban' : ($alert['type'] == 'warning' ? 'exclamation-triangle' : 'info') }}"></i> 
+                            <h5><i class="icon fas fa-{{ $alert['type'] == 'danger' ? 'ban' : ($alert['type'] == 'warning' ? 'exclamation-triangle' : 'info') }}"></i>
                                 {{ ucfirst($alert['priority']) }}!</h5>
                             {{ $alert['message'] }}
                         </div>
@@ -401,15 +401,15 @@
 $(function () {
     // Quality Distribution Chart
     const qualityData = @json($metrics['inventory']['quality_distribution'] ?? []);
-    
+
     if (qualityData.length > 0) {
         const ctx = document.getElementById('qualityChart').getContext('2d');
-        
+
         // Extract labels, data and colors from the structured array
         const labels = qualityData.map(item => item.name);
         const data = qualityData.map(item => item.weight);
         const colors = qualityData.map(item => item.color);
-        
+
         new Chart(ctx, {
             type: 'doughnut',
             data: {

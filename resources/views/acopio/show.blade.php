@@ -90,9 +90,6 @@
                                 <button type="button" class="btn btn-success" onclick="crearVenta()">
                                     <i class="fas fa-shopping-cart"></i> Crear Venta
                                 </button>
-                                <button type="button" class="btn btn-info" onclick="verMovimientos()">
-                                    <i class="fas fa-history"></i> Ver Movimientos
-                                </button>
                                 <button type="button" class="btn btn-primary" onclick="exportarReporte()">
                                     <i class="fas fa-download"></i> Exportar
                                 </button>
@@ -281,9 +278,6 @@ function crearVenta() {
     window.location.href = `{{ route('sales.index') }}`;
 }
 
-function verMovimientos() {
-    window.location.href = `{{ route('acopio.movimientos') }}?quality_grade={{ $quality }}`;
-}
 
 function exportarReporte() {
     window.location.href = `{{ route('acopio.reporte') }}?calidad={{ $quality }}`;
