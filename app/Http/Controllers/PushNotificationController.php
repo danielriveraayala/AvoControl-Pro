@@ -174,10 +174,16 @@ class PushNotificationController extends Controller
                     'message' => 'Desubscripción exitosa de notificaciones push'
                 ]);
             } else {
+                // Si no existe la suscripción, considerar que ya está desactivada
+                Log::info('Unsubscribe attempted for non-existent subscription', [
+                    'user_id' => $user->id,
+                    'endpoint' => substr($endpoint, 0, 50) . '...'
+                ]);
+                
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Subscripción no encontrada'
-                ], 404);
+                    'success' => true,
+                    'message' => 'Las notificaciones ya estaban desactivadas'
+                ]);
             }
 
         } catch (\Exception $e) {

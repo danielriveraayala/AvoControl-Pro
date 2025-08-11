@@ -340,6 +340,12 @@ class AvoControlPush {
         console.log('[Push] Server response headers:', response.headers);
         
         if (!response.ok) {
+            // Para unsubscribe, no tratamos 404 como error ya que significa que ya estaba desuscrito
+            if (action === 'unsubscribe' && response.status === 404) {
+                console.log('[Push] Subscription not found on server (already unsubscribed)');
+                return { success: true, message: 'Already unsubscribed' };
+            }
+            
             const text = await response.text();
             console.error('[Push] Server error response:', text);
             throw new Error(`Server returned ${response.status}: ${text}`);
