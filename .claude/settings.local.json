@@ -31,7 +31,14 @@
       "Bash(git push:*)",
       "Bash(timeout:*)",
       "Bash(copy profitability_fixed.blade.php profitability.blade.php)",
-      "WebFetch(domain:about.me)"
+      "WebFetch(domain:about.me)",
+      "Bash(node:*)",
+      "Bash(chrome-dev.bat)",
+      "Bash(openssl req:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell:*)",
+      "Bash(open-chrome.bat)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }

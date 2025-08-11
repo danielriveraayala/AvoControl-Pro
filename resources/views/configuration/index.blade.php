@@ -32,6 +32,18 @@
                                 <i class="fas fa-building"></i> Empresa
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="email-tab" data-toggle="pill" href="#email" role="tab"
+                               aria-controls="email" aria-selected="false">
+                                <i class="fas fa-envelope"></i> Email/SMTP
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="push-tab" data-toggle="pill" href="#push" role="tab"
+                               aria-controls="push" aria-selected="false">
+                                <i class="fas fa-bell"></i> Push Notifications
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <div class="card-body">
@@ -176,6 +188,312 @@
                                     </div>
                                 </div>
                             </form>
+                        </div>
+                        
+                        <!-- Email/SMTP Configuration Tab -->
+                        <div class="tab-pane fade" id="email" role="tabpanel" aria-labelledby="email-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4><i class="fas fa-envelope text-info"></i> Configuración de Email y SMTP</h4>
+                            </div>
+                            
+                            <form id="emailForm">
+                                @csrf
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Información:</strong> Configure los datos SMTP para el envío de notificaciones por email del sistema.
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="mail_mailer">Proveedor de Email <span class="text-danger">*</span></label>
+                                            <select name="mail_mailer" id="mail_mailer" class="form-control" required>
+                                                <option value="smtp">SMTP Personalizado</option>
+                                                <option value="gmail">Gmail</option>
+                                                <option value="sendgrid">SendGrid</option>
+                                                <option value="mailgun">Mailgun</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="mail_host">Servidor SMTP <span class="text-danger">*</span></label>
+                                            <input type="text" name="mail_host" id="mail_host" class="form-control" 
+                                                   placeholder="smtp.gmail.com" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="mail_port">Puerto SMTP <span class="text-danger">*</span></label>
+                                            <input type="number" name="mail_port" id="mail_port" class="form-control" 
+                                                   placeholder="587" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="mail_encryption">Encriptación</label>
+                                            <select name="mail_encryption" id="mail_encryption" class="form-control">
+                                                <option value="">Sin encriptación</option>
+                                                <option value="tls">TLS</option>
+                                                <option value="ssl">SSL</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="notification_email_enabled">Estado</label>
+                                            <select name="notification_email_enabled" id="notification_email_enabled" class="form-control">
+                                                <option value="1">Habilitado</option>
+                                                <option value="0">Deshabilitado</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="mail_username">Usuario SMTP</label>
+                                            <input type="text" name="mail_username" id="mail_username" class="form-control" 
+                                                   placeholder="tu-email@gmail.com">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="mail_password">Contraseña SMTP</label>
+                                            <input type="password" name="mail_password" id="mail_password" class="form-control" 
+                                                   placeholder="Tu contraseña o token de aplicación">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="mail_from_address">Email Remitente <span class="text-danger">*</span></label>
+                                            <input type="email" name="mail_from_address" id="mail_from_address" class="form-control" 
+                                                   placeholder="noreply@avocontrol.pro" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="mail_from_name">Nombre Remitente</label>
+                                            <input type="text" name="mail_from_name" id="mail_from_name" class="form-control" 
+                                                   placeholder="AvoControl Pro">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Importante:</strong> Para Gmail, necesitas usar una contraseña de aplicación en lugar de tu contraseña normal.
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Guardar Configuración SMTP
+                                        </button>
+                                        <button type="button" class="btn btn-secondary ml-2" onclick="loadEmailConfig()">
+                                            <i class="fas fa-undo"></i> Recargar
+                                        </button>
+                                        <button type="button" class="btn btn-info ml-2" onclick="testEmailConfig()">
+                                            <i class="fas fa-paper-plane"></i> Enviar Email de Prueba
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Push Notifications Configuration Tab -->
+                        <div class="tab-pane fade" id="push" role="tabpanel" aria-labelledby="push-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4><i class="fas fa-bell text-warning"></i> Configuración de Push Notifications</h4>
+                                <div id="push-status" class="ml-2">
+                                    <span class="badge badge-secondary">⭕ Cargando...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Información:</strong> Las notificaciones push permiten enviar alertas en tiempo real al navegador del usuario, incluso cuando no está activamente usando la aplicación.
+                            </div>
+                            
+                            <!-- Push Notification Controls -->
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fas fa-cog"></i> Control de Notificaciones
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6>Estado de Suscripción</h6>
+                                                    <p class="text-muted mb-3">Administra tu suscripción a notificaciones push para este dispositivo.</p>
+                                                    
+                                                    <button type="button" id="enable-push-btn" class="btn btn-success btn-sm mb-2" style="display: none;">
+                                                        <i class="fas fa-bell"></i> Activar Notificaciones
+                                                    </button>
+                                                    
+                                                    <button type="button" id="disable-push-btn" class="btn btn-danger btn-sm mb-2" style="display: none;">
+                                                        <i class="fas fa-bell-slash"></i> Desactivar Notificaciones
+                                                    </button>
+                                                </div>
+                                                
+                                                <div class="col-md-6">
+                                                    <h6>Prueba de Sistema</h6>
+                                                    <p class="text-muted mb-3">Envía una notificación de prueba para verificar el funcionamiento.</p>
+                                                    
+                                                    <button type="button" id="test-push-btn" class="btn btn-info btn-sm mb-2" style="display: none;">
+                                                        <i class="fas fa-paper-plane"></i> Enviar Prueba
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <div class="alert alert-warning" id="browser-unsupported" style="display: none;">
+                                                        <i class="fas fa-exclamation-triangle"></i>
+                                                        <strong>Navegador no soportado:</strong> Tu navegador no soporta notificaciones push. Considera actualizarlo.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fas fa-chart-bar"></i> Estadísticas
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="push-stats-loading" class="text-center">
+                                                <i class="fas fa-spinner fa-spin"></i> Cargando...
+                                            </div>
+                                            
+                                            <div id="push-stats" style="display: none;">
+                                                <div class="stat-item mb-2">
+                                                    <small class="text-muted">Total Subscripciones</small>
+                                                    <div class="h5 mb-0" id="total-subscriptions">0</div>
+                                                </div>
+                                                
+                                                <div class="stat-item mb-2">
+                                                    <small class="text-muted">Subscripciones Activas</small>
+                                                    <div class="h5 mb-0" id="active-subscriptions">0</div>
+                                                </div>
+                                                
+                                                <div class="stat-item mb-2">
+                                                    <small class="text-muted">Usuarios con Notificaciones</small>
+                                                    <div class="h5 mb-0" id="users-with-subscriptions">0</div>
+                                                </div>
+                                                
+                                                <div class="stat-item">
+                                                    <small class="text-muted">Nuevas esta semana</small>
+                                                    <div class="h5 mb-0" id="recent-subscriptions">0</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- User Subscriptions Table -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fas fa-mobile-alt"></i> Mis Dispositivos Suscritos
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm" id="user-subscriptions-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Navegador</th>
+                                                            <th>IP</th>
+                                                            <th>Fecha Registro</th>
+                                                            <th>Último Uso</th>
+                                                            <th>Estado</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="user-subscriptions-tbody">
+                                                        <tr>
+                                                            <td colspan="5" class="text-center text-muted">
+                                                                <i class="fas fa-spinner fa-spin"></i> Cargando subscripciones...
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Admin Tools (only for admin users) -->
+                            @if(auth()->user()->role === 'admin')
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card border-warning">
+                                        <div class="card-header bg-warning">
+                                            <h5 class="card-title mb-0 text-dark">
+                                                <i class="fas fa-tools"></i> Herramientas de Administración
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted">Herramientas avanzadas para gestionar las notificaciones push del sistema.</p>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6>Notificaciones de Prueba</h6>
+                                                    <div class="btn-group-vertical d-block">
+                                                        <button type="button" class="btn btn-outline-info btn-sm mb-1" onclick="sendTestNotification('low_inventory')">
+                                                            📦 Inventario Bajo
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-warning btn-sm mb-1" onclick="sendTestNotification('payment_reminder')">
+                                                            💰 Recordatorio de Pago
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-success btn-sm mb-1" onclick="sendTestNotification('daily_report')">
+                                                            📊 Reporte Diario
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-primary btn-sm mb-1" onclick="sendTestNotification('new_lot')">
+                                                            🚚 Nuevo Lote
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-6">
+                                                    <h6>Gestión del Sistema</h6>
+                                                    <div class="btn-group-vertical d-block">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="refreshPushStats()">
+                                                            <i class="fas fa-sync"></i> Actualizar Estadísticas
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="cleanupInactiveSubscriptions()">
+                                                            <i class="fas fa-broom"></i> Limpiar Subscripciones Inactivas
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-dark btn-sm mb-1" onclick="exportPushStats()">
+                                                            <i class="fas fa-download"></i> Exportar Estadísticas
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -611,8 +929,375 @@
         $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
             if ($(e.target).attr('href') === '#company') {
                 loadCompanyConfig();
+            } else if ($(e.target).attr('href') === '#email') {
+                loadEmailConfig();
+            } else if ($(e.target).attr('href') === '#push') {
+                loadPushNotificationConfig();
             }
         });
+
+        // Email configuration functions
+        function loadEmailConfig() {
+            fetch('{{ route("configuration.email.get") }}', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const config = data.config || {};
+                    $('#mail_mailer').val(config.mail_mailer || 'smtp');
+                    $('#mail_host').val(config.mail_host || '');
+                    $('#mail_port').val(config.mail_port || '587');
+                    $('#mail_encryption').val(config.mail_encryption || 'tls');
+                    $('#mail_username').val(config.mail_username || '');
+                    $('#mail_password').val(config.mail_password || '');
+                    $('#mail_from_address').val(config.mail_from_address || 'noreply@avocontrol.pro');
+                    $('#mail_from_name').val(config.mail_from_name || 'AvoControl Pro');
+                    $('#notification_email_enabled').val(config.notification_email_enabled || '1');
+                    
+                    // Update fields based on provider
+                    updateEmailProvider();
+                } else {
+                    toastr.error('Error al cargar la configuración de email');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Error al cargar la configuración de email');
+            });
+        }
+
+        // Update email fields based on selected provider
+        function updateEmailProvider() {
+            const provider = $('#mail_mailer').val();
+            
+            switch (provider) {
+                case 'gmail':
+                    $('#mail_host').val('smtp.gmail.com');
+                    $('#mail_port').val('587');
+                    $('#mail_encryption').val('tls');
+                    break;
+                case 'sendgrid':
+                    $('#mail_host').val('smtp.sendgrid.net');
+                    $('#mail_port').val('587');
+                    $('#mail_encryption').val('tls');
+                    break;
+                case 'mailgun':
+                    $('#mail_host').val('smtp.mailgun.org');
+                    $('#mail_port').val('587');
+                    $('#mail_encryption').val('tls');
+                    break;
+            }
+        }
+
+        // Email provider change handler
+        $('#mail_mailer').change(function() {
+            updateEmailProvider();
+        });
+
+        // Email form submission
+        $('#emailForm').submit(function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('{{ route("configuration.email.store") }}', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success('Configuración de email guardada correctamente');
+                } else {
+                    if (data.errors) {
+                        Object.keys(data.errors).forEach(key => {
+                            toastr.error(data.errors[key][0]);
+                        });
+                    } else {
+                        toastr.error(data.message || 'Error al guardar la configuración');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Error al guardar la configuración de email');
+            });
+        });
+
+        // Test email configuration
+        function testEmailConfig() {
+            const testEmail = prompt('Ingresa el email de destino para la prueba:', $('#mail_from_address').val() || 'admin@avocontrol.com');
+            
+            if (!testEmail || !validateEmail(testEmail)) {
+                toastr.error('Por favor ingresa un email válido');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('test_email', testEmail);
+
+            fetch('{{ route("configuration.email.test") }}', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message || 'Email de prueba enviado correctamente');
+                } else {
+                    toastr.error(data.message || 'Error al enviar email de prueba');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Error al enviar email de prueba');
+            });
+        }
+
+        // Email validation function
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Push Notification Functions
+        function loadPushNotificationConfig() {
+            // Load push notification stats
+            loadPushStats();
+            
+            // Load user subscriptions
+            loadUserSubscriptions();
+            
+            // Check push notification support and status
+            checkPushSupport();
+        }
+
+        function loadPushStats() {
+            fetch('/push/stats', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const stats = data.stats;
+                    $('#total-subscriptions').text(stats.total_subscriptions || 0);
+                    $('#active-subscriptions').text(stats.active_subscriptions || 0);
+                    $('#users-with-subscriptions').text(stats.users_with_subscriptions || 0);
+                    $('#recent-subscriptions').text(stats.recent_subscriptions || 0);
+                    
+                    $('#push-stats-loading').hide();
+                    $('#push-stats').show();
+                } else {
+                    $('#push-stats-loading').html('<i class="fas fa-exclamation-triangle text-warning"></i> Error al cargar estadísticas');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading push stats:', error);
+                $('#push-stats-loading').html('<i class="fas fa-exclamation-triangle text-danger"></i> Error de conexión');
+            });
+        }
+
+        function loadUserSubscriptions() {
+            fetch('/push/status', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const subscriptions = data.subscriptions || [];
+                    const tbody = $('#user-subscriptions-tbody');
+                    tbody.empty();
+                    
+                    if (subscriptions.length === 0) {
+                        tbody.append(`
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    <i class="fas fa-mobile-alt"></i> No tienes dispositivos suscritos
+                                </td>
+                            </tr>
+                        `);
+                    } else {
+                        subscriptions.forEach(sub => {
+                            tbody.append(`
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-globe"></i> ${sub.browser}
+                                    </td>
+                                    <td>${sub.ip_address}</td>
+                                    <td>${sub.created_at}</td>
+                                    <td>${sub.last_used_at || 'Nunca'}</td>
+                                    <td>
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check"></i> Activo
+                                        </span>
+                                    </td>
+                                </tr>
+                            `);
+                        });
+                    }
+                } else {
+                    $('#user-subscriptions-tbody').html(`
+                        <tr>
+                            <td colspan="5" class="text-center text-danger">
+                                <i class="fas fa-exclamation-triangle"></i> Error al cargar subscripciones
+                            </td>
+                        </tr>
+                    `);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading user subscriptions:', error);
+                $('#user-subscriptions-tbody').html(`
+                    <tr>
+                        <td colspan="5" class="text-center text-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Error de conexión
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function checkPushSupport() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+                $('#browser-unsupported').show();
+                $('#push-status').html('<span class="badge badge-danger">❌ No Soportado</span>');
+                return;
+            }
+            
+            // Check permission status
+            if (Notification.permission === 'denied') {
+                $('#push-status').html('<span class="badge badge-danger">🚫 Permisos Denegados</span>');
+            } else if (window.avoControlPush && window.avoControlPush.isSubscribed) {
+                $('#push-status').html('<span class="badge badge-success">✅ Notificaciones Activas</span>');
+            } else {
+                $('#push-status').html('<span class="badge badge-secondary">⭕ Notificaciones Inactivas</span>');
+            }
+        }
+
+        function refreshPushStats() {
+            $('#push-stats').hide();
+            $('#push-stats-loading').show().html('<i class="fas fa-spinner fa-spin"></i> Actualizando...');
+            
+            setTimeout(() => {
+                loadPushStats();
+                loadUserSubscriptions();
+                toastr.success('Estadísticas actualizadas');
+            }, 1000);
+        }
+
+        function sendTestNotification(type) {
+            const messages = {
+                'low_inventory': '⚠️ Hay productos con inventario crítico que requieren atención inmediata',
+                'payment_reminder': '💰 Tienes pagos pendientes que requieren tu atención', 
+                'daily_report': '📊 Tu reporte diario de operaciones está listo para revisar',
+                'new_lot': '🚚 Se ha registrado un nuevo lote de aguacates en el sistema'
+            };
+
+            fetch('/push/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: messages[type] || 'Notificación de prueba desde AvoControl Pro',
+                    type: type
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success('Notificación de prueba enviada correctamente');
+                } else {
+                    toastr.error(data.message || 'Error al enviar notificación de prueba');
+                }
+            })
+            .catch(error => {
+                console.error('Error sending test notification:', error);
+                toastr.error('Error al enviar notificación de prueba');
+            });
+        }
+
+        function cleanupInactiveSubscriptions() {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Esta acción eliminará todas las subscripciones inactivas permanentemente.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, limpiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/push/cleanup', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            toastr.success(`Se eliminaron ${data.deleted_count} subscripciones inactivas`);
+                            refreshPushStats();
+                        } else {
+                            toastr.error(data.message || 'Error al limpiar subscripciones');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error cleaning subscriptions:', error);
+                        toastr.error('Error al limpiar subscripciones');
+                    });
+                }
+            });
+        }
+
+        function exportPushStats() {
+            const stats = {
+                total_subscriptions: $('#total-subscriptions').text(),
+                active_subscriptions: $('#active-subscriptions').text(),
+                users_with_subscriptions: $('#users-with-subscriptions').text(),
+                recent_subscriptions: $('#recent-subscriptions').text(),
+                generated_at: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(stats, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `push-notifications-stats-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            toastr.success('Estadísticas exportadas correctamente');
+        }
     </script>
 @endpush
 

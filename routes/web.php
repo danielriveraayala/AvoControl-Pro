@@ -27,9 +27,23 @@ Route::get('/', function () {
 });
 
 
+// Public push notification endpoint (needed before auth)
+Route::get('/push/vapid-key', [App\Http\Controllers\PushNotificationController::class, 'getVapidKey']);
+
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Push Notifications endpoints
+    Route::prefix('push')->group(function () {
+        Route::post('/subscribe', [App\Http\Controllers\PushNotificationController::class, 'subscribe']);
+        Route::post('/unsubscribe', [App\Http\Controllers\PushNotificationController::class, 'unsubscribe']);
+        Route::post('/test', [App\Http\Controllers\PushNotificationController::class, 'sendTest']);
+        Route::get('/status', [App\Http\Controllers\PushNotificationController::class, 'getStatus']);
+        Route::post('/track', [App\Http\Controllers\PushNotificationController::class, 'track']);
+        Route::get('/stats', [App\Http\Controllers\PushNotificationController::class, 'getStats']);
+        Route::post('/cleanup', [App\Http\Controllers\PushNotificationController::class, 'cleanup']);
+    });
     
     // Resources
     Route::resource('lots', LotController::class);
@@ -87,6 +101,11 @@ Route::middleware(['auth'])->group(function () {
     // Company configuration routes
     Route::get('configuration/company/get', [ConfigurationController::class, 'getCompanyConfig'])->name('configuration.company.get');
     Route::post('configuration/company/store', [ConfigurationController::class, 'storeCompanyConfig'])->name('configuration.company.store');
+    
+    // Email configuration routes
+    Route::get('configuration/email/get', [ConfigurationController::class, 'getEmailConfig'])->name('configuration.email.get');
+    Route::post('configuration/email/store', [ConfigurationController::class, 'storeEmailConfig'])->name('configuration.email.store');
+    Route::post('configuration/email/test', [ConfigurationController::class, 'testEmailConfig'])->name('configuration.email.test');
     
     // Profile routes
     Route::prefix('perfil')->name('profile.')->group(function () {

@@ -405,6 +405,9 @@
 <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
+<!-- Push Notifications -->
+<script src="{{ asset('js/push-notifications.js') }}"></script>
+
 <!-- Global AJAX Setup -->
 <script>
 $.ajaxSetup({

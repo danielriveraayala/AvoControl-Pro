@@ -4,7 +4,9 @@
 /storage/*.key
 /vendor
 .env
+.env.local
 .env.backup
+.env.production
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json
@@ -14,3 +16,24 @@ yarn-error.log
 /.idea
 /.vscode
 /AvoControl-Pro
+
+# Archivos de desarrollo
+generate_vapid.php
+open-chrome.bat
+chrome-dev.bat
+edge-dev.bat
+ssl-proxy.cjs
+/ssl/
+
+# Logs específicos
+/storage/logs/*.log
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+.DS_Store
+Thumbs.db
