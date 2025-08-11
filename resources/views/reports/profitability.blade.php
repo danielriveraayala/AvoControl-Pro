@@ -285,7 +285,7 @@
                                             <small>{{ number_format($venta['margin'], 1) }}%</small>
                                         </td>
                                         <td class="text-muted">
-                                            <small>{{ \Carbon\Carbon::parse($venta['date'])->format('d/m/Y') }}</small>
+                                            <small>{{ $venta['date'] }}</small>
                                         </td>
                                     </tr>
                                     @endforeach
