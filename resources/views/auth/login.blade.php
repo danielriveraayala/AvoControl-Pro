@@ -170,14 +170,6 @@
                             <p class="mb-1"><strong>Administrador:</strong></p>
                             <small>admin@avocontrol.com / password123</small>
                         </div>
-                        <div class="col-12 mt-2">
-                            <p class="mb-1"><strong>Vendedor:</strong></p>
-                            <small>vendedor@avocontrol.com / password123</small>
-                        </div>
-                        <div class="col-12 mt-2">
-                            <p class="mb-1"><strong>Contador:</strong></p>
-                            <small>contador@avocontrol.com / password123</small>
-                        </div>
                     </div>
                 </div>
             </div>
