@@ -9,6 +9,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\AcopioController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,6 +83,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'showQuality'])->name('configuration.quality.show');
     Route::put('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'updateQuality'])->name('configuration.quality.update');
     Route::delete('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'destroyQuality'])->name('configuration.quality.destroy');
+    
+    // Reports routes
+    Route::prefix('reportes')->name('reports.')->group(function () {
+        Route::get('rentabilidad', [ReportController::class, 'profitability'])->name('profitability');
+        Route::get('analisis-clientes', [ReportController::class, 'customerAnalysis'])->name('customer-analysis');
+        Route::get('analisis-proveedores', [ReportController::class, 'supplierAnalysis'])->name('supplier-analysis');
+    });
 });
 
 require __DIR__.'/auth.php';

@@ -281,8 +281,10 @@ class SaleController extends Controller
         if ($request->ajax()) {
             $inventarioFormatted = $inventario->mapWithKeys(function($item) {
                 $qualityName = $item->qualityGrade ? $item->qualityGrade->name : 'Sin calidad';
+                $qualityColor = $item->qualityGrade ? $item->qualityGrade->color : '#6c757d';
                 return [$qualityName => [
                     'quality_grade' => $qualityName,
+                    'quality_color' => $qualityColor,
                     'peso_disponible' => $item->peso_disponible,
                     'precio_promedio' => $item->precio_promedio,
                     'total_lotes' => $item->total_lotes,

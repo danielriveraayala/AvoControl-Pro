@@ -20,6 +20,9 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap4.min.css">
+    
+    <!-- Date Range Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
 
     <!-- Custom CSS for improved UX -->
     <style>
@@ -267,7 +270,7 @@
                             <li class="nav-item">
                                 <a href="{{ route('acopio.reporte') }}" class="nav-link {{ request()->routeIs('acopio.reporte') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Reportes</p>
+                                    <p>Reportes y Análisis de Acopio</p>
                                 </a>
                             </li>
                         </ul>
@@ -331,51 +334,32 @@
                         </ul>
                     </li>
 
-                    <!-- Pagos -->
-                    <li class="nav-item {{ request()->routeIs('payments.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-money-bill-wave"></i>
-                            <p>
-                                Pagos
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ route('payments.index') }}" class="nav-link {{ request()->routeIs('payments.index') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Lista de Pagos</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('payments.create') }}" class="nav-link {{ request()->routeIs('payments.create') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Nuevo Pago</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
                     <!-- Reportes -->
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
+                    <li class="nav-item {{ request()->routeIs('reports.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-chart-bar"></i>
                             <p>
                                 Reportes
-                                <i class="right fas fa-angle-left"></i>
+                                <i class="fas fa-angle-left right"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
+                                <a href="{{ route('reports.profitability') }}" class="nav-link {{ request()->routeIs('reports.profitability') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon text-success"></i>
                                     <p>Rentabilidad</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
+                                <a href="{{ route('reports.customer-analysis') }}" class="nav-link {{ request()->routeIs('reports.customer-analysis') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon text-info"></i>
                                     <p>Análisis de Clientes</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('reports.supplier-analysis') }}" class="nav-link {{ request()->routeIs('reports.supplier-analysis') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon text-warning"></i>
+                                    <p>Análisis de Proveedores</p>
                                 </a>
                             </li>
                         </ul>
@@ -450,6 +434,10 @@
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap4.min.js"></script>
+
+<!-- Date Range Picker -->
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
 <!-- Global AJAX Setup -->
 <script>

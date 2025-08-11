@@ -45,15 +45,55 @@
     </div>
     @endif
 
+    <!-- Métricas de Ventas -->
+    <div class="row">
+        <div class="col-lg-3 col-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-info"><i class="fas fa-shopping-cart"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Total Ventas</span>
+                    <span class="info-box-number" id="totalSales">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-success"><i class="fas fa-dollar-sign"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Valor Total</span>
+                    <span class="info-box-number" id="totalValue">$0</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-warning"><i class="fas fa-weight"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Peso Total</span>
+                    <span class="info-box-number" id="totalWeight">0 kg</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Pendientes Pago</span>
+                    <span class="info-box-number" id="pendingPayments">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Filtros -->
     <div class="row">
         <div class="col-12">
-            <div class="card card-primary card-outline">
+            <div class="card card-primary card-outline collapsed-card">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-filter"></i> Filtros</h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                            <i class="fas fa-minus"></i>
+                            <i class="fas fa-plus"></i>
                         </button>
                     </div>
                 </div>
@@ -123,46 +163,6 @@
         </div>
     </div>
 
-    <!-- Métricas de Ventas -->
-    <div class="row">
-        <div class="col-lg-3 col-6">
-            <div class="info-box">
-                <span class="info-box-icon bg-info"><i class="fas fa-shopping-cart"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Total Ventas</span>
-                    <span class="info-box-number" id="totalSales">0</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-6">
-            <div class="info-box">
-                <span class="info-box-icon bg-success"><i class="fas fa-dollar-sign"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Valor Total</span>
-                    <span class="info-box-number" id="totalValue">$0</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-6">
-            <div class="info-box">
-                <span class="info-box-icon bg-warning"><i class="fas fa-weight"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Peso Total</span>
-                    <span class="info-box-number" id="totalWeight">0 kg</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-6">
-            <div class="info-box">
-                <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Pendientes Pago</span>
-                    <span class="info-box-number" id="pendingPayments">0</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Tabla de Ventas -->
     <div class="row">
         <div class="col-12">
@@ -171,6 +171,9 @@
                     <h3 class="card-title"><i class="fas fa-list"></i> Lista de Ventas</h3>
                     <div class="card-tools">
                         <div class="btn-group">
+                            <button type="button" class="btn btn-success" onclick="openNewSaleModal()">
+                                <i class="fas fa-plus"></i> Nueva Venta
+                            </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown">
                                 <i class="fas fa-download"></i> Exportar
                             </button>
@@ -605,10 +608,9 @@ function initializeSalesTable() {
                             </a>`;
                         }
 
-                        html += `<div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#" onclick="printInvoice(${row.id})">
-                                <i class="fas fa-print text-primary"></i> Imprimir Factura
-                            </a>`;
+                        html += `<a class="dropdown-item" href="#" onclick="printInvoice(${row.id})">
+                                    <i class="fas fa-print text-primary"></i> Imprimir Factura
+                                </a>`;
 
                         if (['draft', 'confirmed'].includes(row.status)) {
                             html += `<div class="dropdown-divider"></div>
@@ -1110,17 +1112,13 @@ function loadNewSaleForm() {
 
 function renderNewSaleForm() {
     const inventoryCards = Object.values(saleModalInventory).map(inv => {
-        const badgeClass = {
-            'Primera': 'success',
-            'Segunda': 'warning',
-            'Tercera': 'info',
-            'Industrial': 'secondary'
-        }[inv.quality_grade] || 'secondary';
+        // Usar el color dinámico de la base de datos
+        const qualityColor = inv.quality_color || '#6c757d';
 
         return `
             <div class="col-md-3">
                 <div class="text-center">
-                    <span class="badge badge-${badgeClass} badge-lg d-block mb-1">
+                    <span class="badge badge-lg d-block mb-1" style="background-color: ${qualityColor}; color: white;">
                         ${inv.quality_grade}
                     </span>
                     <strong class="d-block">${parseFloat(inv.peso_disponible).toFixed(2)} kg</strong>
@@ -1422,7 +1420,13 @@ function updateModalQualityInfo(itemId, quality) {
     }
 
     const available = parseFloat(saleModalInventory[quality].peso_disponible);
+    const qualityColor = saleModalInventory[quality].quality_color || '#6c757d';
+
     $(`#modal-available-${itemId}`).text(`Disponible: ${available.toFixed(2)} kg`);
+
+    // Actualizar el título del card con el color de la calidad
+    const cardTitle = $(`#modal-item-${itemId} .card-title`);
+    cardTitle.html(`Item #${itemId} <span class="badge badge-sm ml-2" style="background-color: ${qualityColor}; color: white;">${quality}</span>`);
 
     $(`#modal-item-${itemId} .modal-weight-input`).attr('max', available);
     calculateModalItemTotal(itemId);

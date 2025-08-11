@@ -1,18 +1,18 @@
 <table class="table table-hover text-nowrap">
     <thead>
-        <tr>
-            <th>Código</th>
-            <th>Cliente</th>
-            <th>Fecha</th>
-            <th>Peso</th>
-            <th>Monto</th>
-            <th>Estado Venta</th>
-            <th>Estado Pago</th>
-            <th>Acciones</th>
-        </tr>
+    <tr>
+        <th>Código</th>
+        <th>Cliente</th>
+        <th>Fecha</th>
+        <th>Peso</th>
+        <th>Monto</th>
+        <th>Estado Venta</th>
+        <th>Estado Pago</th>
+        <th>Acciones</th>
+    </tr>
     </thead>
     <tbody>
-        @forelse($sales as $sale)
+    @forelse($sales as $sale)
         <tr>
             <td>
                 <strong class="text-primary">{{ $sale->sale_code ?? $sale->invoice_number }}</strong>
@@ -25,7 +25,7 @@
                     <div>
                         <strong>{{ $sale->customer->name }}</strong>
                         @if($sale->customer->customer_type)
-                            <br><span class="badge badge-sm 
+                            <br><span class="badge badge-sm
                                 @switch($sale->customer->customer_type)
                                     @case('mayorista') badge-primary @break
                                     @case('distribuidor') badge-info @break
@@ -50,7 +50,7 @@
                 <strong>{{ number_format($sale->total_weight ?? 0, 2) }} kg</strong>
                 @if($sale->saleItems->count() > 0)
                     <br><small class="text-muted">
-                        {{ $sale->saleItems->count() }} 
+                        {{ $sale->saleItems->count() }}
                         {{ $sale->saleItems->count() == 1 ? 'item' : 'items' }}
                     </small>
                 @endif
@@ -96,10 +96,10 @@
             </td>
             <td>
                 <div class="d-flex align-items-center">
-                    <span class="payment-status-indicator 
+                    <span class="payment-status-indicator
                         @switch($sale->payment_status)
                             @case('paid') payment-paid @break
-                            @case('partial') payment-partial @break  
+                            @case('partial') payment-partial @break
                             @case('overdue') payment-overdue @break
                             @default payment-pending
                         @endswitch"></span>
@@ -123,33 +123,35 @@
             </td>
             <td>
                 <div class="btn-group btn-group-sm quick-actions">
-                    <button type="button" 
-                            class="btn btn-info" 
+                    <button type="button"
+                            class="btn btn-info"
                             onclick="showSaleDetails({{ $sale->id }})"
-                            data-toggle="tooltip" 
+                            data-toggle="tooltip"
                             title="Ver detalles">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <a href="{{ route('sales.edit', $sale) }}" 
-                       class="btn btn-primary btn-ajax" 
-                       data-toggle="tooltip" 
+                    <a href="{{ route('sales.edit', $sale) }}"
+                       class="btn btn-primary btn-ajax"
+                       data-toggle="tooltip"
                        title="Editar">
                         <i class="fas fa-edit"></i>
                     </a>
                     @if($sale->status !== 'cancelled')
                         <div class="btn-group btn-group-sm">
-                            <button type="button" 
-                                    class="btn btn-secondary dropdown-toggle dropdown-icon" 
+                            <button type="button"
+                                    class="btn btn-secondary dropdown-toggle dropdown-icon"
                                     data-toggle="dropdown">
                             </button>
                             <div class="dropdown-menu">
                                 @if($sale->status === 'draft')
-                                    <a class="dropdown-item" href="#" onclick="changeStatus({{ $sale->id }}, 'confirmed')">
+                                    <a class="dropdown-item" href="#"
+                                       onclick="changeStatus({{ $sale->id }}, 'confirmed')">
                                         <i class="fas fa-check text-success"></i> Confirmar
                                     </a>
                                 @endif
                                 @if($sale->status === 'confirmed')
-                                    <a class="dropdown-item" href="#" onclick="changeStatus({{ $sale->id }}, 'delivered')">
+                                    <a class="dropdown-item" href="#"
+                                       onclick="changeStatus({{ $sale->id }}, 'delivered')">
                                         <i class="fas fa-truck text-info"></i> Marcar Entregado
                                     </a>
                                 @endif
@@ -164,7 +166,8 @@
                                 </a>
                                 @if(in_array($sale->status, ['draft', 'confirmed']))
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item text-danger" href="#" onclick="changeStatus({{ $sale->id }}, 'cancelled')">
+                                    <a class="dropdown-item text-danger" href="#"
+                                       onclick="changeStatus({{ $sale->id }}, 'cancelled')">
                                         <i class="fas fa-ban"></i> Cancelar Venta
                                     </a>
                                 @endif
@@ -174,7 +177,7 @@
                 </div>
             </td>
         </tr>
-        @empty
+    @empty
         <tr>
             <td colspan="8" class="text-center py-5">
                 <div class="d-flex flex-column align-items-center">
@@ -198,32 +201,32 @@
                 </div>
             </td>
         </tr>
-        @endforelse
+    @endforelse
     </tbody>
 </table>
 
 @if($sales->hasPages())
-<div class="d-flex justify-content-between align-items-center mt-3">
-    <div class="text-muted">
-        Mostrando {{ $sales->firstItem() }} a {{ $sales->lastItem() }} de {{ $sales->total() }} ventas
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted">
+            Mostrando {{ $sales->firstItem() }} a {{ $sales->lastItem() }} de {{ $sales->total() }} ventas
+        </div>
+        <div>
+            {{ $sales->withQueryString()->onEachSide(2)->links() }}
+        </div>
     </div>
-    <div>
-        {{ $sales->withQueryString()->onEachSide(2)->links() }}
-    </div>
-</div>
 @endif
 
 <script>
-function registerPayment(saleId) {
-    window.location.href = `{{ route('payments.create') }}?sale_id=${saleId}`;
-}
+    function registerPayment(saleId) {
+        window.location.href = `{{ route('payments.create') }}?sale_id=${saleId}`;
+    }
 
-function printInvoice(saleId) {
-    window.open(`/sales/${saleId}/invoice`, '_blank');
-}
+    function printInvoice(saleId) {
+        window.open(`/sales/${saleId}/invoice`, '_blank');
+    }
 
-function clearFilters() {
-    $('#filterForm')[0].reset();
-    loadSales();
-}
+    function clearFilters() {
+        $('#filterForm')[0].reset();
+        loadSales();
+    }
 </script>
