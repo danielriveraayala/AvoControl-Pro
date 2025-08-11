@@ -189,10 +189,10 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        $totalVentas = 0;
                                         $totalPesoVendido = 0;
                                         $totalIngresoVentas = 0;
                                         $totalCostoVendido = 0;
+                                        $ventasIdsUnicas = collect(); // Para rastrear ventas únicas globalmente
                                     @endphp
                                     @foreach($reporte['ventas'] as $calidad => $ventasCalidad)
                                         @php
@@ -209,8 +209,14 @@
                                             $ventasUnicas = $ventasCalidad->groupBy(function($item) {
                                                 return $item->saleItem->sale_id;
                                             })->count();
+                                            
+                                            // Agregar IDs únicos para el conteo global
+                                            $ventasCalidad->pluck('saleItem.sale_id')->each(function($saleId) use ($ventasIdsUnicas) {
+                                                if (!$ventasIdsUnicas->contains($saleId)) {
+                                                    $ventasIdsUnicas->push($saleId);
+                                                }
+                                            });
 
-                                            $totalVentas += $ventasUnicas;
                                             $totalPesoVendido += $pesoVendido;
                                             $totalIngresoVentas += $ingresoVentas;
                                             $totalCostoVendido += $costoVendido;
@@ -258,7 +264,7 @@
                                 <tfoot class="bg-light font-weight-bold">
                                     <tr>
                                         <td>TOTAL</td>
-                                        <td class="text-center">{{ $totalVentas }}</td>
+                                        <td class="text-center">{{ $ventasIdsUnicas->count() }}</td>
                                         <td class="text-right">{{ number_format($totalPesoVendido, 2) }}</td>
                                         <td class="text-right text-success">${{ number_format($totalIngresoVentas, 2) }}</td>
                                         <td class="text-right">
