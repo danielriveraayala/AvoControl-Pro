@@ -282,38 +282,24 @@ class CompleteDataSeeder extends Seeder
                 // Status basado en la fecha (lotes más antiguos más probables de estar vendidos)
                 $daysSinceHarvest = $harvestDate->diffInDays(now());
                 if ($daysSinceHarvest > 150) {
-                    $status = collect(['vendido', 'vendido_parcial', 'vendido'])->random();
+                    $status = collect(['sold', 'partial', 'sold'])->random();
                 } elseif ($daysSinceHarvest > 90) {
-                    $status = collect(['disponible', 'vendido_parcial', 'vendido'])->random();
+                    $status = collect(['active', 'partial', 'sold'])->random();
                 } else {
-                    $status = collect(['disponible', 'vendido_parcial'])->random();
+                    $status = collect(['active', 'partial'])->random();
                 }
                 
                 // Calcular pesos vendidos y disponibles
                 $weightSold = 0;
                 $weightAvailable = $totalWeight;
                 
-                if ($status === 'vendido') {
+                if ($status === 'sold') {
                     $weightSold = $totalWeight;
                     $weightAvailable = 0;
-                } elseif ($status === 'vendido_parcial') {
+                } elseif ($status === 'partial') {
                     $weightSold = $totalWeight * (rand(20, 80) / 100);
                     $weightAvailable = $totalWeight - $weightSold;
                 }
-                
-                $varieties = ['Hass', 'Fuerte', 'Criollo', 'Bacon'];
-                $regions = [
-                    'Uruapan', 'Tancítaro', 'Peribán', 'Los Reyes', 
-                    'Salvador Escalante', 'Ario de Rosales'
-                ];
-                $calibers = ['32-36', '34-32', '30-28', '28-26', '26-24'];
-                
-                $metadata = [
-                    'harvest_region' => $regions[array_rand($regions)],
-                    'variety' => $varieties[array_rand($varieties)],
-                    'organic' => rand(0, 100) < 20, // 20% orgánico
-                    'caliber' => $calibers[array_rand($calibers)]
-                ];
                 
                 $lot = Lot::create([
                     'lot_code' => sprintf('LOT-%04d%02d-%03d', 2025, $month, $lotCounter++),
@@ -327,7 +313,6 @@ class CompleteDataSeeder extends Seeder
                     'status' => $status,
                     'weight_sold' => round($weightSold, 2),
                     'weight_available' => round($weightAvailable, 2),
-                    'metadata' => json_encode($metadata),
                     'created_at' => $entryDate,
                     'updated_at' => $entryDate
                 ]);
@@ -349,7 +334,7 @@ class CompleteDataSeeder extends Seeder
         $soldLots = $lots->where('weight_sold', '>', 0);
         
         foreach ($soldLots as $lot) {
-            $numSales = $lot->status === 'vendido' ? rand(1, 2) : 1;
+            $numSales = $lot->status === 'sold' ? rand(1, 2) : 1;
             $remainingWeight = $lot->weight_sold;
             
             for ($i = 0; $i < $numSales && $remainingWeight > 0; $i++) {
