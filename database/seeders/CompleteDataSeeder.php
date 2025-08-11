@@ -301,6 +301,25 @@ class CompleteDataSeeder extends Seeder
                     $weightAvailable = $totalWeight - $weightSold;
                 }
                 
+                // Calcular pagos aleatorios
+                $amountPaid = 0;
+                $amountOwed = $totalCost;
+                $paymentStatus = 'pending';
+                
+                // 60% de lotes tienen algún pago
+                if (rand(1, 100) <= 60) {
+                    $paidPercentage = rand(20, 100);
+                    $amountPaid = $totalCost * ($paidPercentage / 100);
+                    $amountOwed = $totalCost - $amountPaid;
+                    
+                    if ($paidPercentage >= 100) {
+                        $paymentStatus = 'paid';
+                        $amountOwed = 0;
+                    } else {
+                        $paymentStatus = 'partial';
+                    }
+                }
+                
                 $lot = Lot::create([
                     'lot_code' => sprintf('LOT-%04d%02d-%03d', 2025, $month, $lotCounter++),
                     'supplier_id' => $supplier->id,
@@ -309,6 +328,9 @@ class CompleteDataSeeder extends Seeder
                     'total_weight' => $totalWeight,
                     'purchase_price_per_kg' => round($pricePerKg, 2),
                     'total_purchase_cost' => round($totalCost, 2),
+                    'amount_paid' => round($amountPaid, 2),
+                    'amount_owed' => round($amountOwed, 2),
+                    'payment_status' => $paymentStatus,
                     'quality_grade' => $quality,
                     'status' => $status,
                     'weight_sold' => round($weightSold, 2),
