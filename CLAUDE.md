@@ -4,9 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AvoControl Pro is a Laravel-based web application for managing avocado purchasing and sales operations for a packaging company in Uruapan. The system tracks lot purchases from suppliers, sales to customers, payments, and provides comprehensive reporting and analytics.
+AvoControl Pro is a Laravel-based web application for managing avocado purchasing and sales operations for Avocado Collection Centers (Centros de Acopio de Aguacate). The system tracks lot purchases from suppliers, sales to customers, payments, and provides comprehensive reporting and analytics.
 
-**Status**: Development environment configured and basic structure implemented.
+**Status**: Full production-ready system with comprehensive features implemented.
+
+## Developer Information
+
+**Developer**: Daniel Esau Rivera Ayala  
+**Company**: Kreativos Pro - Agencia de Marketing Digital y Desarrollo Web  
+**Role**: CEO & Web Developer  
+**Location**: Morelia, México  
+**Bio**: [about.me/danielriveraayala](https://about.me/danielriveraayala)  
+
+**About the Developer**: Daniel is a seasoned Software Engineer and Project Manager with over 12 years of experience in web systems development. He specializes in full-stack development with expertise in PHP and data management systems. As the CEO of Kreativos Pro, he leads digital marketing and web development projects with a focus on innovative solutions for business operations.
+
+**License**: Proprietary Software - All rights reserved. This is not open source software.
 
 ## Development Commands
 
@@ -76,15 +88,19 @@ php artisan migrate:fresh --seed
 - All models and migrations (Suppliers, Customers, Lots, Sales, SaleItems, Payments)
 - User roles system (admin, vendedor, contador)
 - Comprehensive seeders with realistic test data
-- Basic controllers structure
-- Dashboard with statistics
-- Route structure
-
-**🔄 In Progress:**
-- Controller implementations
-- Livewire components
-- Complete CRUD operations
-- Report generation
+- Complete controllers structure with AJAX functionality
+- Dashboard with real-time statistics and charts
+- Comprehensive route structure
+- Complete CRUD operations with DataTables integration
+- Advanced reporting system (Profitability, Customer Analysis, Supplier Analysis)
+- PDF and Excel export functionality for all reports
+- Customer and Supplier management with credit/balance systems
+- Payment tracking with polymorphic relationships
+- Configuration system with company settings
+- User profile management with password change functionality
+- Quality grade management system
+- Complete modal-based interfaces for all CRUD operations
+- Server-side DataTables processing for optimal performance
 
 ## Architecture Overview
 

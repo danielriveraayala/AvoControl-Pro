@@ -27,15 +27,9 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="modules-tab" data-toggle="pill" href="#modules" role="tab"
-                               aria-controls="modules" aria-selected="false">
-                                <i class="fas fa-puzzle-piece"></i> Módulos
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="system-tab" data-toggle="pill" href="#system" role="tab"
-                               aria-controls="system" aria-selected="false">
-                                <i class="fas fa-server"></i> Sistema
+                            <a class="nav-link" id="company-tab" data-toggle="pill" href="#company" role="tab"
+                               aria-controls="company" aria-selected="false">
+                                <i class="fas fa-building"></i> Empresa
                             </a>
                         </li>
                     </ul>
@@ -52,24 +46,136 @@
                                     <i class="fas fa-plus"></i> Nueva Calidad
                                 </button>
                             </div>
-                            <div class="table-responsive w-100" id="qualityTableContainer">
-                                @include('configuration.partials.quality_table')
+                            <div class="table-responsive w-100">
+                                <table class="table table-bordered table-striped" id="qualityTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Orden</th>
+                                            <th>Nombre</th>
+                                            <th>Color</th>
+                                            <th>Calibre</th>
+                                            <th>Peso (g)</th>
+                                            <th>Estado</th>
+                                            <th width="100">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- DataTables content -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                        <!-- Modules Tab -->
-                        <div class="tab-pane fade" id="modules" role="tabpanel" aria-labelledby="modules-tab">
-                            <div class="alert alert-info">
-                                <h5><i class="icon fas fa-info"></i> Próximamente!</h5>
-                                Configuración de módulos y funcionalidades adicionales estará disponible pronto.
+                        
+                        <!-- Company Configuration Tab -->
+                        <div class="tab-pane fade" id="company" role="tabpanel" aria-labelledby="company-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4><i class="fas fa-building text-info"></i> Configuración de la Empresa</h4>
                             </div>
-                        </div>
-
-                        <!-- System Tab -->
-                        <div class="tab-pane fade" id="system" role="tabpanel" aria-labelledby="system-tab">
-                            <div class="alert alert-info">
-                                <h5><i class="icon fas fa-info"></i> Próximamente!</h5>
-                                Configuraciones del sistema como empresa, moneda, etc. estarán disponibles pronto.
-                            </div>
+                            
+                            <form id="companyForm">
+                                @csrf
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_name">Nombre de la Empresa <span class="text-danger">*</span></label>
+                                            <input type="text" name="company_name" id="company_name" class="form-control" 
+                                                   placeholder="AvoControl-Pro" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_rfc">RFC</label>
+                                            <input type="text" name="company_rfc" id="company_rfc" class="form-control" 
+                                                   placeholder="RFC123456789" maxlength="13">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="company_address">Dirección</label>
+                                            <textarea name="company_address" id="company_address" class="form-control" 
+                                                      rows="2" placeholder="Dirección completa de la empresa"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="company_city">Ciudad</label>
+                                            <input type="text" name="company_city" id="company_city" class="form-control" 
+                                                   placeholder="Uruapan">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="company_state">Estado</label>
+                                            <input type="text" name="company_state" id="company_state" class="form-control" 
+                                                   value="Michoacán">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="company_postal_code">Código Postal</label>
+                                            <input type="text" name="company_postal_code" id="company_postal_code" class="form-control" 
+                                                   placeholder="60000">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_phone">Teléfono</label>
+                                            <input type="text" name="company_phone" id="company_phone" class="form-control" 
+                                                   placeholder="(452) 123-4567">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_email">Email</label>
+                                            <input type="email" name="company_email" id="company_email" class="form-control" 
+                                                   placeholder="contacto@empresa.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_website">Sitio Web</label>
+                                            <input type="url" name="company_website" id="company_website" class="form-control" 
+                                                   placeholder="https://www.empresa.com">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_logo">Logo (URL)</label>
+                                            <input type="url" name="company_logo" id="company_logo" class="form-control" 
+                                                   placeholder="https://www.empresa.com/logo.png">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="company_description">Descripción</label>
+                                    <textarea name="company_description" id="company_description" class="form-control" 
+                                              rows="3" placeholder="Descripción de la empresa para usar en reportes"></textarea>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Guardar Configuración
+                                        </button>
+                                        <button type="button" class="btn btn-secondary ml-2" onclick="loadCompanyConfig()">
+                                            <i class="fas fa-undo"></i> Recargar
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -159,7 +265,7 @@
                                 <div class="form-group">
                                     <label for="color">Color <span class="text-danger">*</span></label>
                                     <div class="input-group">
-                                        <input type="color" name="color" id="color" class="form-control form-control-color" 
+                                        <input type="color" name="color" id="color" class="form-control form-control-color"
                                                value="#6c757d" required>
                                         <div class="input-group-append">
                                             <span class="input-group-text">
@@ -174,7 +280,7 @@
                                 <div class="form-group">
                                     <label>Vista Previa del Color</label>
                                     <div class="d-flex align-items-center">
-                                        <div id="colorPreview" class="color-preview me-3" 
+                                        <div id="colorPreview" class="color-preview me-3"
                                              style="width: 40px; height: 40px; background-color: #6c757d; border-radius: 8px; border: 2px solid #ddd;"></div>
                                         <span id="colorValue" class="text-muted">#6c757d</span>
                                     </div>
@@ -231,98 +337,46 @@
                 return;
             }
 
-            // Simple version without DataTables for now - more stable
-            console.log('Using simple table without DataTables for stability');
-            $('#qualityTable').addClass('table-responsive');
-            return;
-
-            // DataTables version (disabled for now due to loading issues)
-            /*
-            // Check if DataTables is available
-            if (typeof $.fn.DataTable === 'undefined') {
-                console.warn('DataTables not loaded, using basic table functionality');
-                $('#qualityTable').addClass('table-responsive');
-                return;
-            }
-
-            // Destroy existing DataTable if it exists
-            try {
+            // Initialize DataTable
+            if (typeof $.fn.DataTable !== 'undefined') {
+                // Destroy existing DataTable if it exists
                 if ($.fn.DataTable.isDataTable('#qualityTable')) {
                     $('#qualityTable').DataTable().destroy();
                 }
 
                 // Initialize new DataTable
                 qualityTable = $('#qualityTable').DataTable({
-                    "responsive": true,
-                    "lengthChange": false,
-                    "autoWidth": false,
-                    "pageLength": 10,
-                    "order": [[ 0, "asc" ]],
-                    "language": {
-                        "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
-                    }
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: '{{ route("configuration.qualities.table") }}',
+                        data: function(d) {
+                            d.ajax = 1;
+                        }
+                    },
+                    columns: [
+                        { data: 'sort_order', name: 'sort_order', width: '80px' },
+                        { data: 'name', name: 'name' },
+                        { data: 'color', name: 'color', orderable: false },
+                        { data: 'caliber', name: 'caliber', orderable: false },
+                        { data: 'weight', name: 'weight', orderable: false },
+                        { data: 'status', name: 'active', orderable: false },
+                        { data: 'actions', name: 'actions', orderable: false, searchable: false }
+                    ],
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+                    },
+                    responsive: true,
+                    pageLength: 10,
+                    order: [[0, 'asc']]
                 });
-
-                console.log('DataTable initialized successfully');
-            } catch (error) {
-                console.error('Error initializing DataTable:', error);
-                $('#qualityTable').addClass('table-responsive');
             }
-            */
         }
 
         function loadQualityTable() {
-            // Show loading state
-            $('#qualityTableContainer').html(`
-        <div class="text-center p-4">
-            <div class="spinner-border text-primary" role="status">
-                <span class="sr-only">Cargando...</span>
-            </div>
-            <p class="mt-2 text-muted">Actualizando calidades...</p>
-        </div>
-    `);
-
-            fetch('{{ route("configuration.qualities.table") }}', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-                .then(response => {
-                    console.log('Response status:', response.status);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Response data:', data);
-                    if (data.html) {
-                        $('#qualityTableContainer').html(data.html);
-
-                        // Try to initialize DataTable with delay to ensure scripts are loaded
-                        setTimeout(() => {
-                            initializeQualityTable();
-                        }, 300);
-                    } else if (data.success === false) {
-                        throw new Error(data.message || 'Error del servidor');
-                    } else {
-                        throw new Error('No HTML data received');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error details:', error);
-                    $('#qualityTableContainer').html(`
-            <div class="alert alert-danger">
-                <h5><i class="icon fas fa-ban"></i> Error!</h5>
-                Ha ocurrido un error al cargar los datos: ${error.message}
-                <br><small class="text-muted">Revisa la consola para más detalles</small>
-                <button class="btn btn-sm btn-outline-danger ml-2" onclick="loadQualityTable()">
-                    <i class="fas fa-redo"></i> Reintentar
-                </button>
-            </div>
-        `);
-                });
+            if (qualityTable) {
+                qualityTable.ajax.reload();
+            }
         }
 
         function updateColorPreview(color) {
@@ -336,11 +390,11 @@
             $('#qualityForm').attr('data-mode', 'create');
             $('#qualityForm').attr('data-id', '');
             $('#activeRow').hide();
-            
+
             // Reset color to default
             $('#color').val('#6c757d');
             updateColorPreview('#6c757d');
-            
+
             $('#qualityModal').modal('show');
         }
 
@@ -438,7 +492,7 @@
             } else {
                 formData.set('active', '1');
             }
-            
+
             // Debug: Log the color value being sent
             console.log('Color value being sent:', formData.get('color'));
 
@@ -483,6 +537,81 @@
                         toastr.error(error.message || 'Error al guardar la calidad');
                     }
                 });
+        });
+
+        // Company configuration functions
+        function loadCompanyConfig() {
+            fetch('{{ route("configuration.company.get") }}', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const config = data.config || {};
+                    $('#company_name').val(config.company_name || 'AvoControl-Pro');
+                    $('#company_rfc').val(config.company_rfc || '');
+                    $('#company_address').val(config.company_address || '');
+                    $('#company_city').val(config.company_city || 'Uruapan');
+                    $('#company_state').val(config.company_state || 'Michoacán');
+                    $('#company_postal_code').val(config.company_postal_code || '');
+                    $('#company_phone').val(config.company_phone || '');
+                    $('#company_email').val(config.company_email || '');
+                    $('#company_website').val(config.company_website || '');
+                    $('#company_logo').val(config.company_logo || '');
+                    $('#company_description').val(config.company_description || '');
+                } else {
+                    toastr.error('Error al cargar la configuración de la empresa');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Error al cargar la configuración de la empresa');
+            });
+        }
+
+        // Company form submission
+        $('#companyForm').submit(function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('{{ route("configuration.company.store") }}', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success('Configuración de empresa guardada correctamente');
+                } else {
+                    if (data.errors) {
+                        Object.keys(data.errors).forEach(key => {
+                            toastr.error(data.errors[key][0]);
+                        });
+                    } else {
+                        toastr.error(data.message || 'Error al guardar la configuración');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Error al guardar la configuración de la empresa');
+            });
+        });
+
+        // Load company config when company tab is shown
+        $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+            if ($(e.target).attr('href') === '#company') {
+                loadCompanyConfig();
+            }
         });
     </script>
 @endpush

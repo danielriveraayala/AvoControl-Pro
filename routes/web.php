@@ -84,6 +84,18 @@ Route::middleware(['auth'])->group(function () {
     Route::put('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'updateQuality'])->name('configuration.quality.update');
     Route::delete('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'destroyQuality'])->name('configuration.quality.destroy');
     
+    // Company configuration routes
+    Route::get('configuration/company/get', [ConfigurationController::class, 'getCompanyConfig'])->name('configuration.company.get');
+    Route::post('configuration/company/store', [ConfigurationController::class, 'storeCompanyConfig'])->name('configuration.company.store');
+    
+    // Profile routes
+    Route::prefix('perfil')->name('profile.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'index'])->name('index');
+        Route::post('/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+        Route::post('/settings', [\App\Http\Controllers\ProfileController::class, 'updateSettings'])->name('settings');
+        Route::post('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password');
+    });
+    
     // Reports routes
     Route::prefix('reportes')->name('reports.')->group(function () {
         Route::get('rentabilidad', [ReportController::class, 'profitability'])->name('profitability');

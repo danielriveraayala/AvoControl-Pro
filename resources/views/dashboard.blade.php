@@ -354,44 +354,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Acciones Rápidas -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card card-primary card-outline">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-bolt mr-1"></i>
-                        Acciones Rápidas
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 col-6">
-                            <a href="{{ route('lots.create') }}" class="btn btn-app bg-success">
-                                <i class="fas fa-plus"></i> Nuevo Lote
-                            </a>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <a href="{{ route('sales.create') }}" class="btn btn-app bg-primary">
-                                <i class="fas fa-shopping-cart"></i> Nueva Venta
-                            </a>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <a href="{{ route('customers.create') }}" class="btn btn-app bg-info">
-                                <i class="fas fa-user-plus"></i> Nuevo Cliente
-                            </a>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <a href="{{ route('payments.create') }}" class="btn btn-app bg-warning">
-                                <i class="fas fa-money-bill-wave"></i> Nuevo Pago
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @push('scripts')
