@@ -20,7 +20,7 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap4.min.css">
-    
+
     <!-- Date Range Picker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
 
@@ -375,7 +375,7 @@
         <strong>Copyright &copy; {{ date('Y') }} <a href="#">AvoControl Pro</a>.</strong>
         Todos los derechos reservados.
         <div class="float-right d-none d-sm-inline-block">
-            <b>Version</b> 1.0.0
+            <b>Version</b> 1.0.0 | Desarrollado por <a href="https://about.me/danielriveraayala" target="_blank"><strong>Dany Rivera</strong></a>
         </div>
     </footer>
 

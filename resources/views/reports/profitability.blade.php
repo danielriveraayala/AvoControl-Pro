@@ -233,6 +233,25 @@
                         </div>
                     </div>
                 </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie text-info"></i>
+                                Rentabilidad por Calidad
+                                <i class="fas fa-question-circle text-muted ml-2"
+                                   data-toggle="tooltip"
+                                   data-placement="top"
+                                   title="Qué porcentaje de tus ganancias viene de cada calidad de aguacate. Te ayuda a enfocar en las calidades más rentables."></i>
+                            </h3>
+                            <div class="card-tools">
+                                <span class="badge badge-secondary">Datos históricos</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="profitByQualityChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+
             </div>
 
             <div class="col-lg-6">
@@ -374,7 +393,7 @@
 
         <!-- Gráficas ChartJS -->
         <div class="row mt-3">
-            <div class="col-lg-6">
+            <div class="col-lg-12">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
@@ -391,27 +410,6 @@
                     </div>
                     <div class="card-body">
                         <canvas id="profitEvolutionChart" style="height: 300px;"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-chart-pie text-info"></i>
-                            Rentabilidad por Calidad
-                            <i class="fas fa-question-circle text-muted ml-2"
-                               data-toggle="tooltip"
-                               data-placement="top"
-                               title="Qué porcentaje de tus ganancias viene de cada calidad de aguacate. Te ayuda a enfocar en las calidades más rentables."></i>
-                        </h3>
-                        <div class="card-tools">
-                            <span class="badge badge-secondary">Datos históricos</span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="profitByQualityChart" style="height: 300px;"></canvas>
                     </div>
                 </div>
             </div>
