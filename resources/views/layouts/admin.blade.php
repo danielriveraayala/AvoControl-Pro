@@ -341,8 +341,8 @@
 
                     <!-- Información del Desarrollador - Solo móviles -->
                     <li class="nav-item d-block d-sm-none mt-3">
-                        <div class="nav-link text-center text-muted" style="font-size: 0.75rem; pointer-events: none;">
-                            <b>Version</b> 1.0.0 | Desarrollado por <a href="https://about.me/danielriveraayala" target="_blank"><strong>Dany Rivera</strong></a>
+                        <div class="nav-link text-center text-muted" style="font-size: 0.75rem;">
+                            <b>Version</b> 1.0.0 | Desarrollado por <a href="https://about.me/danielriveraayala" target="_blank" class="text-info"><strong>Dany Rivera</strong></a>
                         </div>
                     </li>
 
