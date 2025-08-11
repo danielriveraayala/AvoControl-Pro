@@ -13,7 +13,7 @@ use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class CompleteDataSeeder extends Seeder
+class ProductionDataSeeder extends Seeder
 {
     public function run()
     {
@@ -48,7 +48,7 @@ class CompleteDataSeeder extends Seeder
         $sales = $this->createSales($customers, $lots);
         
         // 6. Crear pagos
-        $this->createPayments($suppliers, $customers, $lots, $sales);
+        $this->createPayments($lots, $sales);
         
         echo "✅ Seeder completo ejecutado exitosamente!\n";
         echo "📊 Datos creados desde enero 2025 a agosto 2025\n";
@@ -101,6 +101,11 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Carretera Uruapan-Peribán Km 8',
                 'city' => 'Uruapan',
                 'state' => 'Michoacán',
+                'country' => 'México',
+                'postal_code' => '60000',
+                'status' => 'active',
+                'balance_owed' => 0.00,
+                'total_purchased' => 0.00,
                 'notes' => 'Proveedor confiable con aguacates de primera calidad'
             ],
             [
@@ -111,6 +116,11 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Av. Revolución 245',
                 'city' => 'Tancítaro',
                 'state' => 'Michoacán',
+                'country' => 'México',
+                'postal_code' => '60460',
+                'status' => 'active',
+                'balance_owed' => 0.00,
+                'total_purchased' => 0.00,
                 'notes' => 'Especialistas en aguacate Hass orgánico'
             ],
             [
@@ -121,6 +131,11 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Calle Juárez 123',
                 'city' => 'Peribán',
                 'state' => 'Michoacán',
+                'country' => 'México',
+                'postal_code' => '60440',
+                'status' => 'active',
+                'balance_owed' => 0.00,
+                'total_purchased' => 0.00,
                 'notes' => 'Cooperativa de pequeños productores'
             ],
             [
@@ -131,6 +146,11 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Km 15 Carretera a Los Reyes',
                 'city' => 'Los Reyes',
                 'state' => 'Michoacán',
+                'country' => 'México',
+                'postal_code' => '60300',
+                'status' => 'active',
+                'balance_owed' => 0.00,
+                'total_purchased' => 0.00,
                 'notes' => 'Productor premium con certificaciones internacionales'
             ],
             [
@@ -141,6 +161,11 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Ejido El Aguacate',
                 'city' => 'Salvador Escalante',
                 'state' => 'Michoacán',
+                'country' => 'México',
+                'postal_code' => '60450',
+                'status' => 'active',
+                'balance_owed' => 0.00,
+                'total_purchased' => 0.00,
                 'notes' => 'Proveedor familiar con tradición de 3 generaciones'
             ]
         ];
@@ -165,8 +190,12 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Blvd. Manuel Ávila Camacho 647',
                 'city' => 'Ciudad de México',
                 'state' => 'CDMX',
-                'credit_limit' => 500000.00,
+                'country' => 'México',
+                'postal_code' => '11520',
                 'customer_type' => 'mayorista',
+                'credit_limit' => 500000.00,
+                'current_balance' => 0.00,
+                'status' => 'active',
                 'notes' => 'Cliente corporativo de alto volumen'
             ],
             [
@@ -177,8 +206,12 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Av. Ricardo Margáin 444',
                 'city' => 'Monterrey',
                 'state' => 'Nuevo León',
-                'credit_limit' => 300000.00,
+                'country' => 'México',
+                'postal_code' => '66220',
                 'customer_type' => 'mayorista',
+                'credit_limit' => 300000.00,
+                'current_balance' => 0.00,
+                'status' => 'active',
                 'notes' => 'Cadena retail con presencia nacional'
             ],
             [
@@ -189,8 +222,12 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Calle Ernesto Pugibet 21',
                 'city' => 'Ciudad de México',
                 'state' => 'CDMX',
-                'credit_limit' => 50000.00,
+                'country' => 'México',
+                'postal_code' => '06050',
                 'customer_type' => 'minorista',
+                'credit_limit' => 50000.00,
+                'current_balance' => 0.00,
+                'status' => 'active',
                 'notes' => 'Mercado tradicional de alta rotación'
             ],
             [
@@ -202,8 +239,11 @@ class CompleteDataSeeder extends Seeder
                 'city' => 'Los Angeles',
                 'state' => 'California',
                 'country' => 'Estados Unidos',
-                'credit_limit' => 1000000.00,
+                'postal_code' => '90001',
                 'customer_type' => 'distribuidor',
+                'credit_limit' => 1000000.00,
+                'current_balance' => 0.00,
+                'status' => 'active',
                 'notes' => 'Exportación a Estados Unidos y Canadá'
             ],
             [
@@ -214,8 +254,12 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Santa Fe 505',
                 'city' => 'Ciudad de México',
                 'state' => 'CDMX',
-                'credit_limit' => 150000.00,
+                'country' => 'México',
+                'postal_code' => '01219',
                 'customer_type' => 'mayorista',
+                'credit_limit' => 150000.00,
+                'current_balance' => 0.00,
+                'status' => 'active',
                 'notes' => 'Grupo restaurantero con múltiples marcas'
             ],
             [
@@ -226,8 +270,12 @@ class CompleteDataSeeder extends Seeder
                 'address' => 'Av. Dr. Río de la Loza 195',
                 'city' => 'Ciudad de México',
                 'state' => 'CDMX',
-                'credit_limit' => 200000.00,
+                'country' => 'México',
+                'postal_code' => '09040',
                 'customer_type' => 'distribuidor',
+                'credit_limit' => 200000.00,
+                'current_balance' => 0.00,
+                'status' => 'active',
                 'notes' => 'Mayor distribuidor de la central de abastos'
             ]
         ];
@@ -332,12 +380,19 @@ class CompleteDataSeeder extends Seeder
                     'amount_owed' => round($amountOwed, 2),
                     'payment_status' => $paymentStatus,
                     'quality_grade' => $quality,
+                    'quality_grade_id' => null, // No tenemos tabla quality_grades
                     'status' => $status,
+                    'notes' => 'Lote de ' . $quality . ' calidad',
                     'weight_sold' => round($weightSold, 2),
                     'weight_available' => round($weightAvailable, 2),
                     'created_at' => $entryDate,
                     'updated_at' => $entryDate
                 ]);
+                
+                // Actualizar totales del proveedor
+                $supplier->total_purchased += $totalCost;
+                $supplier->balance_owed += $amountOwed;
+                $supplier->save();
                 
                 $lots->push($lot);
             }
@@ -378,8 +433,9 @@ class CompleteDataSeeder extends Seeder
                 
                 $totalSaleAmount = $saleWeight * $salePrice;
                 
-                $saleCode = sprintf('VTA-%04d%02d-%03d', $saleDate->year, $saleDate->month, $saleCounter++);
-                $invoiceNumber = sprintf('F-%04d%02d-%03d', $saleDate->year, $saleDate->month, $saleCounter - 1);
+                $saleCode = sprintf('VTA-%04d%02d-%03d', $saleDate->year, $saleDate->month, $saleCounter);
+                $invoiceNumber = sprintf('F-%04d%02d-%03d', $saleDate->year, $saleDate->month, $saleCounter);
+                $saleCounter++;
                 
                 $sale = Sale::create([
                     'sale_code' => $saleCode,
@@ -387,8 +443,8 @@ class CompleteDataSeeder extends Seeder
                     'customer_id' => $customer->id,
                     'created_by' => 1, // Admin user
                     'sale_date' => $saleDate,
-                    'total_weight' => round($saleWeight, 2),
                     'delivery_date' => $saleDate->copy()->addDays(rand(1, 3)),
+                    'total_weight' => round($saleWeight, 2),
                     'total_amount' => round($totalSaleAmount, 2),
                     'payment_status' => collect(['pending', 'partial', 'paid'])->random(),
                     'status' => collect(['confirmed', 'delivered'])->random(),
@@ -398,16 +454,26 @@ class CompleteDataSeeder extends Seeder
                     'updated_at' => $saleDate
                 ]);
                 
-                // Crear item de venta
+                // Crear item de venta con estructura correcta de sale_items
                 SaleItem::create([
                     'sale_id' => $sale->id,
-                    'lot_id' => $lot->id,
-                    'quantity' => round($saleWeight, 2),
-                    'unit_price' => round($salePrice, 2),
-                    'total_amount' => round($totalSaleAmount, 2),
+                    'quality_grade' => $lot->quality_grade,
+                    'weight' => round($saleWeight, 2),
+                    'price_per_kg' => round($salePrice, 2),
+                    'subtotal' => round($totalSaleAmount, 2),
+                    'notes' => 'Item del lote ' . $lot->lot_code,
                     'created_at' => $saleDate,
                     'updated_at' => $saleDate
                 ]);
+                
+                // Actualizar balance del cliente
+                if ($sale->payment_status === 'pending') {
+                    $customer->current_balance += $totalSaleAmount;
+                    $customer->save();
+                } elseif ($sale->payment_status === 'partial') {
+                    $customer->current_balance += ($totalSaleAmount * 0.5);
+                    $customer->save();
+                }
                 
                 $sales->push($sale);
             }
@@ -417,39 +483,30 @@ class CompleteDataSeeder extends Seeder
         return $sales;
     }
     
-    private function createPayments($suppliers, $customers, $lots, $sales)
+    private function createPayments($lots, $sales)
     {
         $paymentsCount = 0;
         
         // Pagos a proveedores (por lotes)
         foreach ($lots->random($lots->count() * 0.7) as $lot) { // 70% de lotes tienen pagos
-            $numPayments = rand(1, 3);
-            $remainingAmount = $lot->total_purchase_cost;
-            
-            for ($i = 0; $i < $numPayments && $remainingAmount > 10; $i++) {
+            if ($lot->payment_status !== 'pending') {
                 $paymentDate = $lot->entry_date->copy()->addDays(rand(5, 45));
                 
-                if ($i === $numPayments - 1) {
-                    $paymentAmount = $remainingAmount;
-                } else {
-                    $paymentAmount = $remainingAmount * (rand(20, 60) / 100);
-                }
-                $remainingAmount -= $paymentAmount;
-                
-                $methods = ['transferencia', 'cheque', 'efectivo', 'deposito'];
+                $methods = ['transfer', 'cheque', 'cash'];
                 
                 Payment::create([
-                    'payment_code' => 'PAG-PROV-' . $lot->id . '-' . ($i + 1),
+                    'type' => 'supplier',
+                    'concept' => 'Pago por lote ' . $lot->lot_code,
                     'payable_type' => 'App\\Models\\Lot',
                     'payable_id' => $lot->id,
-                    'related_entity_type' => 'supplier',
-                    'related_entity_id' => $lot->supplier_id,
-                    'amount' => round($paymentAmount, 2),
+                    'payment_code' => 'PAG-PROV-' . $lot->id,
                     'payment_date' => $paymentDate,
+                    'amount' => $lot->amount_paid,
                     'payment_method' => $methods[array_rand($methods)],
                     'reference' => 'REF-' . rand(10000, 99999),
                     'status' => 'completed',
                     'notes' => 'Pago a proveedor por lote ' . $lot->lot_code,
+                    'created_by' => 1,
                     'created_at' => $paymentDate,
                     'updated_at' => $paymentDate
                 ]);
@@ -460,33 +517,28 @@ class CompleteDataSeeder extends Seeder
         
         // Pagos de clientes (por ventas)
         foreach ($sales->random($sales->count() * 0.8) as $sale) { // 80% de ventas tienen pagos
-            $numPayments = rand(1, 2);
-            $remainingAmount = $sale->final_amount;
-            
-            for ($i = 0; $i < $numPayments && $remainingAmount > 10; $i++) {
+            if ($sale->payment_status !== 'pending') {
                 $paymentDate = $sale->sale_date->copy()->addDays(rand(1, 30));
                 
-                if ($i === $numPayments - 1) {
-                    $paymentAmount = $remainingAmount;
-                } else {
-                    $paymentAmount = $remainingAmount * (rand(40, 80) / 100);
-                }
-                $remainingAmount -= $paymentAmount;
+                $paymentAmount = $sale->payment_status === 'paid' 
+                    ? $sale->total_amount 
+                    : $sale->total_amount * 0.5;
                 
-                $methods = ['transferencia', 'cheque', 'tarjeta', 'deposito'];
+                $methods = ['transfer', 'cheque', 'card', 'deposit'];
                 
                 Payment::create([
-                    'payment_code' => 'PAG-CLI-' . $sale->id . '-' . ($i + 1),
+                    'type' => 'customer',
+                    'concept' => 'Pago por venta ' . $sale->sale_code,
                     'payable_type' => 'App\\Models\\Sale',
                     'payable_id' => $sale->id,
-                    'related_entity_type' => 'customer',
-                    'related_entity_id' => $sale->customer_id,
-                    'amount' => round($paymentAmount, 2),
+                    'payment_code' => 'PAG-CLI-' . $sale->id,
                     'payment_date' => $paymentDate,
+                    'amount' => round($paymentAmount, 2),
                     'payment_method' => $methods[array_rand($methods)],
                     'reference' => 'REF-' . rand(10000, 99999),
                     'status' => 'completed',
                     'notes' => 'Pago de cliente por venta ' . $sale->sale_code,
+                    'created_by' => 1,
                     'created_at' => $paymentDate,
                     'updated_at' => $paymentDate
                 ]);
