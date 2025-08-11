@@ -9,45 +9,107 @@ class SupplierController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Supplier::query();
-
-        // Filters
-        if ($request->has('search') && $request->search !== '') {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('contact_person', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->has('status') && $request->status !== '') {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->has('city') && $request->city !== '') {
-            $query->where('city', 'like', "%{$request->city}%");
-        }
-
-        $suppliers = $query->latest()->paginate(20);
-        $totalBalance = Supplier::sum('balance_owed');
-
-        // Handle AJAX requests
         if ($request->ajax()) {
-            $stats = [
-                'total' => $suppliers->total(),
-                'active' => Supplier::where('status', 'active')->count(),
-                'balance' => number_format($totalBalance, 2),
-                'inactive' => Supplier::where('status', 'inactive')->count()
-            ];
+            // Handle statistics only request
+            if ($request->has('stats_only')) {
+                $totalBalance = Supplier::sum('balance_owed');
+                $stats = [
+                    'total' => Supplier::count(),
+                    'active' => Supplier::where('status', 'active')->count(),
+                    'balance' => number_format($totalBalance, 2),
+                    'inactive' => Supplier::where('status', 'inactive')->count()
+                ];
+                return response()->json(['stats' => $stats]);
+            }
+
+            // Handle DataTables request
+            $query = Supplier::query();
+            
+            // Search functionality for DataTables
+            if ($request->has('search') && !empty($request->search['value'])) {
+                $search = $request->search['value'];
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('contact_person', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ->orWhere('city', 'like', "%{$search}%");
+                });
+            }
+
+            // Ordering for DataTables
+            if ($request->has('order')) {
+                $columns = ['name', 'contact_person', 'phone', 'email', 'city', 'status', 'balance_owed'];
+                $orderColumn = $columns[$request->order[0]['column']] ?? 'name';
+                $orderDirection = $request->order[0]['dir'] ?? 'asc';
+                $query->orderBy($orderColumn, $orderDirection);
+            } else {
+                $query->orderBy('name', 'asc');
+            }
+
+            // Pagination for DataTables
+            $totalRecords = $query->count();
+            $suppliers = $query->skip($request->start ?? 0)
+                             ->take($request->length ?? 25)
+                             ->get();
+
+            // Format data for DataTables
+            $data = $suppliers->map(function($supplier) {
+                // Status badge
+                $statusBadge = $supplier->status === 'active' 
+                    ? '<span class="badge badge-success">Activo</span>' 
+                    : '<span class="badge badge-danger">Inactivo</span>';
+
+                // Calculate actual balance
+                $actualBalance = $supplier->getTotalPurchasesAttribute() - $supplier->getTotalPaidAttribute();
+                
+                // Balance with color coding
+                $balance = '';
+                if ($actualBalance > 0) {
+                    $balance = '<span class="text-warning font-weight-bold">$'.number_format($actualBalance, 2).'</span>';
+                    if ($actualBalance != $supplier->balance_owed) {
+                        $balance .= '<br><small class="text-muted">BD: $'.number_format($supplier->balance_owed, 2).'</small>';
+                    }
+                } else {
+                    $balance = '<span class="text-success">$0.00</span>';
+                }
+
+                // Actions
+                $actions = '
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-info" onclick="viewSupplier('.$supplier->id.')" title="Ver Detalles">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-secondary" onclick="editSupplier('.$supplier->id.')" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteSupplier('.$supplier->id.', \''.addslashes($supplier->name).'\')" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>';
+
+                return [
+                    'name' => '<strong>'.$supplier->name.'</strong>',
+                    'contact_person' => $supplier->contact_person ?: '-',
+                    'phone' => $supplier->phone ?: '-',
+                    'email' => $supplier->email ?: '-',
+                    'city' => $supplier->city ?: '-',
+                    'status' => $statusBadge,
+                    'balance_owed' => $balance,
+                    'actions' => $actions
+                ];
+            });
 
             return response()->json([
-                'html' => view('suppliers.partials.table', compact('suppliers'))->render(),
-                'stats' => $stats
+                'draw' => intval($request->draw),
+                'recordsTotal' => Supplier::count(),
+                'recordsFiltered' => $totalRecords,
+                'data' => $data
             ]);
         }
 
-        return view('suppliers.index', compact('suppliers', 'totalBalance'));
+        $totalBalance = Supplier::sum('balance_owed');
+        return view('suppliers.index', compact('totalBalance'));
     }
 
     public function create()
@@ -101,7 +163,7 @@ class SupplierController extends Controller
     public function edit(Supplier $supplier)
     {
         if (request()->ajax()) {
-            return view('suppliers.partials.form', compact('supplier'));
+            return response()->json($supplier);
         }
 
         return view('suppliers.edit', compact('supplier'));

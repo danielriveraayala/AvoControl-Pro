@@ -285,53 +285,19 @@
                     </li>
 
                     <!-- Clientes -->
-                    <li class="nav-item {{ request()->routeIs('customers.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
+                    <li class="nav-item">
+                        <a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users"></i>
-                            <p>
-                                Clientes
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
+                            <p>Clientes</p>
                         </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.index') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Lista de Clientes</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('customers.create') }}" class="nav-link {{ request()->routeIs('customers.create') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Nuevo Cliente</p>
-                                </a>
-                            </li>
-                        </ul>
                     </li>
 
                     <!-- Proveedores -->
-                    <li class="nav-item {{ request()->routeIs('suppliers.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
+                    <li class="nav-item">
+                        <a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-truck"></i>
-                            <p>
-                                Proveedores
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
+                            <p>Proveedores</p>
                         </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.index') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Lista de Proveedores</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('suppliers.create') }}" class="nav-link {{ request()->routeIs('suppliers.create') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Nuevo Proveedor</p>
-                                </a>
-                            </li>
-                        </ul>
                     </li>
 
                     <!-- Reportes -->
