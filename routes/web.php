@@ -152,6 +152,11 @@ Route::prefix('developer')
             Route::post('/{user}/reset-password', [App\Http\Controllers\Developer\UserManagementController::class, 'resetPassword'])->name('reset-password');
         });
         
+        // System Actions
+        Route::post('/cache/clear', [App\Http\Controllers\Developer\DeveloperController::class, 'clearCache'])->name('clear-cache');
+        Route::post('/maintenance', [App\Http\Controllers\Developer\DeveloperController::class, 'maintenance'])->name('maintenance');
+        Route::get('/logs', [App\Http\Controllers\Developer\DeveloperController::class, 'logs'])->name('logs');
+        
         // System Configuration
         Route::prefix('config')->name('config.')->group(function () {
             Route::get('/', [App\Http\Controllers\Developer\SystemConfigController::class, 'index'])->name('index');

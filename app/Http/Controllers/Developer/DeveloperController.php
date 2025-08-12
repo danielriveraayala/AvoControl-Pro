@@ -25,13 +25,10 @@ class DeveloperController extends Controller
         // Get system metrics
         $metrics = $this->getSystemMetrics();
         
-        // Get recent activity
-        $recentActivity = $this->getRecentActivity();
-        
         // Get system health
-        $systemHealth = $this->getSystemHealth();
+        $health = $this->getSystemHealth();
         
-        return view('developer.dashboard', compact('metrics', 'recentActivity', 'systemHealth'));
+        return view('developer.dashboard', compact('metrics', 'health'));
     }
 
     /**
@@ -40,48 +37,26 @@ class DeveloperController extends Controller
     private function getSystemMetrics()
     {
         return Cache::remember('developer_metrics', 300, function () {
+            $totalUsers = User::count();
+            $activeUsers = User::whereNull('suspended_at')->count();
+            $suspendedUsers = User::whereNotNull('suspended_at')->count();
+            $lastLogin = User::latest('updated_at')->first();
+            
             return [
-                'users' => [
-                    'total' => User::count(),
-                    'super_admins' => User::whereHas('roles', function ($q) {
-                        $q->where('name', 'super_admin');
-                    })->count(),
-                    'admins' => User::whereHas('roles', function ($q) {
-                        $q->where('name', 'admin');
-                    })->count(),
-                    'active_today' => User::where('updated_at', '>=', Carbon::today())->count(),
-                ],
-                'business' => [
-                    'total_lots' => Lot::count(),
-                    'total_sales' => Sale::count(),
-                    'total_revenue' => Payment::where('type', 'cliente')->sum('amount'),
-                    'total_payments' => Payment::where('type', 'proveedor')->sum('amount'),
-                ],
-                'database' => [
-                    'size' => $this->getDatabaseSize(),
-                    'tables' => DB::select('SHOW TABLES'),
-                    'connections' => DB::select('SHOW STATUS WHERE Variable_name = "Threads_connected"')[0]->Value ?? 0,
-                ],
-                'storage' => [
-                    'disk_usage' => $this->getDiskUsage(),
-                    'cache_size' => $this->getCacheSize(),
-                ],
+                'total_users' => $totalUsers,
+                'active_users' => $activeUsers,
+                'suspended_users' => $suspendedUsers,
+                'last_login' => $lastLogin ? $lastLogin->updated_at->diffForHumans() : 'Sin datos',
+                'super_admins' => User::whereHas('roles', function ($q) {
+                    $q->where('name', 'super_admin');
+                })->count(),
+                'total_lots' => \App\Models\Lot::count(),
+                'total_sales' => \App\Models\Sale::count(),
+                'total_payments' => \App\Models\Payment::count(),
             ];
         });
     }
 
-    /**
-     * Get recent system activity.
-     */
-    private function getRecentActivity()
-    {
-        return [
-            'recent_users' => User::latest()->take(5)->get(),
-            'recent_lots' => Lot::latest()->take(5)->get(),
-            'recent_sales' => Sale::latest()->take(5)->get(),
-            'recent_payments' => Payment::latest()->take(5)->get(),
-        ];
-    }
 
     /**
      * Get system health indicators.
@@ -103,9 +78,9 @@ class DeveloperController extends Controller
     {
         try {
             DB::connection()->getPdo();
-            return ['status' => 'healthy', 'message' => 'Database connection OK'];
+            return true;
         } catch (\Exception $e) {
-            return ['status' => 'error', 'message' => $e->getMessage()];
+            return false;
         }
     }
 
@@ -119,12 +94,9 @@ class DeveloperController extends Controller
             $value = Cache::get('health_check');
             Cache::forget('health_check');
             
-            if ($value === 'ok') {
-                return ['status' => 'healthy', 'message' => 'Cache system OK'];
-            }
-            return ['status' => 'warning', 'message' => 'Cache may not be working properly'];
+            return $value === 'ok';
         } catch (\Exception $e) {
-            return ['status' => 'error', 'message' => $e->getMessage()];
+            return false;
         }
     }
 
@@ -139,15 +111,9 @@ class DeveloperController extends Controller
             $used = $total - $free;
             $percentage = round(($used / $total) * 100, 2);
             
-            if ($percentage > 90) {
-                return ['status' => 'error', 'message' => "Disk usage critical: {$percentage}%"];
-            } elseif ($percentage > 70) {
-                return ['status' => 'warning', 'message' => "Disk usage high: {$percentage}%"];
-            }
-            
-            return ['status' => 'healthy', 'message' => "Disk usage normal: {$percentage}%"];
+            return $percentage < 90; // Return true if usage is below 90%
         } catch (\Exception $e) {
-            return ['status' => 'error', 'message' => $e->getMessage()];
+            return false;
         }
     }
 
@@ -160,82 +126,9 @@ class DeveloperController extends Controller
             $jobs = DB::table('jobs')->count();
             $failed = DB::table('failed_jobs')->count();
             
-            if ($failed > 10) {
-                return ['status' => 'error', 'message' => "Too many failed jobs: {$failed}"];
-            } elseif ($jobs > 100) {
-                return ['status' => 'warning', 'message' => "Queue backlog: {$jobs} pending jobs"];
-            }
-            
-            return ['status' => 'healthy', 'message' => "Queue OK: {$jobs} pending, {$failed} failed"];
+            return $failed <= 10 && $jobs <= 100; // Return true if queues are healthy
         } catch (\Exception $e) {
-            return ['status' => 'info', 'message' => 'Queue tables not configured'];
-        }
-    }
-
-    /**
-     * Get database size.
-     */
-    private function getDatabaseSize()
-    {
-        try {
-            $dbName = config('database.connections.mysql.database');
-            $result = DB::select("
-                SELECT 
-                    ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size_mb
-                FROM information_schema.tables 
-                WHERE table_schema = ?
-            ", [$dbName]);
-            
-            return $result[0]->size_mb ?? 0;
-        } catch (\Exception $e) {
-            return 0;
-        }
-    }
-
-    /**
-     * Get disk usage.
-     */
-    private function getDiskUsage()
-    {
-        try {
-            $storagePath = storage_path();
-            $free = disk_free_space($storagePath);
-            $total = disk_total_space($storagePath);
-            
-            return [
-                'free_gb' => round($free / 1024 / 1024 / 1024, 2),
-                'total_gb' => round($total / 1024 / 1024 / 1024, 2),
-                'used_gb' => round(($total - $free) / 1024 / 1024 / 1024, 2),
-                'percentage' => round((($total - $free) / $total) * 100, 2),
-            ];
-        } catch (\Exception $e) {
-            return [
-                'free_gb' => 0,
-                'total_gb' => 0,
-                'used_gb' => 0,
-                'percentage' => 0,
-            ];
-        }
-    }
-
-    /**
-     * Get cache size.
-     */
-    private function getCacheSize()
-    {
-        try {
-            $cachePath = storage_path('framework/cache');
-            $size = 0;
-            
-            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($cachePath)) as $file) {
-                if ($file->isFile()) {
-                    $size += $file->getSize();
-                }
-            }
-            
-            return round($size / 1024 / 1024, 2); // MB
-        } catch (\Exception $e) {
-            return 0;
+            return true; // If queue tables don't exist, consider it ok
         }
     }
 
@@ -267,11 +160,15 @@ class DeveloperController extends Controller
     {
         try {
             \Artisan::call('optimize:clear');
-            return redirect()->route('developer.index')
-                ->with('success', 'All caches cleared successfully');
+            return response()->json([
+                'success' => true,
+                'message' => 'All caches cleared successfully'
+            ]);
         } catch (\Exception $e) {
-            return redirect()->route('developer.index')
-                ->with('error', 'Error clearing caches: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error clearing caches: ' . $e->getMessage()
+            ]);
         }
     }
 
@@ -280,26 +177,30 @@ class DeveloperController extends Controller
      */
     public function maintenance(Request $request)
     {
-        $action = $request->get('action', 'status');
-        
         try {
-            if ($action === 'enable') {
+            $isDown = app()->isDownForMaintenance();
+            
+            if ($isDown) {
+                \Artisan::call('up');
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Maintenance mode disabled'
+                ]);
+            } else {
                 \Artisan::call('down', [
                     '--message' => 'System maintenance in progress',
                     '--retry' => 60,
                 ]);
-                return redirect()->route('developer.index')
-                    ->with('success', 'Maintenance mode enabled');
-            } elseif ($action === 'disable') {
-                \Artisan::call('up');
-                return redirect()->route('developer.index')
-                    ->with('success', 'Maintenance mode disabled');
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Maintenance mode enabled'
+                ]);
             }
         } catch (\Exception $e) {
-            return redirect()->route('developer.index')
-                ->with('error', 'Error managing maintenance mode: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error managing maintenance mode: ' . $e->getMessage()
+            ]);
         }
-        
-        return redirect()->route('developer.index');
     }
 }
