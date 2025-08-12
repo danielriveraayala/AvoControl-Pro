@@ -233,7 +233,9 @@ class SystemConfigController extends Controller
 
             // Get current user's push subscriptions
             $user = auth()->user();
-            $subscriptions = $user->pushSubscriptions ?? collect();
+            $subscriptions = \App\Models\PushSubscription::where('user_id', $user->id)
+                                                         ->where('active', true)
+                                                         ->get();
 
             if ($subscriptions->isEmpty()) {
                 return response()->json([
@@ -242,12 +244,23 @@ class SystemConfigController extends Controller
                 ]);
             }
 
-            // TODO: Implement actual push notification sending
-            // This would integrate with your existing push notification system
+            // Send test notification using PushNotificationService
+            $pushService = new \App\Services\PushNotificationService();
+            $payload = [
+                'title' => $request->test_title,
+                'body' => $request->test_message,
+                'type' => 'test',
+                'priority' => 'normal',
+                'url' => '/developer',
+                'tracking_id' => 'test-' . now()->timestamp
+            ];
+
+            $results = $pushService->sendToUser($user, $payload);
             
             return response()->json([
                 'success' => true, 
-                'message' => 'Notificación de prueba enviada a ' . $subscriptions->count() . ' dispositivos'
+                'message' => 'Notificación de prueba enviada a ' . $results['sent'] . ' dispositivos' . 
+                           ($results['failed'] > 0 ? ' (' . $results['failed'] . ' fallos)' : '')
             ]);
 
         } catch (\Exception $e) {
