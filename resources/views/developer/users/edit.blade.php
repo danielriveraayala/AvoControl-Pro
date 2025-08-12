@@ -255,26 +255,6 @@
     </div>
 </div>
 
-<!-- Suspend User Modal -->
-<div id="suspendModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Suspender Usuario</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Razón de suspensión:</label>
-                <textarea id="suspensionReason" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Motivo de la suspensión..."></textarea>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeSuspendModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                    Cancelar
-                </button>
-                <button onclick="confirmSuspend()" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
-                    Suspender
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
 function generatePassword() {
@@ -296,64 +276,83 @@ function generatePassword() {
         passwordField.type = originalType;
     }, 3000);
     
-    alert('Nueva contraseña generada: ' + password + '\n\nLa contraseña se ocultará en 3 segundos.');
+    DevAlert.success('Contraseña Generada', 'Nueva contraseña generada automáticamente. Se ocultará en 3 segundos.');
 }
 
 function suspendUser() {
-    document.getElementById('suspendModal').classList.remove('hidden');
-}
-
-function closeSuspendModal() {
-    document.getElementById('suspendModal').classList.add('hidden');
-}
-
-function confirmSuspend() {
-    const reason = document.getElementById('suspensionReason').value;
-    
-    fetch(`{{ route('developer.users.suspend', $user) }}`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reason: reason })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error: ' + data.message);
+    Swal.fire({
+        title: 'Suspender Usuario',
+        text: 'Ingresa la razón de la suspensión:',
+        input: 'textarea',
+        inputPlaceholder: 'Motivo de la suspensión...',
+        showCancelButton: true,
+        confirmButtonText: 'Suspender',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#f59e0b',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Debe ingresar una razón para la suspensión';
+            }
         }
-    })
-    .catch(error => {
-        alert('Error al suspender usuario');
-        console.error('Error:', error);
+    }).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Suspendiendo usuario...', 'Por favor espera');
+            
+            fetch(`{{ route('developer.users.suspend', $user) }}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reason: result.value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                handleAjaxResponse(data);
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
     });
 }
 
 function activateUser() {
-    if (confirm('¿Estás seguro de que deseas activar este usuario?')) {
-        fetch(`{{ route('developer.users.activate', $user) }}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Error al activar usuario');
-            console.error('Error:', error);
-        });
-    }
+    DevAlert.confirm(
+        '¿Activar Usuario?',
+        '¿Estás seguro de que deseas activar este usuario? Tendrá acceso completo al sistema.',
+        'Sí, activar',
+        'Cancelar'
+    ).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Activando usuario...', 'Por favor espera');
+            
+            fetch(`{{ route('developer.users.activate', $user) }}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                handleAjaxResponse(data);
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
+    });
 }
 </script>
 @endsection

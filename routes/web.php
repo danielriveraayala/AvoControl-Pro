@@ -102,10 +102,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('configuration/company/get', [ConfigurationController::class, 'getCompanyConfig'])->name('configuration.company.get');
     Route::post('configuration/company/store', [ConfigurationController::class, 'storeCompanyConfig'])->name('configuration.company.store');
     
-    // Email configuration routes
-    Route::get('configuration/email/get', [ConfigurationController::class, 'getEmailConfig'])->name('configuration.email.get');
-    Route::post('configuration/email/store', [ConfigurationController::class, 'storeEmailConfig'])->name('configuration.email.store');
-    Route::post('configuration/email/test', [ConfigurationController::class, 'testEmailConfig'])->name('configuration.email.test');
     
     // Profile routes
     Route::prefix('perfil')->name('profile.')->group(function () {
@@ -168,6 +164,17 @@ Route::prefix('developer')
             Route::post('/notifications/test', [App\Http\Controllers\Developer\SystemConfigController::class, 'testNotifications'])->name('notifications.test');
             Route::get('/vapid', [App\Http\Controllers\Developer\SystemConfigController::class, 'vapid'])->name('vapid');
             Route::post('/vapid/generate', [App\Http\Controllers\Developer\SystemConfigController::class, 'generateVapid'])->name('vapid.generate');
+        });
+        
+        // Backup Management
+        Route::prefix('backups')->name('backups.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Developer\BackupController::class, 'index'])->name('index');
+            Route::post('/create', [App\Http\Controllers\Developer\BackupController::class, 'create'])->name('create');
+            Route::get('/download/{filename}', [App\Http\Controllers\Developer\BackupController::class, 'download'])->name('download');
+            Route::delete('/delete/{filename}', [App\Http\Controllers\Developer\BackupController::class, 'delete'])->name('delete');
+            Route::post('/restore/{filename}', [App\Http\Controllers\Developer\BackupController::class, 'restore'])->name('restore');
+            Route::post('/cleanup', [App\Http\Controllers\Developer\BackupController::class, 'cleanup'])->name('cleanup');
+            Route::get('/system-info', [App\Http\Controllers\Developer\BackupController::class, 'systemInfo'])->name('system-info');
         });
     });
 

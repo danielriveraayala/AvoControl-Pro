@@ -16,6 +16,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -76,6 +79,9 @@
                         <a href="{{ route('developer.config.index') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.config.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
                             Config
                         </a>
+                        <a href="{{ route('developer.backups.index') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.backups.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
+                            Backups
+                        </a>
                         <a href="{{ route('developer.logs') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.logs') ? 'border-indigo-500 text-indigo-600' : '' }}">
                             Logs
                         </a>
@@ -116,33 +122,65 @@
     <!-- Main Content -->
     <main class="min-h-screen">
         @if(session('success'))
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 fade-in">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-green-400"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm">{{ session('success') }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: '{{ session('success') }}',
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                });
+            </script>
         @endif
 
         @if(session('error'))
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 fade-in">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-circle text-red-400"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm">{{ session('error') }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: '{{ session('error') }}',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#ef4444'
+                    });
+                });
+            </script>
+        @endif
+
+        @if(session('warning'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Advertencia',
+                        text: '{{ session('warning') }}',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#f59e0b'
+                    });
+                });
+            </script>
+        @endif
+
+        @if(session('info'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Información',
+                        text: '{{ session('info') }}',
+                        timer: 4000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                });
+            </script>
         @endif
 
         @yield('content')
@@ -165,5 +203,115 @@
     </footer>
 
     @stack('scripts')
+    
+    <!-- Global SweetAlert Functions -->
+    <script>
+        // Global SweetAlert helper functions
+        window.DevAlert = {
+            success: function(title, text = '', timer = 3000) {
+                return Swal.fire({
+                    icon: 'success',
+                    title: title,
+                    text: text,
+                    timer: timer,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            },
+            
+            error: function(title, text = '') {
+                return Swal.fire({
+                    icon: 'error',
+                    title: title,
+                    text: text,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#ef4444'
+                });
+            },
+            
+            warning: function(title, text = '') {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: title,
+                    text: text,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#f59e0b'
+                });
+            },
+            
+            info: function(title, text = '', timer = 4000) {
+                return Swal.fire({
+                    icon: 'info',
+                    title: title,
+                    text: text,
+                    timer: timer,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            },
+            
+            confirm: function(title, text = '', confirmText = 'Sí, continuar', cancelText = 'Cancelar') {
+                return Swal.fire({
+                    title: title,
+                    text: text,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3b82f6',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: confirmText,
+                    cancelButtonText: cancelText
+                });
+            },
+            
+            confirmDanger: function(title, text = '', confirmText = 'Sí, eliminar', cancelText = 'Cancelar') {
+                return Swal.fire({
+                    title: title,
+                    text: text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: confirmText,
+                    cancelButtonText: cancelText
+                });
+            },
+            
+            loading: function(title = 'Procesando...', text = 'Por favor espera') {
+                return Swal.fire({
+                    title: title,
+                    text: text,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            },
+            
+            close: function() {
+                Swal.close();
+            }
+        };
+        
+        // Helper function for AJAX responses
+        window.handleAjaxResponse = function(response) {
+            if (response.success) {
+                DevAlert.success('¡Éxito!', response.message);
+            } else {
+                DevAlert.error('Error', response.message);
+            }
+        };
+        
+        // Helper function for fetch errors
+        window.handleFetchError = function(error) {
+            console.error('Error:', error);
+            DevAlert.error('Error de conexión', 'No se pudo conectar con el servidor. Por favor, intenta de nuevo.');
+        };
+    </script>
 </body>
 </html>

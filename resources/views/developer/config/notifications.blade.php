@@ -156,96 +156,96 @@
     </div>
 </div>
 
-<!-- Test Notifications Modal -->
-<div id="testNotificationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Probar Notificaciones Push</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Título:</label>
-                <input type="text" id="testTitle" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Título de la notificación" value="Prueba de Notificación">
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Mensaje:</label>
-                <textarea id="testMessage" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Mensaje de la notificación">Esta es una notificación de prueba desde AvoControl Pro.</textarea>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeTestNotificationModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                    Cancelar
-                </button>
-                <button onclick="sendTestNotification()" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
-                    Enviar Notificación
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
 function generateVapidKeys() {
-    if (confirm('¿Estás seguro de que deseas generar nuevas llaves VAPID? Esto invalidará las llaves actuales.')) {
-        fetch('{{ route("developer.config.generate-vapid") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('vapid_public_key').value = data.public_key;
-                document.getElementById('vapid_private_key').value = data.private_key;
-                alert('Nuevas llaves VAPID generadas exitosamente');
-            } else {
-                alert('Error al generar llaves VAPID: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Error al generar llaves VAPID');
-            console.error('Error:', error);
-        });
-    }
+    DevAlert.confirm(
+        '¿Generar Nuevas Llaves VAPID?',
+        '⚠️ Esto invalidará las llaves actuales y será necesario reconfigurar todas las suscripciones de notificaciones push.',
+        'Sí, generar',
+        'Cancelar'
+    ).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Generando llaves VAPID...', 'Por favor espera');
+            
+            fetch('{{ route("developer.config.generate-vapid") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                if (data.success) {
+                    document.getElementById('vapid_public_key').value = data.public_key;
+                    document.getElementById('vapid_private_key').value = data.private_key;
+                    DevAlert.success('Llaves VAPID Generadas', 'Nuevas llaves VAPID generadas exitosamente');
+                } else {
+                    DevAlert.error('Error', 'Error al generar llaves VAPID: ' + data.message);
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
+    });
 }
 
 function testNotifications() {
-    document.getElementById('testNotificationModal').classList.remove('hidden');
-}
-
-function closeTestNotificationModal() {
-    document.getElementById('testNotificationModal').classList.add('hidden');
-}
-
-function sendTestNotification() {
-    const title = document.getElementById('testTitle').value;
-    const message = document.getElementById('testMessage').value;
-    
-    if (!title || !message) {
-        alert('Por favor completa todos los campos');
-        return;
-    }
-
-    fetch('{{ route("developer.config.test-notifications") }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-            test_title: title,
-            test_message: message 
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        if (data.success) {
-            closeTestNotificationModal();
+    Swal.fire({
+        title: 'Enviar Notificación de Prueba',
+        html: `
+            <div class="text-left">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Título:</label>
+                <input type="text" id="testTitle" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-4" placeholder="Título de la notificación">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Mensaje:</label>
+                <textarea id="testMessage" class="w-full px-3 py-2 border border-gray-300 rounded-md" rows="3" placeholder="Mensaje de la notificación"></textarea>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Prueba',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#8b5cf6',
+        focusConfirm: false,
+        preConfirm: () => {
+            const title = document.getElementById('testTitle').value;
+            const message = document.getElementById('testMessage').value;
+            
+            if (!title || !message) {
+                Swal.showValidationMessage('Por favor completa todos los campos');
+                return false;
+            }
+            
+            return { title, message };
         }
-    })
-    .catch(error => {
-        alert('Error al enviar notificación de prueba');
-        console.error('Error:', error);
+    }).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Enviando notificación...', 'Por favor espera');
+            
+            fetch('{{ route("developer.config.test-notifications") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    test_title: result.value.title,
+                    test_message: result.value.message 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                handleAjaxResponse(data);
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
     });
 }
 </script>

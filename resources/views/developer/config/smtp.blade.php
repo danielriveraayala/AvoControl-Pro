@@ -35,7 +35,7 @@
 
         <!-- SMTP Configuration Form -->
         <div class="bg-white shadow rounded-lg">
-            <form action="{{ route('developer.config.update-smtp') }}" method="POST">
+            <form action="{{ route('developer.config.smtp.update') }}" method="POST">
                 @csrf
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900">Configuración del Servidor SMTP</h3>
@@ -176,6 +176,24 @@
                                         <li>Encriptación: TLS</li>
                                     </ul>
                                 </div>
+                                <div>
+                                    <h5 class="font-semibold text-gray-700 mb-2">Hostinger</h5>
+                                    <ul class="space-y-1 text-gray-600">
+                                        <li>Servidor: smtp.hostinger.com</li>
+                                        <li class="text-orange-600 font-medium">Puerto: 587 (recomendado)</li>
+                                        <li class="text-orange-600 font-medium">Encriptación: TLS (recomendado)</li>
+                                        <li class="text-xs text-blue-600">*Alternativo: Puerto 465 + SSL</li>
+                                    </ul>
+                                </div>
+                                <div class="md:col-span-1">
+                                    <h5 class="font-semibold text-red-700 mb-2">⚠️ Problemas Comunes Hostinger</h5>
+                                    <ul class="space-y-1 text-xs text-gray-600">
+                                        <li>• Usa la contraseña del email, no de cPanel</li>
+                                        <li>• El email debe existir en tu panel Hostinger</li>
+                                        <li>• Si falla 465/SSL, prueba 587/TLS</li>
+                                        <li>• Verifica que el email no esté suspendido</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -200,82 +218,96 @@
     </div>
 </div>
 
-<!-- Test Configuration Modal -->
-<div id="testModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Probar Configuración SMTP</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email de prueba:</label>
-                <input type="email" id="testEmailInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="test@example.com">
-            </div>
-            <p class="text-sm text-gray-600 mb-4">Se enviará un email con la configuración actual para verificar que funciona correctamente.</p>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeTestModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                    Cancelar
-                </button>
-                <button onclick="sendTestEmail()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                    Enviar Prueba
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
+@push('scripts')
 <script>
 function testConfiguration() {
-    document.getElementById('testModal').classList.remove('hidden');
-}
-
-function closeTestModal() {
-    document.getElementById('testModal').classList.add('hidden');
-}
-
-function sendTestEmail() {
-    const email = document.getElementById('testEmailInput').value;
-    if (!email) {
-        alert('Por favor ingresa un email válido');
-        return;
-    }
-
-    fetch('{{ route("developer.config.test-smtp") }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ test_email: email })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        if (data.success) {
-            closeTestModal();
+    Swal.fire({
+        title: 'Probar Configuración SMTP',
+        text: 'Ingresa el email donde quieres recibir la prueba:',
+        input: 'email',
+        inputPlaceholder: 'ejemplo@correo.com',
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Prueba',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#10b981',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Por favor ingresa un email válido';
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                return 'El formato del email no es válido';
+            }
         }
-    })
-    .catch(error => {
-        alert('Error al enviar email de prueba');
-        console.error('Error:', error);
+    }).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Enviando email de prueba...', 'Verificando la configuración SMTP actual');
+            
+            fetch('{{ route("developer.config.smtp.test") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ test_email: result.value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                handleAjaxResponse(data);
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
     });
 }
 
-// Auto-fill port based on encryption
-document.getElementById('mail_encryption').addEventListener('change', function() {
+// Auto-fill port based on encryption and detect Hostinger
+document.addEventListener('DOMContentLoaded', function() {
+    const hostField = document.getElementById('mail_host');
     const portField = document.getElementById('mail_port');
-    const currentPort = portField.value;
+    const encryptionField = document.getElementById('mail_encryption');
     
-    if (!currentPort || currentPort === '587' || currentPort === '465' || currentPort === '25') {
-        switch(this.value) {
-            case 'tls':
+    // Auto-detect Hostinger configuration
+    hostField.addEventListener('blur', function() {
+        if (this.value.toLowerCase().includes('hostinger')) {
+            // Show recommendation for Hostinger
+            if (confirm('🔧 Configuración detectada: Hostinger\n\n¿Deseas aplicar la configuración recomendada?\n- Puerto: 587\n- Encriptación: TLS')) {
                 portField.value = '587';
-                break;
-            case 'ssl':
-                portField.value = '465';
-                break;
-            default:
-                portField.value = '25';
+                encryptionField.value = 'tls';
+                
+                // Show additional tips
+                DevAlert.info('Configuración Hostinger', 
+                    '✅ Configuración aplicada!\n\n' +
+                    '💡 Recuerda:\n' +
+                    '• Usa la contraseña del email (no de cPanel)\n' +
+                    '• El email debe existir en tu panel Hostinger\n' +
+                    '• Si tienes problemas, verifica que el email no esté suspendido'
+                );
+            }
         }
-    }
+    });
+    
+    // Auto-fill port based on encryption
+    encryptionField.addEventListener('change', function() {
+        const currentPort = portField.value;
+        
+        if (!currentPort || currentPort === '587' || currentPort === '465' || currentPort === '25') {
+            switch(this.value) {
+                case 'tls':
+                    portField.value = '587';
+                    break;
+                case 'ssl':
+                    portField.value = '465';
+                    break;
+                default:
+                    portField.value = '25';
+            }
+        }
+    });
 });
 </script>
+@endpush
 @endsection

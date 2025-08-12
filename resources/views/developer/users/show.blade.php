@@ -329,52 +329,122 @@
 
 <script>
 function suspendUser() {
-    const reason = prompt('Ingresa la razón de suspensión:');
-    if (reason) {
-        fetch(`{{ route('developer.users.suspend', $user) }}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ reason: reason })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error: ' + data.message);
+    Swal.fire({
+        title: 'Suspender Usuario',
+        text: 'Ingresa la razón de la suspensión:',
+        input: 'textarea',
+        inputPlaceholder: 'Motivo de la suspensión...',
+        showCancelButton: true,
+        confirmButtonText: 'Suspender',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#f59e0b',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Debe ingresar una razón para la suspensión';
             }
-        });
-    }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Suspendiendo usuario...', 'Por favor espera');
+            
+            fetch(`{{ route('developer.users.suspend', $user) }}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reason: result.value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                handleAjaxResponse(data);
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
+    });
 }
 
 function activateUser() {
-    if (confirm('¿Estás seguro de que deseas activar este usuario?')) {
-        fetch(`{{ route('developer.users.activate', $user) }}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        });
-    }
+    DevAlert.confirm(
+        '¿Activar Usuario?',
+        '¿Estás seguro de que deseas activar este usuario? Tendrá acceso completo al sistema.',
+        'Sí, activar',
+        'Cancelar'
+    ).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Activando usuario...', 'Por favor espera');
+            
+            fetch(`{{ route('developer.users.activate', $user) }}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                handleAjaxResponse(data);
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
+    });
 }
 
 function resetPassword() {
-    const newPassword = prompt('Ingresa la nueva contraseña (mínimo 8 caracteres):');
-    if (newPassword && newPassword.length >= 8) {
-        const confirmPassword = prompt('Confirma la nueva contraseña:');
-        if (newPassword === confirmPassword) {
+    Swal.fire({
+        title: 'Restablecer Contraseña',
+        html: `
+            <div class="text-left">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nueva contraseña:</label>
+                <input type="password" id="newPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-4" placeholder="Mínimo 8 caracteres">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar contraseña:</label>
+                <input type="password" id="confirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Confirmar contraseña">
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Restablecer',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#8b5cf6',
+        focusConfirm: false,
+        preConfirm: () => {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!newPassword || !confirmPassword) {
+                Swal.showValidationMessage('Ambas contraseñas son requeridas');
+                return false;
+            }
+            
+            if (newPassword.length < 8) {
+                Swal.showValidationMessage('La contraseña debe tener al menos 8 caracteres');
+                return false;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                Swal.showValidationMessage('Las contraseñas no coinciden');
+                return false;
+            }
+            
+            return { newPassword, confirmPassword };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Restableciendo contraseña...', 'Por favor espera');
+            
             fetch(`{{ route('developer.users.reset-password', $user) }}`, {
                 method: 'POST',
                 headers: {
@@ -382,20 +452,21 @@ function resetPassword() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    new_password: newPassword,
-                    new_password_confirmation: confirmPassword
+                    new_password: result.value.newPassword,
+                    new_password_confirmation: result.value.confirmPassword
                 })
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
+                DevAlert.close();
+                handleAjaxResponse(data);
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
             });
-        } else {
-            alert('Las contraseñas no coinciden');
         }
-    } else {
-        alert('La contraseña debe tener al menos 8 caracteres');
-    }
+    });
 }
 
 function assignRoles() {
@@ -403,22 +474,39 @@ function assignRoles() {
 }
 
 function deleteUser() {
-    if (confirm('⚠️ ¿Estás seguro de que deseas eliminar este usuario?\n\nEsta acción no se puede deshacer.')) {
-        fetch(`{{ route('developer.users.destroy', $user) }}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = '{{ route("developer.users.index") }}';
-            } else {
-                alert('Error al eliminar usuario');
-            }
-        });
-    }
+    DevAlert.confirmDanger(
+        '¿Eliminar Usuario?',
+        '⚠️ Esta acción no se puede deshacer. El usuario será eliminado permanentemente del sistema.',
+        'Sí, eliminar',
+        'Cancelar'
+    ).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Eliminando usuario...', 'Por favor espera');
+            
+            fetch(`{{ route('developer.users.destroy', $user) }}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                DevAlert.close();
+                if (response.ok) {
+                    DevAlert.success('Usuario eliminado', 'El usuario ha sido eliminado exitosamente');
+                    setTimeout(() => {
+                        window.location.href = '{{ route("developer.users.index") }}';
+                    }, 1500);
+                } else {
+                    DevAlert.error('Error', 'No se pudo eliminar el usuario');
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
+    });
 }
 </script>
 @endsection

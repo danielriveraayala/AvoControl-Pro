@@ -192,31 +192,38 @@ function toggleVisibility(elementId) {
 }
 
 function generateNewKeys() {
-    if (confirm('⚠️ ¿Estás seguro de que deseas generar nuevas llaves VAPID?\n\nEsto invalidará las llaves actuales y será necesario reconfigurar todas las suscripciones de notificaciones push.')) {
-        fetch('{{ route("developer.config.generate-vapid") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast('Nuevas llaves VAPID generadas exitosamente', 'success');
-                // Reload page to show new keys
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-            } else {
-                showToast('Error al generar llaves VAPID: ' + data.message, 'error');
-            }
-        })
-        .catch(error => {
-            showToast('Error al generar llaves VAPID', 'error');
-            console.error('Error:', error);
-        });
-    }
+    DevAlert.confirm(
+        '¿Generar Nuevas Llaves VAPID?',
+        '⚠️ Esto invalidará las llaves actuales y será necesario reconfigurar todas las suscripciones de notificaciones push.',
+        'Sí, generar',
+        'Cancelar'
+    ).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Generando llaves VAPID...', 'Por favor espera');
+            
+            fetch('{{ route("developer.config.generate-vapid") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                if (data.success) {
+                    DevAlert.success('Llaves VAPID Generadas', 'Nuevas llaves VAPID generadas exitosamente');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    DevAlert.error('Error', 'Error al generar llaves VAPID: ' + data.message);
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
+    });
 }
 
 function downloadKeys() {
@@ -236,24 +243,9 @@ function downloadKeys() {
     link.download = 'vapid-keys-avocontrol-' + new Date().toISOString().split('T')[0] + '.json';
     link.click();
     
-    showToast('Llaves VAPID descargadas', 'success');
+    DevAlert.success('Descarga Completa', 'Llaves VAPID descargadas exitosamente');
 }
 
-function showToast(message, type = 'info') {
-    // Simple toast notification
-    const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-md text-white z-50 ${
-        type === 'error' ? 'bg-red-500' : 
-        type === 'success' ? 'bg-green-500' : 
-        'bg-blue-500'
-    }`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
+// Custom toast function replaced with DevAlert - function removed
 </script>
 @endsection

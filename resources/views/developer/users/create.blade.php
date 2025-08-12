@@ -229,7 +229,7 @@ function generatePassword() {
         passwordField.type = originalType;
     }, 3000);
     
-    alert('Contraseña generada: ' + password + '\n\nLa contraseña se ocultará en 3 segundos.');
+    DevAlert.success('Contraseña Generada', 'La contraseña se ha generado automáticamente y se ocultará en 3 segundos.');
 }
 
 // Auto-check send welcome email when password is generated

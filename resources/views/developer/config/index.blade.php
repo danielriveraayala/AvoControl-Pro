@@ -13,7 +13,7 @@
                         <h1 class="text-2xl font-bold text-gray-900">Configuración del Sistema</h1>
                         <p class="text-sm text-gray-600">Gestiona la configuración global del sistema</p>
                     </div>
-                    <a href="{{ route('developer.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <a href="{{ route('developer.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         ← Volver al Dashboard
                     </a>
                 </div>
@@ -157,62 +157,59 @@
     </div>
 </div>
 
-<!-- Test SMTP Modal -->
-<div id="testSmtpModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Probar Configuración SMTP</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email de prueba:</label>
-                <input type="email" id="testEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="test@example.com">
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeTestSmtpModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                    Cancelar
-                </button>
-                <button onclick="sendTestEmail()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    Enviar Prueba
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
+@push('scripts')
 <script>
 function testSmtp() {
-    document.getElementById('testSmtpModal').classList.remove('hidden');
-}
-
-function closeTestSmtpModal() {
-    document.getElementById('testSmtpModal').classList.add('hidden');
-}
-
-function sendTestEmail() {
-    const email = document.getElementById('testEmail').value;
-    if (!email) {
-        alert('Por favor ingresa un email válido');
-        return;
-    }
-
-    fetch('{{ route("developer.config.test-smtp") }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ test_email: email })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        if (data.success) {
-            closeTestSmtpModal();
+    DevAlert.confirm(
+        'Probar Configuración SMTP',
+        'Ingresa el email donde quieres recibir la prueba:',
+        'Enviar Prueba',
+        'Cancelar'
+    ).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Email de Prueba',
+                input: 'email',
+                inputPlaceholder: 'ejemplo@correo.com',
+                showCancelButton: true,
+                confirmButtonText: 'Enviar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3b82f6',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Por favor ingresa un email válido';
+                    }
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                        return 'El formato del email no es válido';
+                    }
+                }
+            }).then((emailResult) => {
+                if (emailResult.isConfirmed) {
+                    DevAlert.loading('Enviando email...', 'Probando la configuración SMTP');
+                    
+                    fetch('{{ route("developer.config.smtp.test") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ test_email: emailResult.value })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        DevAlert.close();
+                        handleAjaxResponse(data);
+                    })
+                    .catch(error => {
+                        DevAlert.close();
+                        handleFetchError(error);
+                    });
+                }
+            });
         }
-    })
-    .catch(error => {
-        alert('Error al enviar email de prueba');
-        console.error('Error:', error);
     });
 }
 </script>
+@endpush
 @endsection

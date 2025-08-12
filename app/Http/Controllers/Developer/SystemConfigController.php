@@ -101,12 +101,43 @@ class SystemConfigController extends Controller
             // Clear config cache to get latest settings
             Artisan::call('config:clear');
             
-            // Send test email
-            Mail::raw('Este es un email de prueba desde AvoControl Pro. Si recibes este mensaje, la configuración SMTP está funcionando correctamente.', function ($message) use ($request) {
-                $message->to($request->test_email)
-                        ->subject('Prueba de Configuración SMTP - AvoControl Pro')
-                        ->from(config('mail.from.address'), config('mail.from.name'));
-            });
+            // Create custom mailer configuration for testing
+            $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport(
+                config('mail.mailers.smtp.host'),
+                config('mail.mailers.smtp.port'),
+                config('mail.mailers.smtp.encryption') === 'ssl'
+            );
+            
+            if (config('mail.mailers.smtp.username')) {
+                $transport->setUsername(config('mail.mailers.smtp.username'));
+            }
+            if (config('mail.mailers.smtp.password')) {
+                $transport->setPassword(config('mail.mailers.smtp.password'));
+            }
+
+            // For Hostinger specifically, add stream context options
+            if (strpos(config('mail.mailers.smtp.host'), 'hostinger') !== false) {
+                $transport->setStreamContextOptions([
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    ]
+                ]);
+            }
+
+            $mailer = new \Symfony\Component\Mailer\Mailer($transport);
+            
+            // Create test email
+            $email = (new \Symfony\Component\Mime\Email())
+                ->from(config('mail.from.address'), config('mail.from.name'))
+                ->to($request->test_email)
+                ->subject('Prueba de Configuración SMTP - AvoControl Pro')
+                ->text('Este es un email de prueba desde AvoControl Pro. Si recibes este mensaje, la configuración SMTP está funcionando correctamente.')
+                ->html('<p>Este es un email de prueba desde <strong>AvoControl Pro</strong>.</p><p>Si recibes este mensaje, la configuración SMTP está funcionando correctamente.</p>');
+
+            // Send email
+            $mailer->send($email);
 
             return response()->json([
                 'success' => true, 
@@ -114,9 +145,20 @@ class SystemConfigController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
+            
+            // Provide specific help for common Hostinger issues
+            if (strpos($errorMessage, 'authentication failed') !== false) {
+                $errorMessage .= "\n\n💡 Sugerencias para Hostinger:\n" .
+                    "- Verifica que el email existe en tu panel de Hostinger\n" .
+                    "- Usa la contraseña exacta del email (no la de cPanel)\n" .
+                    "- Prueba con puerto 587 y TLS en lugar de 465/SSL\n" .
+                    "- Asegúrate de que el email no esté bloqueado";
+            }
+            
             return response()->json([
                 'success' => false, 
-                'message' => 'Error al enviar email: ' . $e->getMessage()
+                'message' => 'Error al enviar email: ' . $errorMessage
             ]);
         }
     }

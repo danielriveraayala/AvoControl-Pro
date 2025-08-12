@@ -14,7 +14,7 @@
                         <p class="text-sm text-gray-600">Administra todos los usuarios del sistema</p>
                     </div>
                     <div class="flex space-x-3">
-                        <a href="{{ route('developer.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        <a href="{{ route('developer.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                             ← Dashboard
                         </a>
                         <a href="{{ route('developer.users.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
@@ -230,185 +230,183 @@
     </div>
 </div>
 
-<!-- Suspend User Modal -->
-<div id="suspendModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Suspender Usuario</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Razón de suspensión:</label>
-                <textarea id="suspensionReason" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Motivo de la suspensión..."></textarea>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeSuspendModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                    Cancelar
-                </button>
-                <button onclick="confirmSuspend()" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
-                    Suspender
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Reset Password Modal -->
-<div id="resetPasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Restablecer Contraseña</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Nueva contraseña:</label>
-                <input type="password" id="newPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Nueva contraseña">
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar contraseña:</label>
-                <input type="password" id="confirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Confirmar contraseña">
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeResetPasswordModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                    Cancelar
-                </button>
-                <button onclick="confirmResetPassword()" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
-                    Restablecer
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
+@push('scripts')
 <script>
-let currentUserId = null;
-
 function suspendUser(userId) {
-    currentUserId = userId;
-    document.getElementById('suspendModal').classList.remove('hidden');
-}
-
-function closeSuspendModal() {
-    document.getElementById('suspendModal').classList.add('hidden');
-    currentUserId = null;
-}
-
-function confirmSuspend() {
-    const reason = document.getElementById('suspensionReason').value;
-    
-    fetch(`/developer/users/${currentUserId}/suspend`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reason: reason })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error: ' + data.message);
+    Swal.fire({
+        title: 'Suspender Usuario',
+        text: 'Ingresa la razón de la suspensión:',
+        input: 'textarea',
+        inputPlaceholder: 'Motivo de la suspensión...',
+        showCancelButton: true,
+        confirmButtonText: 'Suspender',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#f59e0b',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Debe ingresar una razón para la suspensión';
+            }
         }
-    })
-    .catch(error => {
-        alert('Error al suspender usuario');
-        console.error('Error:', error);
+    }).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Suspendiendo usuario...', 'Por favor espera');
+            
+            fetch(`/developer/users/${userId}/suspend`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reason: result.value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                handleAjaxResponse(data);
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
     });
 }
 
 function activateUser(userId) {
-    if (confirm('¿Estás seguro de que deseas activar este usuario?')) {
-        fetch(`/developer/users/${userId}/activate`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Error al activar usuario');
-            console.error('Error:', error);
-        });
-    }
+    DevAlert.confirm(
+        '¿Activar Usuario?',
+        '¿Estás seguro de que deseas activar este usuario? Tendrá acceso completo al sistema.',
+        'Sí, activar',
+        'Cancelar'
+    ).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Activando usuario...', 'Por favor espera');
+            
+            fetch(`/developer/users/${userId}/activate`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                handleAjaxResponse(data);
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
+    });
 }
 
 function resetPassword(userId) {
-    currentUserId = userId;
-    document.getElementById('resetPasswordModal').classList.remove('hidden');
-}
-
-function closeResetPasswordModal() {
-    document.getElementById('resetPasswordModal').classList.add('hidden');
-    currentUserId = null;
-}
-
-function confirmResetPassword() {
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    if (newPassword !== confirmPassword) {
-        alert('Las contraseñas no coinciden');
-        return;
-    }
-    
-    if (newPassword.length < 8) {
-        alert('La contraseña debe tener al menos 8 caracteres');
-        return;
-    }
-    
-    fetch(`/developer/users/${currentUserId}/reset-password`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-            new_password: newPassword,
-            new_password_confirmation: confirmPassword
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            closeResetPasswordModal();
-            alert('Contraseña restablecida exitosamente');
-        } else {
-            alert('Error: ' + data.message);
+    Swal.fire({
+        title: 'Restablecer Contraseña',
+        html: `
+            <div class="text-left">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nueva contraseña:</label>
+                <input type="password" id="newPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-4" placeholder="Mínimo 8 caracteres">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar contraseña:</label>
+                <input type="password" id="confirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Confirmar contraseña">
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Restablecer',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#8b5cf6',
+        focusConfirm: false,
+        preConfirm: () => {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!newPassword || !confirmPassword) {
+                Swal.showValidationMessage('Ambas contraseñas son requeridas');
+                return false;
+            }
+            
+            if (newPassword.length < 8) {
+                Swal.showValidationMessage('La contraseña debe tener al menos 8 caracteres');
+                return false;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                Swal.showValidationMessage('Las contraseñas no coinciden');
+                return false;
+            }
+            
+            return { newPassword, confirmPassword };
         }
-    })
-    .catch(error => {
-        alert('Error al restablecer contraseña');
-        console.error('Error:', error);
+    }).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Restableciendo contraseña...', 'Por favor espera');
+            
+            fetch(`/developer/users/${userId}/reset-password`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    new_password: result.value.newPassword,
+                    new_password_confirmation: result.value.confirmPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                DevAlert.close();
+                handleAjaxResponse(data);
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
     });
 }
 
 function deleteUser(userId) {
-    if (confirm('⚠️ ¿Estás seguro de que deseas eliminar este usuario?\n\nEsta acción no se puede deshacer.')) {
-        fetch(`/developer/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Error al eliminar usuario');
-            }
-        })
-        .catch(error => {
-            alert('Error al eliminar usuario');
-            console.error('Error:', error);
-        });
-    }
+    DevAlert.confirmDanger(
+        '¿Eliminar Usuario?',
+        '⚠️ Esta acción no se puede deshacer. El usuario será eliminado permanentemente del sistema.',
+        'Sí, eliminar',
+        'Cancelar'
+    ).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Eliminando usuario...', 'Por favor espera');
+            
+            fetch(`/developer/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                DevAlert.close();
+                if (response.ok) {
+                    DevAlert.success('Usuario eliminado', 'El usuario ha sido eliminado exitosamente');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    DevAlert.error('Error', 'No se pudo eliminar el usuario');
+                }
+            })
+            .catch(error => {
+                DevAlert.close();
+                handleFetchError(error);
+            });
+        }
+    });
 }
 </script>
+@endpush
 @endsection
