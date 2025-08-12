@@ -75,10 +75,10 @@ class AvoControlPush {
             const data = await response.json();
             
             if (data.success) {
-                this.vapidPublicKey = data.vapid_key;
+                this.vapidPublicKey = data.public_key;
                 console.log('[Push] VAPID key retrieved successfully');
             } else {
-                throw new Error('Failed to get VAPID key: ' + data.message);
+                throw new Error('Failed to get VAPID key: ' + (data.message || 'Invalid data provided'));
             }
         } catch (error) {
             console.error('[Push] Error getting VAPID key:', error);
