@@ -56,4 +56,28 @@ class QualityGrade extends Model
         return ($this->weight_min ? $this->weight_min . 'g+' : '') . 
                ($this->weight_max ? $this->weight_max . 'g-' : '');
     }
+
+    /**
+     * Get all lots that belong to this quality grade.
+     */
+    public function lots()
+    {
+        return $this->hasMany(Lot::class, 'quality_grade_id');
+    }
+
+    /**
+     * Get count of lots using this quality grade.
+     */
+    public function getLotsCountAttribute()
+    {
+        return $this->lots()->count();
+    }
+
+    /**
+     * Check if this quality grade can be deleted.
+     */
+    public function canBeDeleted()
+    {
+        return $this->lots()->count() === 0;
+    }
 }

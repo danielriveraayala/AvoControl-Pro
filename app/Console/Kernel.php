@@ -62,6 +62,20 @@ class Kernel extends ConsoleKernel
                  ->description('Enviar estadísticas del sistema (email + push)');
 
         // ===============================
+        // NOTIFICACIONES DE PRUEBA DIARIAS
+        // ===============================
+        
+        // Notificación de prueba matutina (8:00 AM diario)
+        $schedule->command('notifications:test-daily --type=all')
+                 ->dailyAt('08:00')
+                 ->description('Notificación de prueba matutina (email + push)');
+
+        // Notificación de prueba vespertina (5:30 PM diario)
+        $schedule->command('notifications:test-daily --type=all')
+                 ->dailyAt('17:30')
+                 ->description('Notificación de prueba vespertina (email + push)');
+
+        // ===============================
         // SISTEMA DE RESPALDOS AUTOMÁTICOS
         // ===============================
         

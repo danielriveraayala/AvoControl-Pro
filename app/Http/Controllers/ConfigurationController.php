@@ -102,13 +102,82 @@ class ConfigurationController extends Controller
 
     public function destroyQuality(Request $request, QualityGrade $qualityGrade)
     {
-        $qualityGrade->delete();
+        try {
+            // Check if quality grade is being used in lots
+            $lotsCount = $qualityGrade->lots()->count();
+            
+            if ($lotsCount > 0) {
+                $message = "No se puede eliminar la calidad '{$qualityGrade->name}' porque está siendo utilizada en {$lotsCount} lote(s). Primero debes reasignar o eliminar los lotes que usan esta calidad.";
+                
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => $message,
+                        'lots_count' => $lotsCount
+                    ], 400);
+                }
 
-        if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Calidad eliminada exitosamente']);
+                return redirect()->back()->with('error', $message);
+            }
+
+            // Check if quality grade is being used in sale items
+            $saleItemsCount = \DB::table('sale_items')
+                ->where('quality_grade', $qualityGrade->name)
+                ->count();
+                
+            if ($saleItemsCount > 0) {
+                $message = "No se puede eliminar la calidad '{$qualityGrade->name}' porque está siendo utilizada en {$saleItemsCount} venta(s). Esta calidad tiene historial de transacciones.";
+                
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => $message,
+                        'sale_items_count' => $saleItemsCount
+                    ], 400);
+                }
+
+                return redirect()->back()->with('error', $message);
+            }
+
+            // Safe to delete
+            $qualityGrade->delete();
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => "Calidad '{$qualityGrade->name}' eliminada exitosamente"
+                ]);
+            }
+
+            return redirect()->back()->with('success', "Calidad '{$qualityGrade->name}' eliminada exitosamente");
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle foreign key constraint errors
+            if ($e->getCode() === '23000') {
+                $message = "No se puede eliminar la calidad '{$qualityGrade->name}' porque está siendo utilizada en otros registros del sistema. Verifica que no esté asignada a lotes o ventas.";
+                
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => $message,
+                        'error_code' => 'FOREIGN_KEY_CONSTRAINT'
+                    ], 400);
+                }
+
+                return redirect()->back()->with('error', $message);
+            }
+
+            // Other database errors
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Error al eliminar la calidad. Intenta nuevamente.',
+                    'error' => config('app.debug') ? $e->getMessage() : 'Database error'
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Error al eliminar la calidad. Intenta nuevamente.');
         }
-
-        return redirect()->back()->with('success', 'Calidad eliminada exitosamente');
     }
 
     public function showQuality(Request $request, QualityGrade $qualityGrade)
