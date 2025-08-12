@@ -129,8 +129,14 @@
                                 </div>
                             </div>
                             <div class="ml-3 flex-1 min-w-0">
-                                <h4 class="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-red-700 transition-colors">Modo Mantenimiento</h4>
-                                <p class="text-xs text-gray-600">Activar/desactivar modo mantenimiento</p>
+                                <h4 class="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-red-700 transition-colors">Modo Mantenimiento Frontend</h4>
+                                <p class="text-xs text-gray-600">
+                                    @if(\Cache::get('frontend_maintenance', false))
+                                        <span class="text-yellow-600 font-medium">⚠️ Frontend en mantenimiento</span>
+                                    @else
+                                        Activar modo mantenimiento (solo frontend)
+                                    @endif
+                                </p>
                             </div>
                             <div class="ml-2 hidden sm:block">
                                 <svg class="w-4 h-4 text-gray-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,13 +285,13 @@ function clearCache() {
 }
 
 function toggleMaintenance() {
-    const isDown = {{ app()->isDownForMaintenance() ? 'true' : 'false' }};
-    const action = isDown ? 'desactivar' : 'activar';
-    const actionText = isDown ? 'Desactivar Mantenimiento' : 'Activar Mantenimiento';
-    const confirmText = isDown ? 'Sí, desactivar' : 'Sí, activar';
-    const warningText = isDown 
-        ? 'El sitio volverá a estar disponible para todos los usuarios.'
-        : '⚠️ Esto pondrá el sitio en modo mantenimiento y los usuarios no podrán acceder.';
+    const isMaintenanceActive = {{ \Cache::get('frontend_maintenance', false) ? 'true' : 'false' }};
+    const action = isMaintenanceActive ? 'desactivar' : 'activar';
+    const actionText = isMaintenanceActive ? 'Desactivar Mantenimiento' : 'Activar Mantenimiento';
+    const confirmText = isMaintenanceActive ? 'Sí, desactivar' : 'Sí, activar';
+    const warningText = isMaintenanceActive 
+        ? 'El frontend volverá a estar disponible para todos los usuarios. El panel de desarrollador seguirá accesible.'
+        : '⚠️ Esto pondrá el frontend en modo mantenimiento. Los usuarios no podrán acceder pero el panel de desarrollador seguirá funcionando.';
     
     DevAlert.confirm(
         actionText,

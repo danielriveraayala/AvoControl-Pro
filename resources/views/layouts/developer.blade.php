@@ -17,6 +17,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -69,22 +72,69 @@
                     </div>
                     
                     <!-- Navigation Links (Desktop) -->
-                    <div class="hidden md:ml-10 md:flex md:space-x-6 xl:space-x-8">
+                    <div class="hidden md:ml-10 md:flex md:space-x-4 xl:space-x-6">
                         <a href="{{ route('developer.index') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.index') ? 'border-indigo-500 text-indigo-600' : '' }}">
                             Dashboard
                         </a>
-                        <a href="{{ route('developer.users.index') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.users.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
-                            Users
-                        </a>
-                        <a href="{{ route('developer.config.index') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.config.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
-                            Config
-                        </a>
-                        <a href="{{ route('developer.backups.index') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.backups.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
-                            Backups
-                        </a>
-                        <a href="{{ route('developer.logs') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.logs') ? 'border-indigo-500 text-indigo-600' : '' }}">
-                            Logs
-                        </a>
+                        
+                        <!-- Management Dropdown -->
+                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                            <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.users.*') || request()->routeIs('developer.tenants.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
+                                Management
+                                <svg class="ml-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                <div class="py-1">
+                                    <a href="{{ route('developer.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.users.*') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fas fa-users mr-2"></i>Users
+                                    </a>
+                                    <a href="{{ route('developer.tenants.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.tenants.*') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fas fa-building mr-2"></i>Tenants
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- System Dropdown -->
+                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                            <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.config.*') || request()->routeIs('developer.backups.*') || request()->routeIs('developer.logs') ? 'border-indigo-500 text-indigo-600' : '' }}">
+                                System
+                                <svg class="ml-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                <div class="py-1">
+                                    <a href="{{ route('developer.config.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.config.*') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fas fa-cog mr-2"></i>Config
+                                    </a>
+                                    <a href="{{ route('developer.backups.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.backups.*') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fas fa-database mr-2"></i>Backups
+                                    </a>
+                                    <a href="{{ route('developer.logs') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.logs') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fas fa-file-alt mr-2"></i>Logs
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -99,8 +149,17 @@
                     
                     <!-- System Status -->
                     <div class="hidden lg:flex items-center space-x-2">
-                        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                        <span class="text-sm text-gray-500">System Online</span>
+                        @php
+                            $maintenanceActive = \Cache::get('frontend_maintenance', false);
+                        @endphp
+                        
+                        @if($maintenanceActive)
+                            <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-yellow-600 font-medium">Frontend Maintenance</span>
+                        @else
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-gray-500">System Online</span>
+                        @endif
                     </div>
                     
                     <!-- User Menu -->
@@ -138,6 +197,9 @@
                 <a href="{{ route('developer.config.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.config.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
                     <i class="fas fa-cog mr-2"></i>Config
                 </a>
+                <a href="{{ route('developer.tenants.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.tenants.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                    <i class="fas fa-building mr-2"></i>Tenants
+                </a>
                 <a href="{{ route('developer.backups.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.backups.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
                     <i class="fas fa-database mr-2"></i>Backups
                 </a>
@@ -145,6 +207,21 @@
                     <i class="fas fa-file-alt mr-2"></i>Logs
                 </a>
                 <div class="border-t border-gray-200 pt-3">
+                    <!-- System Status (Mobile) -->
+                    <div class="flex items-center justify-center py-2 mb-2">
+                        @php
+                            $maintenanceActive = \Cache::get('frontend_maintenance', false);
+                        @endphp
+                        
+                        @if($maintenanceActive)
+                            <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse mr-2"></div>
+                            <span class="text-sm text-yellow-600 font-medium">Frontend Maintenance</span>
+                        @else
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+                            <span class="text-sm text-gray-500">System Online</span>
+                        @endif
+                    </div>
+                    
                     <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
                         <i class="fas fa-arrow-left mr-2"></i>Back to App
                     </a>

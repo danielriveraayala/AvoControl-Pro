@@ -26,6 +26,11 @@ Route::get('/', function () {
     return redirect('/dashboard');
 })->name('home');
 
+// Ping route for connectivity checks
+Route::get('/ping', function () {
+    return response()->json(['status' => 'ok']);
+});
+
 
 // Public push notification endpoint (needed before auth)
 Route::get('/push/vapid-key', [App\Http\Controllers\PushNotificationController::class, 'getVapidKey']);
@@ -178,6 +183,21 @@ Route::prefix('developer')
             Route::post('/restore/{filename}', [App\Http\Controllers\Developer\BackupController::class, 'restore'])->name('restore');
             Route::post('/cleanup', [App\Http\Controllers\Developer\BackupController::class, 'cleanup'])->name('cleanup');
             Route::get('/system-info', [App\Http\Controllers\Developer\BackupController::class, 'systemInfo'])->name('system-info');
+        });
+        
+        // Tenant Management
+        Route::prefix('tenants')->name('tenants.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Developer\TenantController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Developer\TenantController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Developer\TenantController::class, 'store'])->name('store');
+            Route::get('/{tenant}', [App\Http\Controllers\Developer\TenantController::class, 'show'])->name('show');
+            Route::get('/{tenant}/edit', [App\Http\Controllers\Developer\TenantController::class, 'edit'])->name('edit');
+            Route::put('/{tenant}', [App\Http\Controllers\Developer\TenantController::class, 'update'])->name('update');
+            Route::delete('/{tenant}', [App\Http\Controllers\Developer\TenantController::class, 'destroy'])->name('destroy');
+            Route::post('/{tenant}/suspend', [App\Http\Controllers\Developer\TenantController::class, 'suspend'])->name('suspend');
+            Route::post('/{tenant}/activate', [App\Http\Controllers\Developer\TenantController::class, 'activate'])->name('activate');
+            Route::post('/{tenant}/extend-trial', [App\Http\Controllers\Developer\TenantController::class, 'extendTrial'])->name('extend-trial');
+            Route::post('/{tenant}/refresh-usage', [App\Http\Controllers\Developer\TenantController::class, 'refreshUsage'])->name('refresh-usage');
         });
     });
 

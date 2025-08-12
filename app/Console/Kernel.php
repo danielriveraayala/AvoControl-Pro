@@ -62,6 +62,20 @@ class Kernel extends ConsoleKernel
                  ->description('Enviar estadísticas del sistema (email + push)');
 
         // ===============================
+        // SISTEMA DE RESPALDOS AUTOMÁTICOS
+        // ===============================
+        
+        // Respaldo diario completo (2:00 AM)
+        $schedule->command('backup:daily --type=full --cleanup=true')
+                 ->dailyAt('02:00')
+                 ->description('Crear respaldo diario completo y eliminar el anterior');
+
+        // Respaldo de solo base de datos (cada 6 horas)
+        $schedule->command('backup:daily --type=database --cleanup=true')
+                 ->cron('0 */6 * * *')
+                 ->description('Crear respaldo de BD cada 6 horas y eliminar el anterior');
+
+        // ===============================
         // COMANDOS EXISTENTES
         // ===============================
         

@@ -70,6 +70,12 @@ php artisan optimize:clear
 # Queue worker (for background jobs)
 php artisan queue:work
 
+# Create manual backup
+php artisan backup:daily --type=full
+
+# Run scheduled tasks manually (for testing)
+php artisan schedule:run
+
 # Refresh database and seed (destructive!)
 php artisan migrate:fresh --seed
 ```

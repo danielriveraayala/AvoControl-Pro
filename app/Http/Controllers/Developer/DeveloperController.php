@@ -173,27 +173,35 @@ class DeveloperController extends Controller
     }
 
     /**
-     * Run maintenance mode.
+     * Toggle frontend maintenance mode (excludes developer panel).
      */
     public function maintenance(Request $request)
     {
         try {
-            $isDown = app()->isDownForMaintenance();
+            $isMaintenanceActive = \Cache::get('frontend_maintenance', false);
             
-            if ($isDown) {
-                \Artisan::call('up');
+            if ($isMaintenanceActive) {
+                // Disable maintenance mode
+                \Cache::forget('frontend_maintenance');
+                \Cache::forget('maintenance_message');
+                \Cache::forget('maintenance_retry_after');
+                
                 return response()->json([
                     'success' => true,
-                    'message' => 'Maintenance mode disabled'
+                    'message' => 'Modo mantenimiento desactivado (solo frontend)'
                 ]);
             } else {
-                \Artisan::call('down', [
-                    '--message' => 'System maintenance in progress',
-                    '--retry' => 60,
-                ]);
+                // Enable maintenance mode only for frontend
+                $message = $request->input('message', 'Sistema en mantenimiento temporal. Volveremos pronto.');
+                $retryAfter = $request->input('retry_after', 3600); // 1 hour default
+                
+                \Cache::put('frontend_maintenance', true);
+                \Cache::put('maintenance_message', $message);
+                \Cache::put('maintenance_retry_after', $retryAfter);
+                
                 return response()->json([
                     'success' => true,
-                    'message' => 'Maintenance mode enabled'
+                    'message' => 'Modo mantenimiento activado (solo frontend)'
                 ]);
             }
         } catch (\Exception $e) {

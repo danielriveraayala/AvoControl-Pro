@@ -39,13 +39,13 @@
 - [x] Crear ruta `/developer` protegida con rol `super_admin`
 - [x] Dashboard de desarrollador con métricas del sistema
 - [x] Gestión de usuarios administradores de empresas
-- [ ] Gestión de suscripciones y planes (preparación para multi-tenant)
+- [x] Gestión de suscripciones y planes (preparación para multi-tenant)
 - [x] Configuración de SMTP del sistema
 - [x] Configuración de notificaciones push (VAPID keys)
 - [x] Panel de pruebas de notificaciones
 - [x] Gestión completa de notificaciones existentes (email + push)
 - [x] Logs y auditoría del sistema
-- [ ] Gestión de respaldos y restauración
+- [x] Gestión de respaldos y restauración
 
 #### Sprint 2.2: Gestión de Usuarios por Desarrollador ✅ **COMPLETADO**
 - [x] CRUD completo de usuarios del sistema
