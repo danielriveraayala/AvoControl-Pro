@@ -41,7 +41,8 @@
       "Bash(chmod:*)",
       "Bash(redis-cli:*)",
       "Bash(ssh:*)",
-      "WebFetch(domain:dev.avocontrol.pro)"
+      "WebFetch(domain:dev.avocontrol.pro)",
+      "Bash(telnet:*)"
     ],
     "deny": []
   }

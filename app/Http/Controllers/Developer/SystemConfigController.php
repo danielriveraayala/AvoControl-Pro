@@ -101,36 +101,40 @@ class SystemConfigController extends Controller
             // Clear config cache to get latest settings
             Artisan::call('config:clear');
             
-            // Create custom mailer configuration for testing
+            // Get SMTP configuration
+            $host = config('mail.mailers.smtp.host');
+            $port = config('mail.mailers.smtp.port');
+            $encryption = config('mail.mailers.smtp.encryption');
+            $username = config('mail.mailers.smtp.username');
+            $password = config('mail.mailers.smtp.password');
+            
+            // Create transport based on encryption type
             $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport(
-                config('mail.mailers.smtp.host'),
-                config('mail.mailers.smtp.port'),
-                config('mail.mailers.smtp.encryption') === 'ssl'
+                $host,
+                $port,
+                $encryption === 'ssl' // true for SSL (465), false for TLS/STARTTLS (587)
             );
             
-            if (config('mail.mailers.smtp.username')) {
-                $transport->setUsername(config('mail.mailers.smtp.username'));
+            // Set authentication credentials
+            if ($username) {
+                $transport->setUsername($username);
             }
-            if (config('mail.mailers.smtp.password')) {
-                $transport->setPassword(config('mail.mailers.smtp.password'));
+            if ($password) {
+                $transport->setPassword($password);
             }
 
-            // For Hostinger specifically, add stream context options
-            if (strpos(config('mail.mailers.smtp.host'), 'hostinger') !== false) {
-                $transport->setStreamContextOptions([
-                    'ssl' => [
-                        'verify_peer' => false,
-                        'verify_peer_name' => false,
-                        'allow_self_signed' => true
-                    ]
-                ]);
-            }
+            // For Hostinger and other shared hosting providers
+            // Note: setStreamContextOptions might not be available in all versions
+            // We'll use the transport directly with appropriate settings
 
             $mailer = new \Symfony\Component\Mailer\Mailer($transport);
             
-            // Create test email
+            // Create test email with proper from format
+            $fromAddress = config('mail.from.address');
+            $fromName = config('mail.from.name');
+            
             $email = (new \Symfony\Component\Mime\Email())
-                ->from(config('mail.from.address'), config('mail.from.name'))
+                ->from(new \Symfony\Component\Mime\Address($fromAddress, $fromName))
                 ->to($request->test_email)
                 ->subject('Prueba de Configuración SMTP - AvoControl Pro')
                 ->text('Este es un email de prueba desde AvoControl Pro. Si recibes este mensaje, la configuración SMTP está funcionando correctamente.')
@@ -147,18 +151,45 @@ class SystemConfigController extends Controller
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
             
-            // Provide specific help for common Hostinger issues
-            if (strpos($errorMessage, 'authentication failed') !== false) {
-                $errorMessage .= "\n\n💡 Sugerencias para Hostinger:\n" .
-                    "- Verifica que el email existe en tu panel de Hostinger\n" .
-                    "- Usa la contraseña exacta del email (no la de cPanel)\n" .
-                    "- Prueba con puerto 587 y TLS en lugar de 465/SSL\n" .
-                    "- Asegúrate de que el email no esté bloqueado";
+            // Provide specific help for common issues
+            if (strpos($errorMessage, 'authentication failed') !== false || 
+                strpos($errorMessage, 'AUTH') !== false) {
+                $errorMessage = "Error de autenticación SMTP.\n\n" .
+                    "💡 Sugerencias para Hostinger:\n" .
+                    "• Verifica que el email existe en tu panel de Hostinger\n" .
+                    "• Usa la contraseña exacta del email (no la de cPanel)\n" .
+                    "• Puerto 587 con TLS es recomendado\n" .
+                    "• Asegúrate de que el email no esté bloqueado";
+            } elseif (strpos($errorMessage, 'Connection could not be established') !== false ||
+                     strpos($errorMessage, 'Connection refused') !== false ||
+                     strpos($errorMessage, 'Connection timed out') !== false) {
+                $errorMessage = "No se pudo conectar con el servidor SMTP.\n\n" .
+                    "💡 Posibles soluciones:\n" .
+                    "• Verifica el servidor: smtp.hostinger.com\n" .
+                    "• Puerto 587 para TLS, 465 para SSL\n" .
+                    "• Si usas TLS, asegúrate de que el puerto sea 587\n" .
+                    "• Verifica que tu firewall no bloquee la conexión\n" .
+                    "• Contacta a Hostinger si el problema persiste";
+            } elseif (strpos($errorMessage, 'SSL') !== false || 
+                     strpos($errorMessage, 'TLS') !== false) {
+                $errorMessage = "Error de encriptación SSL/TLS.\n\n" .
+                    "💡 Sugerencias:\n" .
+                    "• Para TLS usa puerto 587\n" .
+                    "• Para SSL usa puerto 465\n" .
+                    "• Verifica que la encriptación coincida con el puerto";
             }
+            
+            \Log::error('SMTP Test Failed', [
+                'error' => $e->getMessage(),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
+                'encryption' => config('mail.mailers.smtp.encryption'),
+                'username' => config('mail.mailers.smtp.username')
+            ]);
             
             return response()->json([
                 'success' => false, 
-                'message' => 'Error al enviar email: ' . $errorMessage
+                'message' => $errorMessage
             ]);
         }
     }
