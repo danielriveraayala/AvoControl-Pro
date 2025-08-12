@@ -8,7 +8,46 @@
 @endsection
 
 @section('content')
-    <!-- Alertas de Déficit de Inventario -->
+    <!-- Mensaje de Bienvenida - Visible para todos los usuarios -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-gradient-info">
+                <div class="card-header border-0">
+                    <h3 class="card-title">
+                        <i class="fas fa-home mr-2"></i>
+                        Bienvenido, {{ auth()->user()->name }}
+                    </h3>
+                    <div class="card-tools">
+                        <span class="badge badge-light">
+                            {{ ucfirst(auth()->user()->role) }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="text-white mb-2">
+                        <strong>Sistema AvoControl Pro</strong> - Panel de Control Principal
+                    </p>
+                    <p class="text-white-50 mb-0">
+                        Último acceso: {{ auth()->user()->updated_at->format('d/m/Y H:i') }}
+                    </p>
+                    
+                    <!-- Mostrar información de permisos solo para usuarios no super admin -->
+                    @if(!auth()->user()->isSuperAdmin())
+                    <div class="mt-3 pt-3 border-top border-white-50">
+                        <small class="text-white-50">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Las funciones disponibles dependen de tus permisos asignados. 
+                            Si necesitas acceso adicional, contacta al administrador.
+                        </small>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas de Déficit de Inventario - Solo para usuarios con permisos de lotes -->
+    @canPermission('lots.read')
     @if(isset($alertasDeficit) && count($alertasDeficit) > 0)
     <div class="row">
         <div class="col-12">
@@ -27,19 +66,25 @@
                     @endforeach
                 </ul>
                 <div class="mt-3">
+                    @canPermission('lots.create')
                     <a href="{{ route('lots.create') }}" class="btn btn-sm btn-success">
                         <i class="fas fa-plus"></i> Registrar Lotes
                     </a>
+                    @endcanPermission
+                    @canPermission('sales.read')
                     <a href="{{ route('sales.index') }}" class="btn btn-sm btn-warning">
                         <i class="fas fa-eye"></i> Revisar Ventas
                     </a>
+                    @endcanPermission
                 </div>
             </div>
         </div>
     </div>
     @endif
+    @endcanPermission
 
-    <!-- Alertas de Poco Inventario -->
+    <!-- Alertas de Poco Inventario - Solo para usuarios con permisos de lotes -->
+    @canPermission('lots.read')
     @if(isset($alertasPocaExistencia) && count($alertasPocaExistencia) > 0)
     <div class="row">
         <div class="col-12">
@@ -57,21 +102,27 @@
                     @endforeach
                 </ul>
                 <div class="mt-3">
+                    @canPermission('lots.read')
                     <a href="{{ route('lots.index') }}" class="btn btn-sm btn-success">
                         <i class="fas fa-plus"></i> Registrar Lotes
                     </a>
+                    @endcanPermission
+                    @canPermission('lots.read')
                     <a href="{{ route('acopio.index') }}" class="btn btn-sm btn-info">
                         <i class="fas fa-boxes"></i> Ver Inventario
                     </a>
+                    @endcanPermission
                 </div>
             </div>
         </div>
     </div>
     @endif
+    @endcanPermission
 
     <!-- Métricas Principales -->
     <div class="row">
-        <!-- Inventario Total -->
+        <!-- Inventario Total - Solo para usuarios con permisos de lotes -->
+        @canPermission('lots.read')
         <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
                 <div class="inner">
@@ -86,8 +137,10 @@
                 </a>
             </div>
         </div>
+        @endcanPermission
 
-        <!-- Valor del Inventario -->
+        <!-- Valor del Inventario - Solo para usuarios con permisos financieros -->
+        @canPermission('reports.financial')
         <div class="col-lg-3 col-6">
             <div class="small-box bg-success">
                 <div class="inner">
@@ -102,8 +155,10 @@
                 </a>
             </div>
         </div>
+        @endcanPermission
 
-        <!-- Ventas del Mes -->
+        <!-- Ventas del Mes - Solo para usuarios con permisos de ventas -->
+        @canPermission('sales.read')
         <div class="col-lg-3 col-6">
             <div class="small-box bg-warning">
                 <div class="inner">
@@ -118,8 +173,10 @@
                 </a>
             </div>
         </div>
+        @endcanPermission
 
-        <!-- Cuentas por Cobrar -->
+        <!-- Cuentas por Cobrar - Solo para usuarios con permisos de clientes o reportes financieros -->
+        @canPermission('customers.read,reports.financial')
         <div class="col-lg-3 col-6">
             <div class="small-box bg-danger">
                 <div class="inner">
@@ -134,9 +191,11 @@
                 </a>
             </div>
         </div>
+        @endcanPermission
     </div>
 
-    <!-- Resumen de Acopio por Calidad -->
+    <!-- Resumen de Acopio por Calidad - Solo para usuarios con permisos de lotes -->
+    @canPermission('lots.read')
     @if(isset($acopioSummary) && $acopioSummary->count() > 0)
     <div class="row">
         <div class="col-12">
@@ -190,8 +249,10 @@
         </div>
     </div>
     @endif
+    @endcanPermission
 
-    <!-- Segunda fila de métricas -->
+    <!-- Segunda fila de métricas - Solo para usuarios con permisos financieros -->
+    @canPermission('reports.financial')
     <div class="row">
         <div class="col-lg-3 col-6">
             <div class="info-box">
@@ -233,8 +294,10 @@
             </div>
         </div>
     </div>
+    @endcanPermission
 
-    <!-- Gráficos y Tablas -->
+    <!-- Gráficos y Tablas - Solo para usuarios con permisos de lotes -->
+    @canPermission('lots.read')
     <div class="row">
         <!-- Distribución por Calidad -->
         <div class="col-md-6">
@@ -354,6 +417,7 @@
             </div>
         </div>
     </div>
+    @endcanPermission
 @endsection
 
 @push('scripts')
