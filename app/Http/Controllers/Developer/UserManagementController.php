@@ -177,7 +177,7 @@ class UserManagementController extends Controller
         // Get user activity (example data - implement based on your needs)
         $activityData = [
             'last_login' => $user->updated_at,
-            'lots_created' => $user->lots()->count() ?? 0,
+            'lots_created' => 0, // Lots don't have user relationship in current schema
             'sales_created' => $user->sales()->count() ?? 0,
             'payments_processed' => $user->payments()->count() ?? 0,
         ];

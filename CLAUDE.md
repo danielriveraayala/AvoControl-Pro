@@ -225,6 +225,14 @@ php artisan migrate:fresh --seed
     - Tablas con columnas que se ocultan en móvil
     - Cards de estadísticas optimizadas para pantallas pequeñas
 
+  - ✅ **Corrección de Relaciones User Model (100%)**
+    - Fixed User::sales() relationship to use 'created_by' foreign key
+    - Fixed User::payments() relationship to use 'created_by' foreign key
+    - Removed User::lots() relationship (not supported by database schema)
+    - UserManagementController now works correctly without column errors
+    - Database schema uses 'created_by' instead of 'user_id' for tracking
+    - Verified relationships work with actual data (54 sales, 61 payments)
+
 ### Sistema de Notificaciones Push (100% Complete)
 - ✅ **Phase 1: Architecture & Foundations (100%)**
   - Custom Notification model with UUIDs and polymorphic relations
