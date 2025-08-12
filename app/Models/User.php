@@ -24,6 +24,11 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'suspended_at',
+        'suspension_reason',
+        'password_changed_at',
+        'created_by',
+        'email_verified_at',
     ];
 
     /**
@@ -43,6 +48,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'suspended_at' => 'datetime',
+        'password_changed_at' => 'datetime',
         'role' => 'string',
     ];
 
