@@ -94,7 +94,14 @@ class User extends Authenticatable
         $cacheKey = 'user_permissions_' . $this->id;
         
         return Cache::remember($cacheKey, 3600, function () {
-            return $this->permissions()->pluck('name')->toArray();
+            // Get all permissions from all user's roles
+            $permissions = [];
+            foreach ($this->roles as $role) {
+                foreach ($role->permissions as $permission) {
+                    $permissions[] = $permission->name;
+                }
+            }
+            return array_unique($permissions);
         });
     }
 
@@ -104,6 +111,14 @@ class User extends Authenticatable
     public function clearPermissionsCache(): void
     {
         Cache::forget('user_permissions_' . $this->id);
+    }
+
+    /**
+     * Get all permissions for the user (from all roles).
+     */
+    public function getAllPermissions(): array
+    {
+        return $this->getCachedPermissions();
     }
 
     /**
