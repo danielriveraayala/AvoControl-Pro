@@ -75,9 +75,24 @@ php artisan migrate:fresh --seed
 ```
 
 ### Authentication & Users
-- Default admin user: `admin@avocontrol.com` / `password123`
+
+#### Panel de Desarrollador (Super Admin)
+- **Acceso exclusivo**: Solo el rol `super_admin` puede acceder a `/developer`
+- **Credenciales de desarrollador**: Crear manualmente en BD o mediante seeder especial
+- **Funciones exclusivas**:
+  - Gestión completa de usuarios del sistema
+  - Configuración de SMTP global
+  - Configuración de notificaciones push (VAPID keys)
+  - Gestión de tenants/empresas (cuando se implemente multi-tenant)
+  - Visualización de métricas y logs del sistema
+  - Gestión de suscripciones y planes
+
+#### Usuarios de Prueba
+- Default admin empresa: `admin@avocontrol.com` / `password123`
 - Default vendedor: `vendedor@avocontrol.com` / `password123`
 - Default contador: `contador@avocontrol.com` / `password123`
+
+**Nota**: Los usuarios admin de empresa NO tienen acceso al panel de desarrollador
 
 ### Current Implementation Status
 
@@ -108,6 +123,26 @@ php artisan migrate:fresh --seed
 - Complete modal-based interfaces for all CRUD operations
 - Server-side DataTables processing for optimal performance
 
+### Sistema RBAC (Role-Based Access Control) - En Desarrollo
+- ✅ **Sprint 1.1: Estructura de Base de Datos (100%)**
+  - 4 tablas creadas (roles, permissions, role_permission, user_role)
+  - 8 roles jerárquicos (super_admin hasta visualizador)
+  - 52 permisos granulares en 10 módulos
+  - Seeders con asignaciones rol-permiso configuradas
+
+- ✅ **Sprint 1.2: Modelos y Relaciones (100%)**
+  - Modelo Role con gestión de jerarquías
+  - Modelo Permission con organización por módulos
+  - User mejorado con 15+ métodos helper
+  - Traits reutilizables (HasPermissions, HasRoles)
+  - Sistema de caché de permisos (1hr TTL)
+
+**🔄 Próximas Fases:**
+- Sprint 2.1: Panel Exclusivo de Desarrollador
+- Sprint 2.2: Gestión de Usuarios por Desarrollador
+- Sprint 3.1: Sistema de Middleware
+- Sprint 3.2: Interfaz de Administración Regular
+
 ### Notification System (Phase 1/10 Complete - 10%)
 - ✅ **Phase 1: Architecture & Foundations (100%)**
   - Custom Notification model with UUIDs and polymorphic relations
@@ -118,16 +153,7 @@ php artisan migrate:fresh --seed
   - Multi-priority notification system (low, normal, high, critical)
   - Multi-channel support (database, email, push, all)
 
-**🔄 In Progress:**
-- Phase 2: Email System with responsive templates (0% - Ready to start)
-- Phase 3: Native browser push notifications (0%)
-- Phase 4: Automated events and triggers (0%)
-- Phase 5: Jobs and queues processing (0%)
-- Phase 6: Custom CRON system (0%)
-- Phase 7: Complete user interface (0%)
-- Phase 8: Advanced configuration (0%)
-- Phase 9: Testing and validation (0%)
-- Phase 10: Production deployment (0%)
+**Nota**: La configuración de SMTP y notificaciones push será exclusiva del panel de desarrollador. Los usuarios regulares solo podrán activar/desactivar sus notificaciones.
 
 ## Architecture Overview
 
@@ -209,7 +235,18 @@ Focus testing on:
 
 ## Security Considerations
 
-- Role-based access control (admin, vendedor, contador)
+### Sistema de Roles y Permisos (RBAC)
+- **Jerarquía de Roles**: 8 niveles desde super_admin (100) hasta visualizador (10)
+- **Control Granular**: 52 permisos específicos en 10 módulos
+- **Panel de Desarrollador**: Acceso exclusivo para super_admin en `/developer`
+- **Separación de Responsabilidades**:
+  - Super Admin: Control total del sistema y configuraciones críticas
+  - Admin Empresa: Gestión de su empresa y usuarios (futuro multi-tenant)
+  - Roles Operativos: Permisos limitados según función
+
+### Seguridad de Operaciones
 - Payment operations require special permissions
 - Audit trail for financial transactions
 - Soft deletes for data integrity
+- Cache de permisos con TTL de 1 hora
+- Verificación de jerarquía para modificación de roles

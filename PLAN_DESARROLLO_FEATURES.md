@@ -33,42 +33,68 @@
 - [x] Crear traits para manejo de permisos (HasPermissions, HasRoles)
 - [x] Implementar métodos helper (hasRole, hasPermission, etc.)
 
-### **Fase 2: Middleware y Protección (Semana 3)**
+### **Fase 2: Panel de Desarrollador (Semana 3)**
 
-#### Sprint 2.1: Sistema de Middleware
+#### Sprint 2.1: Panel Exclusivo de Desarrollador
+- [ ] Crear ruta `/developer` protegida con rol `super_admin`
+- [ ] Dashboard de desarrollador con métricas del sistema
+- [ ] Gestión de usuarios administradores de empresas
+- [ ] Gestión de suscripciones y planes (preparación para multi-tenant)
+- [ ] Configuración de SMTP del sistema
+- [ ] Configuración de notificaciones push (VAPID keys)
+- [ ] Panel de pruebas de notificaciones
+- [ ] Logs y auditoría del sistema
+- [ ] Gestión de respaldos y restauración
+
+#### Sprint 2.2: Gestión de Usuarios por Desarrollador
+- [ ] CRUD completo de usuarios del sistema
+- [ ] Asignación de roles a usuarios
+- [ ] Suspensión/activación de cuentas
+- [ ] Reseteo de contraseñas
+- [ ] Visualización de actividad por usuario
+- [ ] Gestión de permisos especiales
+
+### **Fase 3: Middleware y Protección (Semana 4)**
+
+#### Sprint 3.1: Sistema de Middleware
 - [ ] Crear middleware `CheckRole`
 - [ ] Crear middleware `CheckPermission`
+- [ ] Crear middleware `DeveloperOnly` para panel exclusivo
 - [ ] Implementar Gates y Policies para cada controlador
 - [ ] Proteger rutas con middleware de permisos
 - [ ] Crear sistema de jerarquía de roles
 
-#### Sprint 2.2: Interfaz de Administración
-- [ ] Vista de gestión de roles y permisos
-- [ ] Asignación de roles a usuarios
-- [ ] Interfaz para crear/editar permisos
-- [ ] Sistema de auditoría de permisos
+#### Sprint 3.2: Interfaz de Administración Regular
+- [ ] Vista de gestión de usuarios para admin de empresa (futura)
+- [ ] Asignación de roles limitada por jerarquía
+- [ ] Interfaz de activación de notificaciones push para usuarios
+- [ ] Sistema de auditoría de permisos limitado
 
-### **Fase 3: Integración con Sistema Existente (Semana 4)**
+### **Fase 4: Integración con Sistema Existente (Semana 5)**
 
-#### Sprint 3.1: Aplicación de Permisos
+#### Sprint 4.1: Aplicación de Permisos
 - [ ] Aplicar verificaciones en controladores existentes
 - [ ] Ocultar/mostrar elementos UI según permisos
 - [ ] Modificar DataTables para filtrar por permisos
 - [ ] Implementar control granular en operaciones CRUD
 
-#### Sprint 3.2: Testing y Validación
+#### Sprint 4.2: Testing y Validación
 - [ ] Tests unitarios para roles y permisos
 - [ ] Tests de integración con controladores
 - [ ] Validación de seguridad
 - [ ] Documentación del sistema RBAC
 
-**Tiempo estimado: 4 semanas**
+**Tiempo estimado: 5 semanas**
 
 ---
 
 ## 2. SISTEMA MULTI-TENANT
 
-### **Fase 1: Arquitectura Multi-Tenant (Semana 5-6)**
+**Nota Importante:** El sistema multi-tenant funcionará con dos niveles de administración:
+1. **Super Admin (Desarrollador)**: Control total del sistema, gestión de empresas/tenants y suscripciones
+2. **Admin de Empresa**: Gestión de su propia empresa, usuarios y configuración limitada
+
+### **Fase 1: Arquitectura Multi-Tenant (Semana 6-7)**
 
 #### Sprint 4.1: Estructura de Tenants
 - [ ] Crear migración para tabla `tenants`
@@ -100,17 +126,24 @@
 
 ### **Fase 3: Gestión de Tenants (Semana 8-9)**
 
-#### Sprint 6.1: Registro y Administración
-- [ ] Sistema de registro de nuevos tenants
-- [ ] Panel de administración de tenants
-- [ ] Gestión de usuarios por tenant
-- [ ] Sistema de invitaciones entre tenants
+#### Sprint 6.1: Registro y Administración (Panel Desarrollador)
+- [ ] Sistema de registro de nuevos tenants (solo super_admin)
+- [ ] Panel de administración de tenants en `/developer/tenants`
+- [ ] Gestión de suscripciones y planes por tenant
+- [ ] Suspensión/activación de tenants
+- [ ] Métricas de uso por tenant
 
-#### Sprint 6.2: Configuración por Tenant
-- [ ] Configuraciones específicas por tenant
+#### Sprint 6.2: Administración por Tenant (Admin de Empresa)
+- [ ] Panel de administración limitado para admin de empresa
+- [ ] Gestión de usuarios de su propia empresa
+- [ ] Sistema de invitaciones dentro del tenant
+- [ ] Asignación de roles (excepto super_admin)
+
+#### Sprint 6.3: Configuración por Tenant
+- [ ] Configuraciones específicas por tenant (límites por admin de empresa)
 - [ ] Personalización de marca por tenant
-- [ ] Planes y limitaciones por tenant
-- [ ] Sistema de facturación básico
+- [ ] Planes y limitaciones administrados desde panel desarrollador
+- [ ] Sistema de facturación básico controlado por super_admin
 
 ### **Fase 4: Migración y Testing (Semana 10)**
 
