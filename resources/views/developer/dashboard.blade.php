@@ -22,7 +22,7 @@
         <!-- Quick Actions -->
         <div class="mb-6 sm:mb-8">
             <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Accesos Rápidos</h2>
-            
+
             <!-- Primary Actions -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
                 <a href="{{ route('developer.users.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:border-blue-300 transition-all duration-200">
@@ -35,7 +35,7 @@
                             </div>
                         </div>
                         <div class="ml-3 sm:ml-4 flex-1 min-w-0">
-                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">Gestión de Usuarios</h3>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">   Gestión de Usuarios</h3>
                             <p class="text-xs sm:text-sm text-gray-600 mt-1">Administrar usuarios, roles y permisos del sistema</p>
                             <div class="mt-2 sm:mt-3 flex items-center text-xs sm:text-sm text-blue-600">
                                 <span>Administrar usuarios</span>
@@ -260,7 +260,7 @@ function clearCache() {
     ).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Limpiando caché...', 'Por favor espera mientras se limpia la caché del sistema');
-            
+
             fetch('{{ route("developer.clear-cache") }}', {
                 method: 'POST',
                 headers: {
@@ -289,10 +289,10 @@ function toggleMaintenance() {
     const action = isMaintenanceActive ? 'desactivar' : 'activar';
     const actionText = isMaintenanceActive ? 'Desactivar Mantenimiento' : 'Activar Mantenimiento';
     const confirmText = isMaintenanceActive ? 'Sí, desactivar' : 'Sí, activar';
-    const warningText = isMaintenanceActive 
+    const warningText = isMaintenanceActive
         ? 'El frontend volverá a estar disponible para todos los usuarios. El panel de desarrollador seguirá accesible.'
         : '⚠️ Esto pondrá el frontend en modo mantenimiento. Los usuarios no podrán acceder pero el panel de desarrollador seguirá funcionando.';
-    
+
     DevAlert.confirm(
         actionText,
         warningText,
@@ -301,7 +301,7 @@ function toggleMaintenance() {
     ).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading(`${action === 'activar' ? 'Activando' : 'Desactivando'} modo mantenimiento...`);
-            
+
             fetch('{{ route("developer.maintenance") }}', {
                 method: 'POST',
                 headers: {

@@ -79,7 +79,7 @@
                         
                         <!-- Management Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                            <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.users.*') || request()->routeIs('developer.tenants.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
+                            <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.users.*') || request()->routeIs('developer.roles.*') || request()->routeIs('developer.tenants.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
                                 Management
                                 <svg class="ml-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -97,6 +97,9 @@
                                 <div class="py-1">
                                     <a href="{{ route('developer.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.users.*') ? 'bg-gray-100 text-gray-900' : '' }}">
                                         <i class="fas fa-users mr-2"></i>Users
+                                    </a>
+                                    <a href="{{ route('developer.roles.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.roles.*') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fas fa-user-shield mr-2"></i>Roles
                                     </a>
                                     <a href="{{ route('developer.tenants.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.tenants.*') ? 'bg-gray-100 text-gray-900' : '' }}">
                                         <i class="fas fa-building mr-2"></i>Tenants

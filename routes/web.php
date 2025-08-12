@@ -191,6 +191,20 @@ Route::prefix('developer')
             Route::get('/system-info', [App\Http\Controllers\Developer\BackupController::class, 'systemInfo'])->name('system-info');
         });
         
+        // Role Management
+        Route::prefix('roles')->name('roles.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Developer\RoleManagementController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Developer\RoleManagementController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Developer\RoleManagementController::class, 'store'])->name('store');
+            Route::get('/{role}', [App\Http\Controllers\Developer\RoleManagementController::class, 'show'])->name('show');
+            Route::get('/{role}/edit', [App\Http\Controllers\Developer\RoleManagementController::class, 'edit'])->name('edit');
+            Route::put('/{role}', [App\Http\Controllers\Developer\RoleManagementController::class, 'update'])->name('update');
+            Route::delete('/{role}', [App\Http\Controllers\Developer\RoleManagementController::class, 'destroy'])->name('destroy');
+            Route::post('/{role}/permissions', [App\Http\Controllers\Developer\RoleManagementController::class, 'updatePermissions'])->name('update-permissions');
+            Route::get('/{role}/clone', [App\Http\Controllers\Developer\RoleManagementController::class, 'clone'])->name('clone');
+            Route::get('/{role}/details', [App\Http\Controllers\Developer\RoleManagementController::class, 'getDetails'])->name('details');
+        });
+        
         // Tenant Management
         Route::prefix('tenants')->name('tenants.')->group(function () {
             Route::get('/', [App\Http\Controllers\Developer\TenantController::class, 'index'])->name('index');
