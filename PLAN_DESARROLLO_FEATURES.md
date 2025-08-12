@@ -53,17 +53,17 @@
 - [x] Suspensión/activación de cuentas
 - [x] Reseteo de contraseñas
 - [x] Visualización de actividad por usuario
-- [ ] Gestión de permisos especiales
+- [x] Gestión de permisos especiales
 
 ### **Fase 3: Middleware y Protección (Semana 4)**
 
-#### Sprint 3.1: Sistema de Middleware
-- [ ] Crear middleware `CheckRole`
-- [ ] Crear middleware `CheckPermission`
-- [ ] Crear middleware `DeveloperOnly` para panel exclusivo
-- [ ] Implementar Gates y Policies para cada controlador
-- [ ] Proteger rutas con middleware de permisos
-- [ ] Crear sistema de jerarquía de roles
+#### Sprint 3.1: Sistema de Middleware ✅ **COMPLETADO**
+- [x] Crear middleware `CheckRole`
+- [x] Crear middleware `CheckPermission`
+- [x] Crear middleware `DeveloperOnly` para panel exclusivo
+- [x] Implementar Gates y Policies para cada controlador (30+ Gates implementados)
+- [x] Proteger rutas con middleware de permisos (Todas las rutas principales protegidas)
+- [x] Crear sistema de jerarquía de roles (8 roles con niveles jerárquicos 10-100)
 
 #### Sprint 3.2: Interfaz de Administración Regular
 - [ ] Vista de gestión de usuarios para admin de empresa (futura)

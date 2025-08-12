@@ -50,62 +50,68 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/cleanup', [App\Http\Controllers\PushNotificationController::class, 'cleanup']);
     });
     
-    // Resources
-    Route::resource('lots', LotController::class);
-    Route::resource('sales', SaleController::class);
-    Route::resource('payments', PaymentController::class);
-    Route::resource('suppliers', SupplierController::class);
-    Route::resource('customers', CustomerController::class);
+    // Resources with permission middleware
+    Route::resource('lots', LotController::class)->middleware('permission:manage_lots');
+    Route::resource('sales', SaleController::class)->middleware('permission:manage_sales');
+    Route::resource('payments', PaymentController::class)->middleware('permission:manage_payments');
+    Route::resource('suppliers', SupplierController::class)->middleware('permission:manage_suppliers');
+    Route::resource('customers', CustomerController::class)->middleware('permission:manage_customers');
     
-    // Acopio routes
-    Route::get('acopio', [AcopioController::class, 'index'])->name('acopio.index');
-    Route::get('acopio/{quality}', [AcopioController::class, 'show'])->name('acopio.show');
-    Route::get('acopio-reporte', [AcopioController::class, 'reporte'])->name('acopio.reporte');
+    // Acopio routes - protected with view reports permission
+    Route::prefix('acopio')->middleware('permission:view_reports')->group(function () {
+        Route::get('/', [AcopioController::class, 'index'])->name('acopio.index');
+        Route::get('/{quality}', [AcopioController::class, 'show'])->name('acopio.show');
+    });
+    Route::get('acopio-reporte', [AcopioController::class, 'reporte'])->name('acopio.reporte')->middleware('permission:view_reports');
     
     
-    // Lots routes
-    Route::get('lots/{lot}/report', [LotController::class, 'report'])->name('lots.report');
-    Route::get('lots/{lot}/pdf', [LotController::class, 'downloadPDF'])->name('lots.pdf');
-    Route::get('lots/{lot}/payments', [LotController::class, 'payments'])->name('lots.payments');
-    Route::post('lots/{lot}/payments', [LotController::class, 'addPayment'])->name('lots.payments.add');
-    Route::get('lots/{lot}/payment-timeline', [LotController::class, 'paymentTimeline'])->name('lots.payment-timeline');
-    Route::get('lots/{lot}/payment-form', [LotController::class, 'paymentForm'])->name('lots.payment-form');
-    Route::get('lots/{lot}/debug-payments', [LotController::class, 'debugPayments'])->name('lots.debug-payments');
-    
-    // Sales AJAX routes
-    Route::group(['prefix' => 'sales'], function() {
-        Route::get('{sale}/details', [SaleController::class, 'details'])->name('sales.details');
-        Route::get('{sale}/edit-modal', [SaleController::class, 'editModal'])->name('sales.edit-modal');
-        Route::post('{sale}/update-modal', [SaleController::class, 'updateModal'])->name('sales.update-modal');
-        Route::patch('{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.update-status');
-        Route::get('{sale}/payment-form', [SaleController::class, 'paymentForm'])->name('sales.payment-form');
-        Route::get('{sale}/payment-timeline', [SaleController::class, 'paymentTimeline'])->name('sales.payment-timeline');
-        Route::get('{sale}/invoice', [SaleController::class, 'invoice'])->name('sales.invoice');
-        Route::patch('{sale}/deliver', [SaleController::class, 'markDelivered'])->name('sales.deliver');
+    // Lots routes - protected with appropriate permissions
+    Route::prefix('lots')->middleware('permission:manage_lots')->group(function () {
+        Route::get('{lot}/report', [LotController::class, 'report'])->name('lots.report')->middleware('permission:view_reports');
+        Route::get('{lot}/pdf', [LotController::class, 'downloadPDF'])->name('lots.pdf')->middleware('permission:export_data');
+        Route::get('{lot}/payments', [LotController::class, 'payments'])->name('lots.payments')->middleware('permission:view_payments');
+        Route::post('{lot}/payments', [LotController::class, 'addPayment'])->name('lots.payments.add')->middleware('permission:create_payments');
+        Route::get('{lot}/payment-timeline', [LotController::class, 'paymentTimeline'])->name('lots.payment-timeline')->middleware('permission:view_payments');
+        Route::get('{lot}/payment-form', [LotController::class, 'paymentForm'])->name('lots.payment-form')->middleware('permission:create_payments');
+        Route::get('{lot}/debug-payments', [LotController::class, 'debugPayments'])->name('lots.debug-payments')->middleware('role:super_admin');
     });
     
-    // Payment routes
-    Route::group(['prefix' => 'payments'], function() {
+    // Sales AJAX routes - protected with manage sales permission
+    Route::prefix('sales')->middleware('permission:manage_sales')->group(function() {
+        Route::get('{sale}/details', [SaleController::class, 'details'])->name('sales.details');
+        Route::get('{sale}/edit-modal', [SaleController::class, 'editModal'])->name('sales.edit-modal')->middleware('permission:edit_sales');
+        Route::post('{sale}/update-modal', [SaleController::class, 'updateModal'])->name('sales.update-modal')->middleware('permission:edit_sales');
+        Route::patch('{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.update-status')->middleware('permission:edit_sales');
+        Route::get('{sale}/payment-form', [SaleController::class, 'paymentForm'])->name('sales.payment-form')->middleware('permission:create_payments');
+        Route::get('{sale}/payment-timeline', [SaleController::class, 'paymentTimeline'])->name('sales.payment-timeline')->middleware('permission:view_payments');
+        Route::get('{sale}/invoice', [SaleController::class, 'invoice'])->name('sales.invoice')->middleware('permission:export_data');
+        Route::patch('{sale}/deliver', [SaleController::class, 'markDelivered'])->name('sales.deliver')->middleware('permission:edit_sales');
+    });
+    
+    // Payment routes - protected with manage payments permission
+    Route::prefix('payments')->middleware('permission:manage_payments')->group(function() {
         Route::get('sales/{sale}/create', [PaymentController::class, 'createSalePayment'])->name('payments.sale.create');
         Route::post('sales/{sale}/store', [PaymentController::class, 'storeSalePayment'])->name('payments.sale.store');
         Route::get('lots/{lot}/create', [PaymentController::class, 'createLotPayment'])->name('payments.lot.create');
         Route::post('lots/{lot}/store', [PaymentController::class, 'storeLotPayment'])->name('payments.lot.store');
-        Route::get('cash-flow', [PaymentController::class, 'dailyCashFlow'])->name('payments.cash-flow');
+        Route::get('cash-flow', [PaymentController::class, 'dailyCashFlow'])->name('payments.cash-flow')->middleware('permission:view_financial_reports');
         Route::post('sale-payment', [PaymentController::class, 'storeSalePayment'])->name('payments.store-sale-payment');
         Route::post('lot-payment', [PaymentController::class, 'storeLotPayment'])->name('payments.store-lot-payment');
     });
     
-    // Configuration routes
-    Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
-    Route::get('configuration/qualities-table', [ConfigurationController::class, 'getQualitiesTable'])->name('configuration.qualities.table');
-    Route::post('configuration/quality', [ConfigurationController::class, 'storeQuality'])->name('configuration.quality.store');
-    Route::get('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'showQuality'])->name('configuration.quality.show');
-    Route::put('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'updateQuality'])->name('configuration.quality.update');
-    Route::delete('configuration/quality/{qualityGrade}', [ConfigurationController::class, 'destroyQuality'])->name('configuration.quality.destroy');
-    
-    // Company configuration routes
-    Route::get('configuration/company/get', [ConfigurationController::class, 'getCompanyConfig'])->name('configuration.company.get');
-    Route::post('configuration/company/store', [ConfigurationController::class, 'storeCompanyConfig'])->name('configuration.company.store');
+    // Configuration routes - protected with manage company config permission
+    Route::prefix('configuration')->middleware('permission:manage_company_config')->group(function () {
+        Route::get('/', [ConfigurationController::class, 'index'])->name('configuration.index');
+        Route::get('/qualities-table', [ConfigurationController::class, 'getQualitiesTable'])->name('configuration.qualities.table');
+        Route::post('/quality', [ConfigurationController::class, 'storeQuality'])->name('configuration.quality.store');
+        Route::get('/quality/{qualityGrade}', [ConfigurationController::class, 'showQuality'])->name('configuration.quality.show');
+        Route::put('/quality/{qualityGrade}', [ConfigurationController::class, 'updateQuality'])->name('configuration.quality.update');
+        Route::delete('/quality/{qualityGrade}', [ConfigurationController::class, 'destroyQuality'])->name('configuration.quality.destroy');
+        
+        // Company configuration routes
+        Route::get('/company/get', [ConfigurationController::class, 'getCompanyConfig'])->name('configuration.company.get');
+        Route::post('/company/store', [ConfigurationController::class, 'storeCompanyConfig'])->name('configuration.company.store');
+    });
     
     
     // Profile routes
@@ -116,10 +122,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password');
     });
     
-    // Reports routes
-    Route::prefix('reportes')->name('reports.')->group(function () {
-        Route::get('rentabilidad', [ReportController::class, 'profitability'])->name('profitability');
-        Route::get('rentabilidad-lotes', [ReportController::class, 'lotProfitability'])->name('lot-profitability');
+    // Reports routes - protected with view reports permission
+    Route::prefix('reportes')->name('reports.')->middleware('permission:view_reports')->group(function () {
+        Route::get('rentabilidad', [ReportController::class, 'profitability'])->name('profitability')->middleware('permission:view_financial_reports');
+        Route::get('rentabilidad-lotes', [ReportController::class, 'lotProfitability'])->name('lot-profitability')->middleware('permission:view_financial_reports');
         Route::get('analisis-clientes', [ReportController::class, 'customerAnalysis'])->name('customer-analysis');
         Route::get('analisis-proveedores', [ReportController::class, 'supplierAnalysis'])->name('supplier-analysis');
     });
