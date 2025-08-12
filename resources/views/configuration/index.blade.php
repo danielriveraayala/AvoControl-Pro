@@ -273,38 +273,6 @@
                                 </div>
                             </div>
                             
-                            <!-- My Devices Section (only if user has subscriptions) -->
-                            <div class="row mt-4" id="my-devices-section" style="display: none;">
-                                <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h5 class="card-title mb-0">
-                                                <i class="fas fa-mobile-alt"></i> Mis Dispositivos Suscritos
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table class="table table-sm" id="user-subscriptions-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Navegador</th>
-                                                            <th>Fecha Registro</th>
-                                                            <th>Estado</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="user-subscriptions-tbody">
-                                                        <tr>
-                                                            <td colspan="3" class="text-center text-muted">
-                                                                <i class="fas fa-spinner fa-spin"></i> Cargando subscripciones...
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -748,9 +716,6 @@
 
         // Push Notification Functions
         function loadPushNotificationConfig() {
-            // Load user subscriptions
-            loadUserSubscriptions();
-            
             // Check push notification support and status
             checkPushSupport();
             
@@ -758,61 +723,6 @@
             initializePushControls();
         }
 
-        function loadUserSubscriptions() {
-            fetch('/push/status', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const subscriptions = data.subscriptions || [];
-                    const tbody = $('#user-subscriptions-tbody');
-                    tbody.empty();
-                    
-                    if (subscriptions.length === 0) {
-                        $('#my-devices-section').hide();
-                    } else {
-                        $('#my-devices-section').show();
-                        subscriptions.forEach(sub => {
-                            tbody.append(`
-                                <tr>
-                                    <td>
-                                        <i class="fas fa-globe"></i> ${sub.browser}
-                                    </td>
-                                    <td>${sub.created_at}</td>
-                                    <td>
-                                        <span class="badge badge-success">
-                                            <i class="fas fa-check"></i> Activo
-                                        </span>
-                                    </td>
-                                </tr>
-                            `);
-                        });
-                    }
-                } else {
-                    $('#user-subscriptions-tbody').html(`
-                        <tr>
-                            <td colspan="3" class="text-center text-danger">
-                                <i class="fas fa-exclamation-triangle"></i> Error al cargar subscripciones
-                            </td>
-                        </tr>
-                    `);
-                }
-            })
-            .catch(error => {
-                console.error('Error loading user subscriptions:', error);
-                $('#user-subscriptions-tbody').html(`
-                    <tr>
-                        <td colspan="3" class="text-center text-danger">
-                            <i class="fas fa-exclamation-triangle"></i> Error de conexión
-                        </td>
-                    </tr>
-                `);
-            });
-        }
 
         function checkPushSupport() {
             if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
@@ -883,7 +793,6 @@
             $('#enable-push-btn').hide();
             $('#disable-push-btn').show();
             $('#test-push-btn').show();
-            loadUserSubscriptions(); // Refresh the devices list
         }
 
         function showDeniedState() {
@@ -979,7 +888,6 @@
                     toastr.success('Notificaciones desactivadas correctamente');
                     showUnsubscribedState();
                     $('#push-status').html('<span class="badge badge-secondary">⭕ Notificaciones Inactivas</span>');
-                    $('#my-devices-section').hide();
                 } else {
                     throw new Error(data.message || 'Error del servidor');
                 }

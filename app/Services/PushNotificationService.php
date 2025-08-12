@@ -70,19 +70,25 @@ class PushNotificationService
                 if (!$result->isSuccess()) {
                     $success = false;
                     
+                    // Get response details from the report
+                    $response = $result->getResponse();
+                    $statusCode = $response ? $response->getStatusCode() : null;
+                    $reason = $response ? $response->getReasonPhrase() : 'Unknown error';
+                    
                     // Check if subscription is expired (410 = Gone, 404 = Not Found)
-                    if (in_array($result->getStatusCode(), [410, 404])) {
+                    if ($statusCode && in_array($statusCode, [410, 404])) {
                         $subscription->update(['active' => false]);
                         Log::warning('Push subscription expired, deactivated', [
                             'subscription_id' => $subscription->id,
-                            'status_code' => $result->getStatusCode(),
-                            'reason' => $result->getReason()
+                            'status_code' => $statusCode,
+                            'reason' => $reason
                         ]);
                     } else {
                         Log::error('Push notification failed', [
                             'subscription_id' => $subscription->id,
-                            'status_code' => $result->getStatusCode(),
-                            'reason' => $result->getReason()
+                            'status_code' => $statusCode ?? 'unknown',
+                            'reason' => $reason,
+                            'is_subscription_expired' => $result->isSubscriptionExpired()
                         ]);
                     }
                 }
