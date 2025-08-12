@@ -3,22 +3,22 @@
 @section('title', 'Gestión de Usuarios')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
-                        <p class="text-sm text-gray-600">Administra todos los usuarios del sistema</p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Gestión de Usuarios</h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Administra todos los usuarios del sistema</p>
                     </div>
-                    <div class="flex space-x-3">
-                        <a href="{{ route('developer.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                            ← Dashboard
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Dashboard</span>
                         </a>
-                        <a href="{{ route('developer.users.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-                            + Nuevo Usuario
+                        <a href="{{ route('developer.users.create') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                            <span class="mr-1">+</span> Nuevo Usuario
                         </a>
                     </div>
                 </div>
@@ -27,21 +27,21 @@
 
         <!-- Success/Error Messages -->
         @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 sm:mb-6">
                 {{ session('success') }}
             </div>
         @endif
 
         @if(session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 sm:mb-6">
                 {{ session('error') }}
             </div>
         @endif
 
         <!-- Filters -->
-        <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4">
-                <form method="GET" action="{{ route('developer.users.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white shadow rounded-lg mb-4 sm:mb-6">
+            <div class="px-4 sm:px-6 py-4">
+                <form method="GET" action="{{ route('developer.users.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Search -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
@@ -88,29 +88,70 @@
 
         <!-- Users Table -->
         <div class="bg-white shadow rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">
                     Lista de Usuarios ({{ $users->total() }} total)
                 </h3>
             </div>
             
-            <div class="overflow-x-auto">
+            <!-- Mobile Cards (visible on small screens) -->
+            <div class="block sm:hidden">
+                @forelse($users as $user)
+                    <div class="border-b border-gray-200 px-4 py-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8">
+                                    <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                        <span class="text-xs font-medium text-gray-700">
+                                            {{ substr($user->name, 0, 2) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="ml-3">
+                                    <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                    <div class="text-xs text-gray-500">{{ $user->email }}</div>
+                                </div>
+                            </div>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                {{ $user->role === 'super_admin' ? 'bg-purple-100 text-purple-800' : 
+                                   ($user->role === 'admin' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
+                                {{ ucfirst(str_replace('_', ' ', $user->role)) }}
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <a href="{{ route('developer.users.show', $user) }}" class="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded text-blue-600 bg-blue-100 hover:bg-blue-200">
+                                Ver
+                            </a>
+                            <a href="{{ route('developer.users.edit', $user) }}" class="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded text-yellow-600 bg-yellow-100 hover:bg-yellow-200">
+                                Editar
+                            </a>
+                        </div>
+                    </div>
+                @empty
+                    <div class="px-4 py-8 text-center">
+                        <p class="text-gray-500">No se encontraron usuarios.</p>
+                    </div>
+                @endforelse
+            </div>
+
+            <!-- Desktop Table (hidden on small screens) -->
+            <div class="hidden sm:block overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Usuario
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Roles
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Estado
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Última Actividad
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Acciones
                             </th>
                         </tr>
@@ -118,20 +159,20 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($users as $user)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-10 w-10">
-                                            <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                                <span class="text-sm font-medium text-gray-700">
+                                        <div class="flex-shrink-0 h-8 sm:h-10 w-8 sm:w-10">
+                                            <div class="h-8 sm:h-10 w-8 sm:w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                                <span class="text-xs sm:text-sm font-medium text-gray-700">
                                                     {{ substr($user->name, 0, 2) }}
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="ml-4">
+                                        <div class="ml-3 sm:ml-4">
                                             <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                            <div class="text-sm text-gray-500">{{ $user->email }}</div>
+                                            <div class="text-xs sm:text-sm text-gray-500">{{ $user->email }}</div>
                                             @if($user->hasRole('super_admin'))
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                                     Super Admin
                                                 </span>
                                             @endif
@@ -139,10 +180,10 @@
                                     </div>
                                 </td>
                                 
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                                     <div class="flex flex-wrap gap-1">
                                         @foreach($user->roles as $role)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
                                                 {{ $role->name === 'super_admin' ? 'bg-purple-100 text-purple-800' : 
                                                    ($role->name === 'admin' ? 'bg-blue-100 text-blue-800' : 
                                                    ($role->name === 'vendedor' ? 'bg-green-100 text-green-800' : 
@@ -156,53 +197,53 @@
                                     </div>
                                 </td>
                                 
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                                     @if($user->suspended_at)
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             Suspendido
                                         </span>
                                         @if($user->suspension_reason)
                                             <div class="text-xs text-gray-500 mt-1">{{ $user->suspension_reason }}</div>
                                         @endif
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             Activo
                                         </span>
                                     @endif
                                 </td>
                                 
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <div>{{ $user->updated_at->format('d/m/Y H:i') }}</div>
                                     <div class="text-xs">{{ $user->updated_at->diffForHumans() }}</div>
                                 </td>
                                 
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div class="flex space-x-2">
-                                        <a href="{{ route('developer.users.show', $user) }}" class="text-indigo-600 hover:text-indigo-900">
+                                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex flex-wrap gap-1 sm:gap-2">
+                                        <a href="{{ route('developer.users.show', $user) }}" class="text-indigo-600 hover:text-indigo-900 text-xs sm:text-sm">
                                             Ver
                                         </a>
-                                        <a href="{{ route('developer.users.edit', $user) }}" class="text-blue-600 hover:text-blue-900">
+                                        <a href="{{ route('developer.users.edit', $user) }}" class="text-blue-600 hover:text-blue-900 text-xs sm:text-sm">
                                             Editar
                                         </a>
                                         
                                         @if($user->suspended_at)
-                                            <button onclick="activateUser({{ $user->id }})" class="text-green-600 hover:text-green-900">
+                                            <button onclick="activateUser({{ $user->id }})" class="text-green-600 hover:text-green-900 text-xs sm:text-sm">
                                                 Activar
                                             </button>
                                         @else
                                             @if(!$user->hasRole('super_admin'))
-                                                <button onclick="suspendUser({{ $user->id }})" class="text-yellow-600 hover:text-yellow-900">
+                                                <button onclick="suspendUser({{ $user->id }})" class="text-yellow-600 hover:text-yellow-900 text-xs sm:text-sm">
                                                     Suspender
                                                 </button>
                                             @endif
                                         @endif
                                         
-                                        <button onclick="resetPassword({{ $user->id }})" class="text-purple-600 hover:text-purple-900">
-                                            Reset Pass
+                                        <button onclick="resetPassword({{ $user->id }})" class="text-purple-600 hover:text-purple-900 text-xs sm:text-sm">
+                                            Reset
                                         </button>
                                         
                                         @if(!$user->hasRole('super_admin') && $user->id !== auth()->id())
-                                            <button onclick="deleteUser({{ $user->id }})" class="text-red-600 hover:text-red-900">
+                                            <button onclick="deleteUser({{ $user->id }})" class="text-red-600 hover:text-red-900 text-xs sm:text-sm">
                                                 Eliminar
                                             </button>
                                         @endif
@@ -222,7 +263,7 @@
             
             <!-- Pagination -->
             @if($users->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200">
+                <div class="px-4 sm:px-6 py-4 border-t border-gray-200">
                     {{ $users->withQueryString()->links() }}
                 </div>
             @endif

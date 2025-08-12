@@ -3,18 +3,18 @@
 @section('title', 'Crear Usuario')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-4xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Crear Nuevo Usuario</h1>
-                        <p class="text-sm text-gray-600">Agrega un nuevo usuario al sistema</p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Crear Nuevo Usuario</h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Agrega un nuevo usuario al sistema</p>
                     </div>
-                    <a href="{{ route('developer.users.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                        ← Volver a Usuarios
+                    <a href="{{ route('developer.users.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
+                        ← <span class="ml-1">Volver a Usuarios</span>
                     </a>
                 </div>
             </div>
@@ -22,8 +22,8 @@
 
         <!-- Error Messages -->
         @if($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                <ul class="list-disc list-inside">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 sm:mb-6">
+                <ul class="list-disc list-inside text-sm">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -35,12 +35,12 @@
         <div class="bg-white shadow rounded-lg">
             <form action="{{ route('developer.users.store') }}" method="POST">
                 @csrf
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Información del Usuario</h3>
+                <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">Información del Usuario</h3>
                 </div>
                 
-                <div class="px-6 py-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="px-4 sm:px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <!-- Name -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
@@ -143,28 +143,29 @@
                     </div>
 
                     <!-- Additional Options -->
-                    <div class="mt-8">
-                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Opciones Adicionales</h4>
+                    <div class="mt-6 sm:mt-8">
+                        <h4 class="text-base sm:text-lg font-semibold text-gray-900 mb-4">Opciones Adicionales</h4>
                         
                         <div class="space-y-4">
                             <!-- Send Welcome Email -->
-                            <div class="flex items-center">
+                            <div class="flex items-start">
                                 <input type="checkbox" name="send_welcome_email" id="send_welcome_email" value="1"
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                       class="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                        {{ old('send_welcome_email') ? 'checked' : '' }}>
-                                <label for="send_welcome_email" class="ml-2 text-sm text-gray-900">
-                                    Enviar email de bienvenida
-                                </label>
+                                <div class="ml-3">
+                                    <label for="send_welcome_email" class="text-sm text-gray-900">
+                                        Enviar email de bienvenida
+                                    </label>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Se enviará un email con las credenciales de acceso al usuario
+                                    </p>
+                                </div>
                             </div>
-                            
-                            <p class="text-xs text-gray-500 ml-6">
-                                Se enviará un email con las credenciales de acceso al usuario
-                            </p>
                         </div>
                     </div>
 
                     <!-- Role Hierarchy Information -->
-                    <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 p-4">
+                    <div class="mt-6 sm:mt-8 bg-blue-50 border-l-4 border-blue-400 p-4">
                         <div class="flex">
                             <div class="flex-shrink-0">
                                 <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,7 +174,7 @@
                             </div>
                             <div class="ml-3">
                                 <h3 class="text-sm font-medium text-blue-800">Jerarquía de Roles</h3>
-                                <div class="mt-2 text-sm text-blue-700">
+                                <div class="mt-2 text-xs sm:text-sm text-blue-700">
                                     <ul class="list-disc pl-5 space-y-1">
                                         <li><strong>Super Admin (8):</strong> Acceso completo al sistema y panel de desarrollador</li>
                                         <li><strong>Admin (7):</strong> Gestión completa de la empresa</li>
@@ -191,15 +192,15 @@
                 </div>
 
                 <!-- Form Actions -->
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
-                    <button type="button" onclick="generatePassword()" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium">
+                <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-0">
+                    <button type="button" onclick="generatePassword()" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium order-2 sm:order-1">
                         Generar Contraseña
                     </button>
-                    <div class="space-x-3">
-                        <a href="{{ route('developer.users.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-md text-sm font-medium">
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-3 order-1 sm:order-2">
+                        <a href="{{ route('developer.users.index') }}" class="inline-flex items-center justify-center bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-md text-sm font-medium">
                             Cancelar
                         </a>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium">
+                        <button type="submit" class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium">
                             Crear Usuario
                         </button>
                     </div>
