@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Lot;
 use App\Models\Supplier;
 use App\Models\QualityGrade;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -294,13 +295,18 @@ class LotController extends Controller
 
                 // Create initial payment record if payment was made
                 if ($amountPaid > 0 && $validated['fecha_pago']) {
-                    \App\Models\LotPayment::create([
-                        'lot_id' => $lot->id,
-                        'amount' => $amountPaid,
+                    Payment::create([
+                        'payment_code' => 'PAY-LOT-' . $lot->id . '-' . time(),
+                        'type' => 'proveedor',
+                        'concept' => 'Pago inicial de lote',
+                        'payable_type' => Lot::class,
+                        'payable_id' => $lot->id,
                         'payment_date' => $validated['fecha_pago'],
-                        'payment_type' => $validated['tipo_pago'] ?? 'efectivo',
-                        'paid_by_user_id' => auth()->id(),
-                        'notes' => $validated['notas_pago']
+                        'amount' => $amountPaid,
+                        'payment_method' => $validated['tipo_pago'] ?? 'efectivo',
+                        'status' => 'completed',
+                        'notes' => $validated['notas_pago'],
+                        'created_by' => auth()->id()
                     ]);
                 }
 
@@ -457,13 +463,18 @@ class LotController extends Controller
                 if (isset($validated['monto_pago']) && $validated['monto_pago'] > 0 && 
                     $validated['fecha_pago'] && $validated['monto_pago'] > $lot->amount_paid) {
                     $additionalPayment = $validated['monto_pago'] - $lot->amount_paid;
-                    \App\Models\LotPayment::create([
-                        'lot_id' => $lot->id,
-                        'amount' => $additionalPayment,
+                    Payment::create([
+                        'payment_code' => 'PAY-LOT-' . $lot->id . '-' . time(),
+                        'type' => 'proveedor',
+                        'concept' => 'Pago adicional de lote',
+                        'payable_type' => Lot::class,
+                        'payable_id' => $lot->id,
                         'payment_date' => $validated['fecha_pago'],
-                        'payment_type' => $validated['tipo_pago'] ?? 'efectivo',
-                        'paid_by_user_id' => auth()->id(),
-                        'notes' => $validated['notas_pago']
+                        'amount' => $additionalPayment,
+                        'payment_method' => $validated['tipo_pago'] ?? 'efectivo',
+                        'status' => 'completed',
+                        'notes' => $validated['notas_pago'],
+                        'created_by' => auth()->id()
                     ]);
                 }
             });
@@ -669,13 +680,18 @@ class LotController extends Controller
         try {
             DB::transaction(function () use ($lot, $validated) {
                 // Create payment record
-                \App\Models\LotPayment::create([
-                    'lot_id' => $lot->id,
-                    'amount' => $validated['amount'],
+                Payment::create([
+                    'payment_code' => 'PAY-LOT-' . $lot->id . '-' . time(),
+                    'type' => 'proveedor',
+                    'concept' => 'Pago de lote',
+                    'payable_type' => Lot::class,
+                    'payable_id' => $lot->id,
                     'payment_date' => $validated['payment_date'],
-                    'payment_type' => $validated['payment_type'],
-                    'paid_by_user_id' => auth()->id(),
-                    'notes' => $validated['notes']
+                    'amount' => $validated['amount'],
+                    'payment_method' => $validated['payment_type'],
+                    'status' => 'completed',
+                    'notes' => $validated['notes'],
+                    'created_by' => auth()->id()
                 ]);
 
                 // Update lot payment amounts
