@@ -278,20 +278,15 @@ class SystemConfigController extends Controller
     public function generateVapid()
     {
         try {
-            // Generate VAPID keys using artisan command
-            Artisan::call('webpush:vapid');
-            $output = Artisan::output();
+            // Generate VAPID keys using Web Push library directly
+            $keys = \Minishlink\WebPush\VAPID::createVapidKeys();
             
-            // Parse the output to extract keys
-            preg_match('/Public Key:\s*(.+)/', $output, $publicMatches);
-            preg_match('/Private Key:\s*(.+)/', $output, $privateMatches);
+            $publicKey = $keys['publicKey'];
+            $privateKey = $keys['privateKey'];
             
-            if (empty($publicMatches[1]) || empty($privateMatches[1])) {
+            if (empty($publicKey) || empty($privateKey)) {
                 throw new \Exception('No se pudieron generar las llaves VAPID');
             }
-
-            $publicKey = trim($publicMatches[1]);
-            $privateKey = trim($privateMatches[1]);
             
             // Update .env file
             $this->updateEnvFile([
