@@ -43,6 +43,7 @@
 - [x] Configuración de SMTP del sistema
 - [x] Configuración de notificaciones push (VAPID keys)
 - [x] Panel de pruebas de notificaciones
+- [x] Gestión completa de notificaciones existentes (email + push)
 - [x] Logs y auditoría del sistema
 - [ ] Gestión de respaldos y restauración
 

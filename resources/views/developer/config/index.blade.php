@@ -93,14 +93,55 @@
                             <span class="text-sm text-gray-900">{{ $configs['push']['subject'] ?? 'No configurado' }}</span>
                         </div>
                     </div>
-                    <div class="mt-6 flex space-x-3">
-                        <a href="{{ route('developer.config.notifications') }}" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium">
+                    <div class="mt-6 flex space-x-2">
+                        <a href="{{ route('developer.config.notifications') }}" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-center py-2 px-3 rounded-md text-sm font-medium">
                             Configurar Push
                         </a>
-                        <a href="{{ route('developer.config.vapid') }}" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium">
+                        <a href="{{ route('developer.config.vapid') }}" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-3 rounded-md text-sm font-medium">
                             Gestionar VAPID
                         </a>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Management -->
+        <div class="mt-6 bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Gestión de Notificaciones</h3>
+                        <p class="text-sm text-gray-600">Administra todas las notificaciones del sistema</p>
+                    </div>
+                    <a href="{{ route('developer.config.notifications-manager') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                        <i class="fas fa-bell mr-2"></i>
+                        Gestionar Notificaciones
+                    </a>
+                </div>
+            </div>
+            <div class="px-6 py-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">--</div>
+                        <div class="text-sm text-gray-600">Total de Notificaciones</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">--</div>
+                        <div class="text-sm text-gray-600">Enviadas Correctamente</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-yellow-600">--</div>
+                        <div class="text-sm text-gray-600">Pendientes</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-red-600">--</div>
+                        <div class="text-sm text-gray-600">Fallidas</div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-gray-500">
+                        Ver y administrar todas las notificaciones enviadas por email y push notifications
+                    </p>
                 </div>
             </div>
         </div>

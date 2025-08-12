@@ -359,6 +359,199 @@ class SystemConfigController extends Controller
     }
 
     /**
+     * Show notifications manager page.
+     */
+    public function notificationsManager()
+    {
+        return view('developer.config.notifications-manager');
+    }
+
+    /**
+     * Get notifications data for DataTable.
+     */
+    public function getNotificationsData(Request $request)
+    {
+        $query = \App\Models\Notification::query()->with(['user', 'notifiable']);
+        
+        // Search functionality
+        if ($request->has('search') && $request->search['value']) {
+            $search = $request->search['value'];
+            $query->where(function($q) use ($search) {
+                $q->where('type', 'like', "%{$search}%")
+                  ->orWhere('title', 'like', "%{$search}%")
+                  ->orWhere('message', 'like', "%{$search}%")
+                  ->orWhere('channels', 'like', "%{$search}%")
+                  ->orWhere('priority', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by type
+        if ($request->has('type') && $request->type !== '') {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by priority
+        if ($request->has('priority') && $request->priority !== '') {
+            $query->where('priority', $request->priority);
+        }
+
+        // Filter by channels
+        if ($request->has('channels') && $request->channels !== '') {
+            $query->where('channels', 'like', "%{$request->channels}%");
+        }
+
+        // Filter by date range
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $totalRecords = $query->count();
+
+        // Ordering
+        $columns = ['id', 'type', 'title', 'priority', 'channels', 'status', 'created_at'];
+        if ($request->has('order')) {
+            $columnIndex = $request->order[0]['column'];
+            $columnName = $columns[$columnIndex] ?? 'created_at';
+            $direction = $request->order[0]['dir'] ?? 'desc';
+            $query->orderBy($columnName, $direction);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        // Pagination
+        if ($request->has('start') && $request->has('length')) {
+            $query->skip($request->start)->take($request->length);
+        }
+
+        $notifications = $query->get();
+
+        $data = $notifications->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'type' => '<span class="badge badge-info">' . ucfirst($notification->type) . '</span>',
+                'title' => $notification->title,
+                'message' => \Str::limit($notification->message, 50),
+                'user' => $notification->user ? $notification->user->name : 'Sistema',
+                'priority' => $this->getPriorityBadge($notification->priority),
+                'channels' => $this->getChannelsBadges($notification->channels),
+                'status' => $this->getStatusBadge($notification->status),
+                'created_at' => $notification->created_at->format('d/m/Y H:i'),
+                'actions' => $this->getNotificationActions($notification)
+            ];
+        });
+
+        return response()->json([
+            'draw' => intval($request->draw),
+            'recordsTotal' => \App\Models\Notification::count(),
+            'recordsFiltered' => $totalRecords,
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * Delete notification.
+     */
+    public function deleteNotification(\App\Models\Notification $notification)
+    {
+        try {
+            $notification->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Notificación eliminada correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la notificación: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get priority badge.
+     */
+    private function getPriorityBadge($priority)
+    {
+        $badges = [
+            'low' => 'badge-secondary',
+            'normal' => 'badge-primary',
+            'high' => 'badge-warning',
+            'critical' => 'badge-danger'
+        ];
+
+        $class = $badges[$priority] ?? 'badge-secondary';
+        return '<span class="badge ' . $class . '">' . ucfirst($priority) . '</span>';
+    }
+
+    /**
+     * Get channels badges.
+     */
+    private function getChannelsBadges($channels)
+    {
+        if (is_string($channels)) {
+            $channelsArray = explode(',', $channels);
+        } else {
+            $channelsArray = (array) $channels;
+        }
+
+        $badges = [];
+        foreach ($channelsArray as $channel) {
+            $channel = trim($channel);
+            $badgeClass = match($channel) {
+                'email' => 'badge-success',
+                'push' => 'badge-info',
+                'database' => 'badge-secondary',
+                default => 'badge-light'
+            };
+            $badges[] = '<span class="badge ' . $badgeClass . '">' . ucfirst($channel) . '</span>';
+        }
+
+        return implode(' ', $badges);
+    }
+
+    /**
+     * Get status badge.
+     */
+    private function getStatusBadge($status)
+    {
+        $badges = [
+            'pending' => 'badge-warning',
+            'sent' => 'badge-success',
+            'failed' => 'badge-danger',
+            'scheduled' => 'badge-info'
+        ];
+
+        $class = $badges[$status] ?? 'badge-secondary';
+        return '<span class="badge ' . $class . '">' . ucfirst($status) . '</span>';
+    }
+
+    /**
+     * Get notification actions.
+     */
+    private function getNotificationActions($notification)
+    {
+        $actions = '<div class="btn-group" role="group">';
+        
+        // View details button
+        $actions .= '<button type="button" class="btn btn-sm btn-outline-info" onclick="viewNotification(\'' . $notification->id . '\')" title="Ver detalles">';
+        $actions .= '<i class="fas fa-eye"></i>';
+        $actions .= '</button>';
+        
+        // Delete button
+        $actions .= '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteNotification(\'' . $notification->id . '\')" title="Eliminar">';
+        $actions .= '<i class="fas fa-trash"></i>';
+        $actions .= '</button>';
+        
+        $actions .= '</div>';
+        
+        return $actions;
+    }
+
+    /**
      * Get SMTP configuration.
      */
     private function getSmtpConfig()

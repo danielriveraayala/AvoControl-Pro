@@ -164,6 +164,9 @@ Route::prefix('developer')
             Route::post('/notifications/test', [App\Http\Controllers\Developer\SystemConfigController::class, 'testNotifications'])->name('notifications.test');
             Route::get('/vapid', [App\Http\Controllers\Developer\SystemConfigController::class, 'vapid'])->name('vapid');
             Route::post('/vapid/generate', [App\Http\Controllers\Developer\SystemConfigController::class, 'generateVapid'])->name('vapid.generate');
+            Route::get('/notifications-manager', [App\Http\Controllers\Developer\SystemConfigController::class, 'notificationsManager'])->name('notifications-manager');
+            Route::get('/notifications-manager/data', [App\Http\Controllers\Developer\SystemConfigController::class, 'getNotificationsData'])->name('notifications-manager.data');
+            Route::delete('/notifications-manager/{notification}', [App\Http\Controllers\Developer\SystemConfigController::class, 'deleteNotification'])->name('notifications-manager.delete');
         });
         
         // Backup Management
