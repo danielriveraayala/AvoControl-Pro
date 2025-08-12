@@ -124,4 +124,46 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+// Developer Panel Routes - Exclusive for super_admin
+Route::prefix('developer')
+    ->middleware(['auth', App\Http\Middleware\DeveloperOnly::class])
+    ->name('developer.')
+    ->group(function () {
+        // Dashboard
+        Route::get('/', [App\Http\Controllers\Developer\DeveloperController::class, 'index'])->name('index');
+        
+        // System Management
+        Route::get('/logs', [App\Http\Controllers\Developer\DeveloperController::class, 'logs'])->name('logs');
+        Route::post('/cache/clear', [App\Http\Controllers\Developer\DeveloperController::class, 'clearCache'])->name('cache.clear');
+        Route::post('/maintenance', [App\Http\Controllers\Developer\DeveloperController::class, 'maintenance'])->name('maintenance');
+        
+        // User Management
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Developer\UserManagementController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Developer\UserManagementController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Developer\UserManagementController::class, 'store'])->name('store');
+            Route::get('/{user}', [App\Http\Controllers\Developer\UserManagementController::class, 'show'])->name('show');
+            Route::get('/{user}/edit', [App\Http\Controllers\Developer\UserManagementController::class, 'edit'])->name('edit');
+            Route::put('/{user}', [App\Http\Controllers\Developer\UserManagementController::class, 'update'])->name('update');
+            Route::delete('/{user}', [App\Http\Controllers\Developer\UserManagementController::class, 'destroy'])->name('destroy');
+            Route::post('/{user}/roles', [App\Http\Controllers\Developer\UserManagementController::class, 'assignRoles'])->name('assign-roles');
+            Route::post('/{user}/suspend', [App\Http\Controllers\Developer\UserManagementController::class, 'suspend'])->name('suspend');
+            Route::post('/{user}/activate', [App\Http\Controllers\Developer\UserManagementController::class, 'activate'])->name('activate');
+            Route::post('/{user}/reset-password', [App\Http\Controllers\Developer\UserManagementController::class, 'resetPassword'])->name('reset-password');
+        });
+        
+        // System Configuration
+        Route::prefix('config')->name('config.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Developer\SystemConfigController::class, 'index'])->name('index');
+            Route::get('/smtp', [App\Http\Controllers\Developer\SystemConfigController::class, 'smtp'])->name('smtp');
+            Route::post('/smtp', [App\Http\Controllers\Developer\SystemConfigController::class, 'updateSmtp'])->name('smtp.update');
+            Route::post('/smtp/test', [App\Http\Controllers\Developer\SystemConfigController::class, 'testSmtp'])->name('smtp.test');
+            Route::get('/notifications', [App\Http\Controllers\Developer\SystemConfigController::class, 'notifications'])->name('notifications');
+            Route::post('/notifications', [App\Http\Controllers\Developer\SystemConfigController::class, 'updateNotifications'])->name('notifications.update');
+            Route::post('/notifications/test', [App\Http\Controllers\Developer\SystemConfigController::class, 'testNotifications'])->name('notifications.test');
+            Route::get('/vapid', [App\Http\Controllers\Developer\SystemConfigController::class, 'vapid'])->name('vapid');
+            Route::post('/vapid/generate', [App\Http\Controllers\Developer\SystemConfigController::class, 'generateVapid'])->name('vapid.generate');
+        });
+    });
+
 require __DIR__.'/auth.php';
