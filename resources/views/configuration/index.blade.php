@@ -223,9 +223,6 @@
                                                     <i class="fas fa-bell-slash"></i> Desactivar Notificaciones
                                                 </button>
                                                 
-                                                <button type="button" id="test-push-btn" class="btn btn-outline-info ml-2" style="display: none;">
-                                                    <i class="fas fa-paper-plane"></i> Enviar Prueba
-                                                </button>
                                             </div>
                                             
                                             <div id="browser-unsupported" class="alert alert-warning" style="display: none;">
@@ -777,28 +774,21 @@
                 disablePushNotifications();
             });
 
-            // Test push notification button
-            $('#test-push-btn').click(() => {
-                sendTestPushNotification();
-            });
         }
 
         function showUnsubscribedState() {
             $('#enable-push-btn').show();
             $('#disable-push-btn').hide();
-            $('#test-push-btn').hide();
         }
 
         function showSubscribedState() {
             $('#enable-push-btn').hide();
             $('#disable-push-btn').show();
-            $('#test-push-btn').show();
         }
 
         function showDeniedState() {
             $('#enable-push-btn').hide();
             $('#disable-push-btn').hide();
-            $('#test-push-btn').hide();
         }
 
         function enablePushNotifications() {
@@ -901,38 +891,6 @@
             });
         }
 
-        function sendTestPushNotification() {
-            $('#test-push-btn').html('<i class="fas fa-spinner fa-spin"></i> Enviando...').prop('disabled', true);
-
-            fetch('/push/test', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: 'Esta es una notificación de prueba desde AvoControl Pro',
-                    type: 'test'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    toastr.success('Notificación de prueba enviada correctamente');
-                } else {
-                    toastr.error(data.message || 'Error al enviar notificación de prueba');
-                }
-            })
-            .catch(error => {
-                console.error('Error sending test notification:', error);
-                toastr.error('Error al enviar notificación de prueba');
-            })
-            .finally(() => {
-                $('#test-push-btn').html('<i class="fas fa-paper-plane"></i> Enviar Prueba').prop('disabled', false);
-            });
-        }
 
         // Helper function to convert VAPID key
         function urlBase64ToUint8Array(base64String) {
