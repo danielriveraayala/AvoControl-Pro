@@ -18,20 +18,20 @@
 
 ### **Fase 1: Fundamentos de RBAC (Semana 1-2)**
 
-#### Sprint 1.1: Estructura de Base de Datos
-- [ ] Crear migración para tabla `roles`
-- [ ] Crear migración para tabla `permissions` 
-- [ ] Crear migración para tabla `role_permission` (pivot)
-- [ ] Crear migración para tabla `user_role` (pivot)
-- [ ] Crear seeders con roles básicos (admin, gerente, vendedor, contador)
-- [ ] Crear seeders con permisos granulares
+#### Sprint 1.1: Estructura de Base de Datos ✅ **COMPLETADO**
+- [x] Crear migración para tabla `roles`
+- [x] Crear migración para tabla `permissions` 
+- [x] Crear migración para tabla `role_permission` (pivot)
+- [x] Crear migración para tabla `user_role` (pivot)
+- [x] Crear seeders con roles básicos (8 roles: super_admin, admin, gerente, contador, vendedor, comprador, operario, visualizador)
+- [x] Crear seeders con permisos granulares (52 permisos en 10 módulos)
 
-#### Sprint 1.2: Modelos y Relaciones
-- [ ] Crear modelo `Role` con relaciones
-- [ ] Crear modelo `Permission` con relaciones
-- [ ] Modificar modelo `User` para incluir roles
-- [ ] Crear traits para manejo de permisos
-- [ ] Implementar métodos helper (hasRole, hasPermission, etc.)
+#### Sprint 1.2: Modelos y Relaciones ✅ **COMPLETADO**
+- [x] Crear modelo `Role` con relaciones
+- [x] Crear modelo `Permission` con relaciones
+- [x] Modificar modelo `User` para incluir roles
+- [x] Crear traits para manejo de permisos (HasPermissions, HasRoles)
+- [x] Implementar métodos helper (hasRole, hasPermission, etc.)
 
 ### **Fase 2: Middleware y Protección (Semana 3)**
 

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Cache;
 
 class User extends Authenticatable
 {
@@ -52,6 +54,184 @@ class User extends Authenticatable
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * The roles that belong to the user.
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'user_role')
+            ->withPivot('is_primary')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get all permissions for the user through their roles.
+     */
+    public function permissions()
+    {
+        return $this->roles()
+            ->with('permissions')
+            ->get()
+            ->pluck('permissions')
+            ->flatten()
+            ->unique('id');
+    }
+
+    /**
+     * Get cached permissions for better performance.
+     */
+    public function getCachedPermissions()
+    {
+        $cacheKey = 'user_permissions_' . $this->id;
+        
+        return Cache::remember($cacheKey, 3600, function () {
+            return $this->permissions()->pluck('name')->toArray();
+        });
+    }
+
+    /**
+     * Clear permissions cache for the user.
+     */
+    public function clearPermissionsCache(): void
+    {
+        Cache::forget('user_permissions_' . $this->id);
+    }
+
+    /**
+     * Check if user has a specific role.
+     */
+    public function hasRole(string $roleName): bool
+    {
+        return $this->roles()->where('name', $roleName)->exists();
+    }
+
+    /**
+     * Check if user has any of the given roles.
+     */
+    public function hasAnyRole(array $roles): bool
+    {
+        return $this->roles()->whereIn('name', $roles)->exists();
+    }
+
+    /**
+     * Check if user has all of the given roles.
+     */
+    public function hasAllRoles(array $roles): bool
+    {
+        return $this->roles()->whereIn('name', $roles)->count() === count($roles);
+    }
+
+    /**
+     * Check if user has a specific permission.
+     */
+    public function hasPermission(string $permissionName): bool
+    {
+        $permissions = $this->getCachedPermissions();
+        return in_array($permissionName, $permissions);
+    }
+
+    /**
+     * Check if user has any of the given permissions.
+     */
+    public function hasAnyPermission(array $permissions): bool
+    {
+        $userPermissions = $this->getCachedPermissions();
+        return !empty(array_intersect($permissions, $userPermissions));
+    }
+
+    /**
+     * Check if user has all of the given permissions.
+     */
+    public function hasAllPermissions(array $permissions): bool
+    {
+        $userPermissions = $this->getCachedPermissions();
+        return count(array_intersect($permissions, $userPermissions)) === count($permissions);
+    }
+
+    /**
+     * Assign roles to user.
+     */
+    public function assignRoles(array $roleIds): void
+    {
+        $this->roles()->syncWithoutDetaching($roleIds);
+        $this->clearPermissionsCache();
+    }
+
+    /**
+     * Remove roles from user.
+     */
+    public function removeRoles(array $roleIds): void
+    {
+        $this->roles()->detach($roleIds);
+        $this->clearPermissionsCache();
+    }
+
+    /**
+     * Sync roles with user.
+     */
+    public function syncRoles(array $roleIds): void
+    {
+        $this->roles()->sync($roleIds);
+        $this->clearPermissionsCache();
+    }
+
+    /**
+     * Get the primary role of the user.
+     */
+    public function getPrimaryRole()
+    {
+        return $this->roles()->wherePivot('is_primary', true)->first();
+    }
+
+    /**
+     * Set the primary role for the user.
+     */
+    public function setPrimaryRole(int $roleId): void
+    {
+        // Reset all roles to non-primary
+        $this->roles()->updateExistingPivot(
+            $this->roles()->pluck('id')->toArray(),
+            ['is_primary' => false]
+        );
+        
+        // Set the specified role as primary
+        $this->roles()->updateExistingPivot($roleId, ['is_primary' => true]);
+        $this->clearPermissionsCache();
+    }
+
+    /**
+     * Check if user can perform an action on a module.
+     */
+    public function canPerformAction(string $module, string $action): bool
+    {
+        $permission = $module . '.' . $action;
+        return $this->hasPermission($permission);
+    }
+
+    /**
+     * Get the highest role hierarchy level for the user.
+     */
+    public function getHighestHierarchyLevel(): int
+    {
+        return $this->roles()->max('hierarchy_level') ?? 0;
+    }
+
+    /**
+     * Check if user has higher authority than another user.
+     */
+    public function hasHigherAuthorityThan(User $user): bool
+    {
+        return $this->getHighestHierarchyLevel() > $user->getHighestHierarchyLevel();
+    }
+
+    /**
+     * Check if user is a super admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
     }
 
     public function isAdmin()
