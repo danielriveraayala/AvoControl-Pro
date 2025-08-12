@@ -1,6 +1,6 @@
 @extends('layouts.developer')
 
-@section('title', isset($clonedFrom) ? 'Clonar Rol' : 'Crear Nuevo Rol')
+@section('title', 'Editar Rol')
 
 @section('content')
 <div class="py-12">
@@ -10,16 +10,14 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">
-                            {{ isset($clonedFrom) ? 'Clonar Rol: ' . $clonedFrom->display_name : 'Crear Nuevo Rol' }}
-                        </h1>
-                        <p class="text-sm text-gray-600">
-                            {{ isset($clonedFrom) ? 'Crea un nuevo rol basado en uno existente' : 'Define un nuevo rol con permisos específicos' }}
-                        </p>
+                        <h1 class="text-2xl font-bold text-gray-900">Editar Rol: {{ $role->display_name }}</h1>
+                        <p class="text-sm text-gray-600">Modifica la información y permisos del rol</p>
                     </div>
-                    <a href="{{ route('developer.roles.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                        ← Volver
-                    </a>
+                    <div class="flex space-x-3">
+                        <a href="{{ route('developer.roles.show', $role) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← Volver
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -37,8 +35,15 @@
             </div>
         @endif
 
-        <form action="{{ route('developer.roles.store') }}" method="POST">
+        @if(session('warning'))
+            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+                {{ session('warning') }}
+            </div>
+        @endif
+
+        <form action="{{ route('developer.roles.update', $role) }}" method="POST">
             @csrf
+            @method('PUT')
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Basic Information -->
@@ -49,21 +54,12 @@
                         </div>
                         <div class="px-6 py-4 space-y-6">
                             <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700">
-                                    Nombre del Rol <span class="text-red-500">*</span>
-                                </label>
+                                <label class="block text-sm font-medium text-gray-700">Nombre del Rol</label>
                                 <input type="text" 
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('name') border-red-500 @enderror" 
-                                       id="name" 
-                                       name="name" 
-                                       value="{{ old('name', isset($clonedFrom) ? '' : '') }}"
-                                       placeholder="ej: content_manager"
-                                       pattern="[a-z_]+"
-                                       required>
-                                <p class="mt-1 text-sm text-gray-500">Solo letras minúsculas y guiones bajos</p>
-                                @error('name')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500" 
+                                       value="{{ $role->name }}"
+                                       disabled>
+                                <p class="mt-1 text-sm text-gray-500">El nombre del rol no se puede modificar</p>
                             </div>
 
                             <div>
@@ -74,8 +70,7 @@
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('display_name') border-red-500 @enderror" 
                                        id="display_name" 
                                        name="display_name" 
-                                       value="{{ old('display_name', isset($clonedFrom) ? $clonedFrom->display_name . ' (Copia)' : '') }}"
-                                       placeholder="ej: Gestor de Contenido"
+                                       value="{{ old('display_name', $role->display_name) }}"
                                        required>
                                 @error('display_name')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -88,7 +83,7 @@
                                           id="description" 
                                           name="description" 
                                           rows="3"
-                                          placeholder="Describe las responsabilidades de este rol">{{ old('description', isset($clonedFrom) ? $clonedFrom->description : '') }}</textarea>
+                                          placeholder="Describe las responsabilidades de este rol">{{ old('description', $role->description) }}</textarea>
                                 @error('description')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -102,7 +97,7 @@
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('hierarchy_level') border-red-500 @enderror" 
                                        id="hierarchy_level" 
                                        name="hierarchy_level" 
-                                       value="{{ old('hierarchy_level', isset($clonedFrom) ? $clonedFrom->hierarchy_level : '') }}"
+                                       value="{{ old('hierarchy_level', $role->hierarchy_level) }}"
                                        min="1" 
                                        max="99"
                                        required>
@@ -112,7 +107,6 @@
                                 @enderror
                             </div>
 
-                            @if(isset($clonedFrom))
                             <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
                                 <div class="flex">
                                     <div class="flex-shrink-0">
@@ -120,12 +114,14 @@
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm text-blue-700">
-                                            Clonando desde: <strong>{{ $clonedFrom->display_name }}</strong>
+                                            Editando: <strong>{{ $role->display_name }}</strong>
+                                        </p>
+                                        <p class="text-xs text-blue-600 mt-1">
+                                            {{ $role->users->count() }} usuarios asignados
                                         </p>
                                     </div>
                                 </div>
                             </div>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -149,6 +145,9 @@
                         <div class="px-6 py-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 @foreach($permissions as $module => $modulePermissions)
+                                @php
+                                    $rolePermissionIds = $role->permissions->pluck('id')->toArray();
+                                @endphp
                                 <div class="border border-gray-200 rounded-lg">
                                     <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
                                         <div class="flex justify-between items-center">
@@ -177,8 +176,7 @@
                                                        name="permissions[]" 
                                                        value="{{ $permission->id }}"
                                                        data-module="{{ $module }}"
-                                                       {{ (old('permissions') && in_array($permission->id, old('permissions'))) || 
-                                                          (isset($selectedPermissions) && in_array($permission->id, $selectedPermissions)) ? 'checked' : '' }}>
+                                                       {{ in_array($permission->id, $rolePermissionIds) ? 'checked' : '' }}>
                                                 <label for="perm-{{ $permission->id }}" class="ml-2 text-sm text-gray-900">
                                                     {{ $permission->display_name }}
                                                 </label>
@@ -199,11 +197,11 @@
                 <div class="bg-white shadow rounded-lg">
                     <div class="px-6 py-4">
                         <div class="flex justify-end space-x-3">
-                            <a href="{{ route('developer.roles.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            <a href="{{ route('developer.roles.show', $role) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                 <i class="fas fa-times mr-2"></i>Cancelar
                             </a>
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-                                <i class="fas fa-save mr-2"></i>Crear Rol
+                                <i class="fas fa-save mr-2"></i>Guardar Cambios
                             </button>
                         </div>
                     </div>
@@ -252,26 +250,6 @@ $(document).ready(function() {
 
     // Initialize module toggles on page load
     updateModuleToggles();
-    
-    // Initialize individual module checkboxes to match pre-selected permissions
-    @if(isset($selectedPermissions))
-    @foreach($selectedPermissions as $permissionId)
-    $('#perm-{{ $permissionId }}').prop('checked', true);
-    @endforeach
-    updateModuleToggles();
-    @endif
-
-    // Auto-generate name from display_name
-    $('#display_name').on('keyup', function() {
-        if ($('#name').val() === '') {
-            const name = $(this).val()
-                .toLowerCase()
-                .replace(/[^a-z0-9]/g, '_')
-                .replace(/_+/g, '_')
-                .replace(/^_|_$/g, '');
-            $('#name').val(name);
-        }
-    });
 });
 </script>
 @endpush

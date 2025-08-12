@@ -327,24 +327,65 @@ class RoleManagementController extends Controller
     /**
      * Get role details via AJAX.
      */
-    public function getDetails(Role $role)
+    public function getDetails($roleId)
     {
-        $role->load('permissions', 'users');
-        
-        return response()->json([
-            'success' => true,
-            'role' => [
-                'id' => $role->id,
-                'name' => $role->name,
-                'display_name' => $role->display_name,
-                'description' => $role->description,
-                'hierarchy_level' => $role->hierarchy_level,
-                'is_system' => $role->is_system,
-                'users_count' => $role->users->count(),
-                'permissions_count' => $role->permissions->count(),
-                'permissions' => $role->permissions->groupBy('module')
-            ]
-        ]);
+        try {
+            Log::info('Getting role details', [
+                'role_id' => $roleId,
+                'user' => auth()->user()->email ?? 'not authenticated'
+            ]);
+            
+            // Manually find the role instead of using route model binding
+            $role = Role::find($roleId);
+            
+            if (!$role) {
+                Log::warning('Role not found', [
+                    'role_id' => $roleId,
+                    'user' => auth()->user()->email ?? 'not authenticated'
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Rol no encontrado'
+                ], 404);
+            }
+            
+            $role->load('permissions', 'users');
+            
+            $response = [
+                'success' => true,
+                'role' => [
+                    'id' => $role->id,
+                    'name' => $role->name,
+                    'display_name' => $role->display_name,
+                    'description' => $role->description,
+                    'hierarchy_level' => $role->hierarchy_level,
+                    'is_system' => $role->is_system,
+                    'users_count' => $role->users->count(),
+                    'permissions_count' => $role->permissions->count(),
+                    'permissions' => $role->permissions->groupBy('module')
+                ]
+            ];
+            
+            Log::info('Role details retrieved successfully', [
+                'role_id' => $role->id,
+                'permissions_count' => $role->permissions->count()
+            ]);
+            
+            return response()->json($response);
+            
+        } catch (\Exception $e) {
+            Log::error('Error getting role details', [
+                'role_id' => $roleId ?? 'unknown',
+                'error' => $e->getMessage(),
+                'user' => auth()->user()->email ?? 'not authenticated'
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar los detalles del rol: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

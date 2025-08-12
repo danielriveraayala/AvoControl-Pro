@@ -196,13 +196,15 @@ Route::prefix('developer')
             Route::get('/', [App\Http\Controllers\Developer\RoleManagementController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Developer\RoleManagementController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\Developer\RoleManagementController::class, 'store'])->name('store');
-            Route::get('/{role}', [App\Http\Controllers\Developer\RoleManagementController::class, 'show'])->name('show');
+            // More specific routes first
+            Route::get('/{role}/details', [App\Http\Controllers\Developer\RoleManagementController::class, 'getDetails'])->name('details');
             Route::get('/{role}/edit', [App\Http\Controllers\Developer\RoleManagementController::class, 'edit'])->name('edit');
+            Route::get('/{role}/clone', [App\Http\Controllers\Developer\RoleManagementController::class, 'clone'])->name('clone');
+            Route::post('/{role}/permissions', [App\Http\Controllers\Developer\RoleManagementController::class, 'updatePermissions'])->name('update-permissions');
             Route::put('/{role}', [App\Http\Controllers\Developer\RoleManagementController::class, 'update'])->name('update');
             Route::delete('/{role}', [App\Http\Controllers\Developer\RoleManagementController::class, 'destroy'])->name('destroy');
-            Route::post('/{role}/permissions', [App\Http\Controllers\Developer\RoleManagementController::class, 'updatePermissions'])->name('update-permissions');
-            Route::get('/{role}/clone', [App\Http\Controllers\Developer\RoleManagementController::class, 'clone'])->name('clone');
-            Route::get('/{role}/details', [App\Http\Controllers\Developer\RoleManagementController::class, 'getDetails'])->name('details');
+            // General route last
+            Route::get('/{role}', [App\Http\Controllers\Developer\RoleManagementController::class, 'show'])->name('show');
         });
         
         // Tenant Management
