@@ -3,17 +3,17 @@
 @section('title', 'Configuración SMTP')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-4xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Configuración SMTP</h1>
-                        <p class="text-sm text-gray-600">Configura el servidor de correo electrónico</p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Configuración SMTP</h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Configura el servidor de correo electrónico</p>
                     </div>
-                    <a href="{{ route('developer.config.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <a href="{{ route('developer.config.index') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
                         ← Volver
                     </a>
                 </div>
@@ -37,12 +37,12 @@
         <div class="bg-white shadow rounded-lg">
             <form action="{{ route('developer.config.smtp.update') }}" method="POST">
                 @csrf
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Configuración del Servidor SMTP</h3>
+                <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">Configuración del Servidor SMTP</h3>
                 </div>
                 
-                <div class="px-6 py-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <!-- Mail Driver -->
                         <div>
                             <label for="mail_mailer" class="block text-sm font-medium text-gray-700 mb-2">

@@ -3,18 +3,18 @@
 @section('title', 'Gestión de Notificaciones')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Gestión de Notificaciones</h1>
-                        <p class="text-sm text-gray-600">Administra todas las notificaciones del sistema (email y push)</p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Gestión de Notificaciones</h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Administra todas las notificaciones del sistema (email y push)</p>
                     </div>
-                    <a href="{{ route('developer.config.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                        ← Volver a Configuración
+                    <a href="{{ route('developer.config.index') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
+                        ← <span class="ml-1">Volver</span>
                     </a>
                 </div>
             </div>
@@ -38,11 +38,11 @@
 
         <!-- Filters -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Filtros de Búsqueda</h3>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">Filtros de Búsqueda</h3>
             </div>
-            <div class="px-6 py-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div class="px-4 sm:px-6 py-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
                     <div>
                         <label for="filter-type" class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
                         <select id="filter-type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
@@ -86,20 +86,20 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     <div>
-                        <label for="filter-date-from" class="block text-sm font-medium text-gray-700 mb-1">Desde</label>
-                        <input type="date" id="filter-date-from" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <label for="filter-date-from" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Desde</label>
+                        <input type="date" id="filter-date-from" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                     </div>
                     <div>
-                        <label for="filter-date-to" class="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
-                        <input type="date" id="filter-date-to" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <label for="filter-date-to" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Hasta</label>
+                        <input type="date" id="filter-date-to" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                     </div>
-                    <div class="flex items-end space-x-2">
-                        <button type="button" id="clear-filters" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-md transition-colors">
+                    <div class="flex flex-col sm:flex-row sm:items-end space-y-2 sm:space-y-0 sm:space-x-2">
+                        <button type="button" id="clear-filters" class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors">
                             Limpiar Filtros
                         </button>
-                        <button type="button" id="refresh-table" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors">
+                        <button type="button" id="refresh-table" class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-md transition-colors">
                             Actualizar
                         </button>
                     </div>
@@ -108,21 +108,21 @@
         </div>
 
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6">
             <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
+                <div class="p-3 sm:p-5">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="p-3 bg-blue-100 rounded-full">
-                                <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="p-2 sm:p-3 bg-blue-100 rounded-full">
+                                <svg class="h-4 w-4 sm:h-6 sm:w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM11 19H6a2 2 0 01-2-2V7a2 2 0 012-2h6m5-2l2.5 2.5L16 9"/>
                                 </svg>
                             </div>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
+                        <div class="ml-3 sm:ml-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Notificaciones</dt>
-                                <dd class="text-lg font-medium text-gray-900" id="total-notifications">-</dd>
+                                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Total</dt>
+                                <dd class="text-sm sm:text-lg font-medium text-gray-900" id="total-notifications">-</dd>
                             </dl>
                         </div>
                     </div>
@@ -130,19 +130,19 @@
             </div>
 
             <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
+                <div class="p-3 sm:p-5">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="p-3 bg-green-100 rounded-full">
-                                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="p-2 sm:p-3 bg-green-100 rounded-full">
+                                <svg class="h-4 w-4 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
+                        <div class="ml-3 sm:ml-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Enviadas</dt>
-                                <dd class="text-lg font-medium text-gray-900" id="sent-notifications">-</dd>
+                                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Enviadas</dt>
+                                <dd class="text-sm sm:text-lg font-medium text-gray-900" id="sent-notifications">-</dd>
                             </dl>
                         </div>
                     </div>
@@ -150,19 +150,19 @@
             </div>
 
             <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
+                <div class="p-3 sm:p-5">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="p-3 bg-yellow-100 rounded-full">
-                                <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="p-2 sm:p-3 bg-yellow-100 rounded-full">
+                                <svg class="h-4 w-4 sm:h-6 sm:w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
+                        <div class="ml-3 sm:ml-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Pendientes</dt>
-                                <dd class="text-lg font-medium text-gray-900" id="pending-notifications">-</dd>
+                                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Pendientes</dt>
+                                <dd class="text-sm sm:text-lg font-medium text-gray-900" id="pending-notifications">-</dd>
                             </dl>
                         </div>
                     </div>
@@ -170,19 +170,19 @@
             </div>
 
             <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
+                <div class="p-3 sm:p-5">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="p-3 bg-red-100 rounded-full">
-                                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="p-2 sm:p-3 bg-red-100 rounded-full">
+                                <svg class="h-4 w-4 sm:h-6 sm:w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
                                 </svg>
                             </div>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
+                        <div class="ml-3 sm:ml-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Fallidas</dt>
-                                <dd class="text-lg font-medium text-gray-900" id="failed-notifications">-</dd>
+                                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Fallidas</dt>
+                                <dd class="text-sm sm:text-lg font-medium text-gray-900" id="failed-notifications">-</dd>
                             </dl>
                         </div>
                     </div>
@@ -192,10 +192,10 @@
 
         <!-- DataTable -->
         <div class="bg-white shadow rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Lista de Notificaciones</h3>
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">Lista de Notificaciones</h3>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto p-1 sm:p-2">
                 <table class="min-w-full divide-y divide-gray-200" id="notificationsTable">
                     <thead class="bg-gray-50">
                         <tr>
@@ -222,12 +222,12 @@
 
 <!-- Notification Details Modal -->
 <div id="notificationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="relative top-4 sm:top-20 mx-auto p-3 sm:p-5 border w-11/12 sm:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto">
         <div class="mt-3">
             <div class="flex items-center justify-between pb-3 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Detalles de la Notificación</h3>
-                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeModal()">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">Detalles de la Notificación</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600 p-1" onclick="closeModal()">
+                    <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
@@ -236,7 +236,7 @@
                 <!-- Notification details will be loaded here -->
             </div>
             <div class="mt-6 flex justify-end">
-                <button type="button" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-md" onclick="closeModal()">
+                <button type="button" class="px-3 sm:px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs sm:text-sm font-medium rounded-md" onclick="closeModal()">
                     Cerrar
                 </button>
             </div>
@@ -252,7 +252,7 @@ let notificationsTable;
 document.addEventListener('DOMContentLoaded', function() {
     initializeNotificationsTable();
     loadNotificationsStats();
-    
+
     // Filter change events
     const filters = ['filter-type', 'filter-priority', 'filter-channels', 'filter-status', 'filter-date-from', 'filter-date-to'];
     filters.forEach(filterId => {
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // Clear filters
     document.getElementById('clear-filters').addEventListener('click', function() {
         ['filter-type', 'filter-priority', 'filter-channels', 'filter-status', 'filter-date-from', 'filter-date-to'].forEach(id => {
@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             notificationsTable.ajax.reload();
         }
     });
-    
+
     // Refresh table
     document.getElementById('refresh-table').addEventListener('click', function() {
         if (notificationsTable) {
@@ -289,7 +289,7 @@ function initializeNotificationsTable() {
         setTimeout(initializeNotificationsTable, 100);
         return;
     }
-    
+
     notificationsTable = $('#notificationsTable').DataTable({
         processing: true,
         serverSide: true,
@@ -351,7 +351,7 @@ function loadNotificationsStats() {
     document.getElementById('sent-notifications').textContent = '0';
     document.getElementById('pending-notifications').textContent = '0';
     document.getElementById('failed-notifications').textContent = '0';
-    
+
     // This would typically be an API call to get real statistics
     // fetch('/developer/config/notifications-manager/stats')
     //     .then(response => response.json())
@@ -366,7 +366,7 @@ function loadNotificationsStats() {
 function viewNotification(id) {
     // Show modal
     document.getElementById('notificationModal').classList.remove('hidden');
-    
+
     // Show loading
     document.getElementById('notificationModalBody').innerHTML = `
         <div class="flex justify-center items-center py-4">
@@ -374,7 +374,7 @@ function viewNotification(id) {
             <span class="ml-3 text-gray-600">Cargando detalles...</span>
         </div>
     `;
-    
+
     // Here you would fetch the notification details via AJAX
     // For now, showing a placeholder
     setTimeout(() => {
@@ -466,7 +466,7 @@ function showNotification(type, message) {
     // Create notification element
     const notification = document.createElement('div');
     const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-    
+
     notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-md shadow-lg z-50 transform transition-transform duration-300 translate-x-full`;
     notification.innerHTML = `
         <div class="flex items-center">
@@ -478,14 +478,14 @@ function showNotification(type, message) {
             </button>
         </div>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     // Slide in
     setTimeout(() => {
         notification.classList.remove('translate-x-full');
     }, 100);
-    
+
     // Auto remove after 5 seconds
     setTimeout(() => {
         notification.classList.add('translate-x-full');

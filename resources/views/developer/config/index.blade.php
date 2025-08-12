@@ -3,36 +3,36 @@
 @section('title', 'Configuración del Sistema')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Configuración del Sistema</h1>
-                        <p class="text-sm text-gray-600">Gestiona la configuración global del sistema</p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Configuración del Sistema</h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Gestiona la configuración global del sistema</p>
                     </div>
-                    <a href="{{ route('developer.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                        ← Volver al Dashboard
+                    <a href="{{ route('developer.index') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
+                        ← <span class="ml-1">Dashboard</span>
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- Configuration Cards -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <!-- SMTP Configuration -->
             <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900">Configuración SMTP</h3>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $configs['smtp']['configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Configuración SMTP</h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $configs['smtp']['configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} self-start">
                             {{ $configs['smtp']['configured'] ? 'Configurado' : 'Sin Configurar' }}
                         </span>
                     </div>
                 </div>
-                <div class="px-6 py-4">
+                <div class="px-4 sm:px-6 py-4">
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-sm font-medium text-gray-600">Servidor:</span>
@@ -51,12 +51,12 @@
                             <span class="text-sm text-gray-900">{{ $configs['smtp']['from_address'] ?? 'No configurado' }}</span>
                         </div>
                     </div>
-                    <div class="mt-6 flex space-x-3">
-                        <a href="{{ route('developer.config.smtp') }}" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium">
+                    <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.config.smtp') }}" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium">
                             Configurar SMTP
                         </a>
                         @if($configs['smtp']['configured'])
-                            <button onclick="testSmtp()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium">
+                            <button onclick="testSmtp()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium">
                                 Probar SMTP
                             </button>
                         @endif
@@ -66,15 +66,15 @@
 
             <!-- Push Notifications Configuration -->
             <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900">Notificaciones Push</h3>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $configs['push']['configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Notificaciones Push</h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $configs['push']['configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} self-start">
                             {{ $configs['push']['configured'] ? 'Configurado' : 'Sin Configurar' }}
                         </span>
                     </div>
                 </div>
-                <div class="px-6 py-4">
+                <div class="px-4 sm:px-6 py-4">
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-sm font-medium text-gray-600">Estado:</span>
@@ -93,11 +93,11 @@
                             <span class="text-sm text-gray-900">{{ $configs['push']['subject'] ?? 'No configurado' }}</span>
                         </div>
                     </div>
-                    <div class="mt-6 flex space-x-2">
-                        <a href="{{ route('developer.config.notifications') }}" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-center py-2 px-3 rounded-md text-sm font-medium">
+                    <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                        <a href="{{ route('developer.config.notifications') }}" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-center py-2 px-3 rounded-md text-xs sm:text-sm font-medium">
                             Configurar Push
                         </a>
-                        <a href="{{ route('developer.config.vapid') }}" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-3 rounded-md text-sm font-medium">
+                        <a href="{{ route('developer.config.vapid') }}" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-3 rounded-md text-xs sm:text-sm font-medium">
                             Gestionar VAPID
                         </a>
                     </div>
@@ -106,21 +106,21 @@
         </div>
 
         <!-- Notifications Management -->
-        <div class="mt-6 bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Gestión de Notificaciones</h3>
-                        <p class="text-sm text-gray-600">Administra todas las notificaciones del sistema</p>
+        <div class="mt-4 sm:mt-6 bg-white shadow rounded-lg">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                    <div class="mb-4 sm:mb-0">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1">Gestión de Notificaciones</h3>
+                        <p class="text-xs sm:text-sm text-gray-600">Administra todas las notificaciones del sistema</p>
                     </div>
-                    <a href="{{ route('developer.config.notifications-manager') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-                        <i class="fas fa-bell mr-2"></i>
-                        Gestionar Notificaciones
+                    <a href="{{ route('developer.config.notifications-manager') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 self-start">
+                        <i class="fas fa-bell mr-1 sm:mr-2"></i>
+                        <span class="hidden sm:inline">Gestionar</span> Notificaciones
                     </a>
                 </div>
             </div>
-            <div class="px-6 py-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="px-4 sm:px-6 py-4">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     <div class="text-center">
                         <div class="text-2xl font-bold text-blue-600">--</div>
                         <div class="text-sm text-gray-600">Total de Notificaciones</div>
@@ -147,12 +147,12 @@
         </div>
 
         <!-- System Information -->
-        <div class="mt-6 bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Información del Sistema</h3>
+        <div class="mt-4 sm:mt-6 bg-white shadow rounded-lg">
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Información del Sistema</h3>
             </div>
-            <div class="px-6 py-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="px-4 sm:px-6 py-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <div>
                         <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Aplicación</h4>
                         <div class="space-y-1">

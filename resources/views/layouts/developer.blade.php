@@ -64,12 +64,12 @@
                 <div class="flex items-center">
                     <!-- Logo -->
                     <div class="flex-shrink-0 flex items-center">
-                        <i class="fas fa-code text-2xl text-indigo-600 mr-3"></i>
-                        <h1 class="text-xl font-bold text-gray-900">Developer Panel</h1>
+                        <i class="fas fa-code text-xl sm:text-2xl text-indigo-600 mr-2 sm:mr-3"></i>
+                        <h1 class="text-lg sm:text-xl font-bold text-gray-900 truncate">Developer Panel</h1>
                     </div>
                     
-                    <!-- Navigation Links -->
-                    <div class="hidden md:ml-10 md:flex md:space-x-8">
+                    <!-- Navigation Links (Desktop) -->
+                    <div class="hidden md:ml-10 md:flex md:space-x-6 xl:space-x-8">
                         <a href="{{ route('developer.index') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.index') ? 'border-indigo-500 text-indigo-600' : '' }}">
                             Dashboard
                         </a>
@@ -89,17 +89,24 @@
                 </div>
 
                 <!-- Right Side -->
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <!-- Mobile Menu Button -->
+                    <button type="button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" id="mobile-menu-button">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    
                     <!-- System Status -->
-                    <div class="hidden sm:flex items-center space-x-2">
+                    <div class="hidden lg:flex items-center space-x-2">
                         <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                         <span class="text-sm text-gray-500">System Online</span>
                     </div>
                     
                     <!-- User Menu -->
                     <div class="relative">
-                        <div class="flex items-center space-x-3">
-                            <div class="text-right">
+                        <div class="flex items-center space-x-2 sm:space-x-3">
+                            <div class="text-right hidden sm:block">
                                 <div class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</div>
                                 <div class="text-xs text-gray-500">Super Admin</div>
                             </div>
@@ -110,9 +117,36 @@
                     </div>
                     
                     <!-- Back to App -->
-                    <a href="{{ route('dashboard') }}" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Back to App
+                    <a href="{{ route('dashboard') }}" class="hidden sm:inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-arrow-left mr-1 sm:mr-2"></i>
+                        <span class="hidden lg:inline">Back to App</span>
+                        <span class="lg:hidden">App</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 border-t border-gray-200">
+                <a href="{{ route('developer.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.index') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+                <a href="{{ route('developer.users.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.users.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                    <i class="fas fa-users mr-2"></i>Users
+                </a>
+                <a href="{{ route('developer.config.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.config.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                    <i class="fas fa-cog mr-2"></i>Config
+                </a>
+                <a href="{{ route('developer.backups.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.backups.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                    <i class="fas fa-database mr-2"></i>Backups
+                </a>
+                <a href="{{ route('developer.logs') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.logs') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                    <i class="fas fa-file-alt mr-2"></i>Logs
+                </a>
+                <div class="border-t border-gray-200 pt-3">
+                    <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to App
                     </a>
                 </div>
             </div>
@@ -203,6 +237,38 @@
     </footer>
 
     @stack('scripts')
+    
+    <!-- Mobile Menu Toggle Script ---->
+    <script>
+        // Mobile menu toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    const isHidden = mobileMenu.style.display === 'none';
+                    if (isHidden) {
+                        mobileMenu.style.display = 'block';
+                        // Change hamburger to X icon
+                        this.innerHTML = `
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        `;
+                    } else {
+                        mobileMenu.style.display = 'none';
+                        // Change back to hamburger icon
+                        this.innerHTML = `
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        `;
+                    }
+                });
+            }
+        });
+    </script>
     
     <!-- Global SweetAlert Functions -->
     <script>
