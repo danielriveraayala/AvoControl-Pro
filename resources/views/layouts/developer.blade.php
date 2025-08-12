@@ -197,6 +197,9 @@
                 <a href="{{ route('developer.users.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.users.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
                     <i class="fas fa-users mr-2"></i>Users
                 </a>
+                <a href="{{ route('developer.roles.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.roles.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                    <i class="fas fa-user-shield mr-2"></i>Roles
+                </a>
                 <a href="{{ route('developer.config.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.config.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
                     <i class="fas fa-cog mr-2"></i>Config
                 </a>

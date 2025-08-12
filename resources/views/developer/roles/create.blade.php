@@ -3,24 +3,26 @@
 @section('title', isset($clonedFrom) ? 'Clonar Rol' : 'Crear Nuevo Rol')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-0 text-gray-800">
-                        {{ isset($clonedFrom) ? 'Clonar Rol: ' . $clonedFrom->display_name : 'Crear Nuevo Rol' }}
-                    </h1>
-                    <p class="mb-0 text-muted">
-                        {{ isset($clonedFrom) ? 'Crea un nuevo rol basado en uno existente' : 'Define un nuevo rol con permisos específicos' }}
-                    </p>
+<div class="py-12">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            {{ isset($clonedFrom) ? 'Clonar Rol: ' . $clonedFrom->display_name : 'Crear Nuevo Rol' }}
+                        </h1>
+                        <p class="text-sm text-gray-600">
+                            {{ isset($clonedFrom) ? 'Crea un nuevo rol basado en uno existente' : 'Define un nuevo rol con permisos específicos' }}
+                        </p>
+                    </div>
+                    <a href="{{ route('developer.roles.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        ← Volver
+                    </a>
                 </div>
-                <a href="{{ route('developer.roles.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left mr-2"></i>Volver
-                </a>
             </div>
         </div>
-    </div>
 
     <form action="{{ route('developer.roles.store') }}" method="POST">
         @csrf
