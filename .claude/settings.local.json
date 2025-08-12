@@ -39,7 +39,8 @@
       "Bash(powershell:*)",
       "Bash(open-chrome.bat)",
       "Bash(chmod:*)",
-      "Bash(redis-cli:*)"
+      "Bash(redis-cli:*)",
+      "Bash(ssh:*)"
     ],
     "deny": []
   }

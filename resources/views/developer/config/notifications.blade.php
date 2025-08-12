@@ -35,13 +35,13 @@
 
         <!-- Push Notifications Configuration Form -->
         <div class="bg-white shadow rounded-lg">
-            <form action="{{ route('developer.config.update-notifications') }}" method="POST">
+            <form action="{{ route('developer.config.notifications.update') }}" method="POST">
                 @csrf
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900">Configuración VAPID</h3>
                     <p class="text-sm text-gray-600 mt-1">Las llaves VAPID son necesarias para enviar notificaciones push</p>
                 </div>
-                
+
                 <div class="px-6 py-6">
                     <div class="space-y-6">
                         <!-- Enable/Disable Push Notifications -->
@@ -52,7 +52,7 @@
                             </div>
                             <div class="flex items-center">
                                 <input type="hidden" name="push_enabled" value="0">
-                                <input type="checkbox" name="push_enabled" id="push_enabled" value="1" 
+                                <input type="checkbox" name="push_enabled" id="push_enabled" value="1"
                                        {{ old('push_enabled', $pushConfig['enabled']) ? 'checked' : '' }}
                                        class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
                                 <label for="push_enabled" class="ml-2 text-sm text-gray-900">Habilitado</label>
@@ -90,7 +90,7 @@
                             <label for="vapid_subject" class="block text-sm font-medium text-gray-700 mb-2">
                                 Subject VAPID <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="vapid_subject" id="vapid_subject" 
+                            <input type="text" name="vapid_subject" id="vapid_subject"
                                    value="{{ old('vapid_subject', $pushConfig['subject']) }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 @error('vapid_subject') border-red-500 @enderror"
                                    placeholder="mailto:admin@avocontrol.com">
@@ -167,8 +167,8 @@ function generateVapidKeys() {
     ).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Generando llaves VAPID...', 'Por favor espera');
-            
-            fetch('{{ route("developer.config.generate-vapid") }}', {
+
+            fetch('{{ route("developer.config.vapid.generate") }}', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -213,27 +213,27 @@ function testNotifications() {
         preConfirm: () => {
             const title = document.getElementById('testTitle').value;
             const message = document.getElementById('testMessage').value;
-            
+
             if (!title || !message) {
                 Swal.showValidationMessage('Por favor completa todos los campos');
                 return false;
             }
-            
+
             return { title, message };
         }
     }).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Enviando notificación...', 'Por favor espera');
-            
-            fetch('{{ route("developer.config.test-notifications") }}', {
+
+            fetch('{{ route("developer.config.notifications.test") }}', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     test_title: result.value.title,
-                    test_message: result.value.message 
+                    test_message: result.value.message
                 })
             })
             .then(response => response.json())

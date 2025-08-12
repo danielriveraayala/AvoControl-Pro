@@ -172,7 +172,7 @@ function copyToClipboard(elementId) {
     const element = document.getElementById(elementId);
     element.select();
     element.setSelectionRange(0, 99999); // For mobile devices
-    
+
     try {
         document.execCommand('copy');
         showToast('Copiado al portapapeles');
@@ -200,8 +200,8 @@ function generateNewKeys() {
     ).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Generando llaves VAPID...', 'Por favor espera');
-            
-            fetch('{{ route("developer.config.generate-vapid") }}', {
+
+            fetch('{{ route("developer.config.vapid.generate") }}', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -234,15 +234,15 @@ function downloadKeys() {
         generated_at: new Date().toISOString(),
         application: 'AvoControl Pro'
     };
-    
+
     const dataStr = JSON.stringify(keys, null, 2);
     const dataBlob = new Blob([dataStr], {type: 'application/json'});
-    
+
     const link = document.createElement('a');
     link.href = URL.createObjectURL(dataBlob);
     link.download = 'vapid-keys-avocontrol-' + new Date().toISOString().split('T')[0] + '.json';
     link.click();
-    
+
     DevAlert.success('Descarga Completa', 'Llaves VAPID descargadas exitosamente');
 }
 
