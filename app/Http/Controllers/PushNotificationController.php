@@ -34,7 +34,7 @@ class PushNotificationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'vapid_key' => $vapidKey
+                'public_key' => $vapidKey
             ]);
 
         } catch (\Exception $e) {

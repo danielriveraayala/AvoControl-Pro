@@ -378,11 +378,55 @@ php artisan view:clear
 
 ---
 
+### 4. Configuración de Notificaciones Push
+1. Ir a `/developer/config/notifications`
+2. Generar llaves VAPID automáticamente
+3. Configurar subject de notificaciones
+4. Probar funcionamiento del sistema
+
+### 5. Verificación de Funcionalidades
+1. **Panel de Desarrollador**: Acceder a `/developer` con credenciales de desarrollador
+2. **Notificaciones Push**: Probar desde `/configuration` (tab Push Notifications)
+3. **Service Worker**: Verificar que `/sw.js` esté accesible
+4. **HTTPS**: Confirmar que las notificaciones funcionen solo con HTTPS
+
+---
+
+## 🔔 Sistema de Notificaciones Push
+
+### Funcionalidades Incluidas:
+- **Service Worker nativo** (`/sw.js`) con soporte completo para push notifications
+- **Panel de desarrollador** para configuración técnica de VAPID
+- **Interface de usuario simplificada** en configuración regular
+- **Tipos de notificaciones**: Inventario bajo, pagos pendientes, nuevos lotes, reportes
+- **Gestión de subscripciones** por dispositivo/navegador
+- **Compatibilidad multi-navegador** con detección automática
+
+### Rutas Importantes:
+- `/developer/config/notifications` - Configuración VAPID (solo desarrolladores)
+- `/developer/config/vapid` - Gestión de llaves VAPID
+- `/configuration` - Suscripción de usuarios (tab Push Notifications)
+- `/sw.js` - Service Worker (debe ser accesible públicamente)
+
+### Requisitos Técnicos:
+- **HTTPS obligatorio** para notificaciones push
+- **Service Worker** registrado automáticamente
+- **Llaves VAPID** generadas y configuradas
+- **Extensión push** de minishlink/web-push instalada via Composer
+
+---
+
 ## 📝 Changelog
 
 - **v1.0** - Deployment inicial con todas las funcionalidades core
 - **v1.1** - Sistema de notificaciones y panel de desarrollador
 - **v1.2** - Mejoras en SMTP y configuraciones
+- **v1.3** - Sistema completo de notificaciones push nativas
+  - Service Worker implementado con tipos de notificaciones personalizadas
+  - Panel de desarrollador con gestión completa de VAPID keys
+  - Interface de usuario simplificada para suscripciones
+  - Separación clara entre configuración técnica y uso regular
+  - Soporte completo para HTTPS y compatibilidad multi-navegador
 
 ---
 

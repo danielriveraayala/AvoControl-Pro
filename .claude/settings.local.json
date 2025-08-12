@@ -40,7 +40,8 @@
       "Bash(open-chrome.bat)",
       "Bash(chmod:*)",
       "Bash(redis-cli:*)",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "WebFetch(domain:dev.avocontrol.pro)"
     ],
     "deny": []
   }
