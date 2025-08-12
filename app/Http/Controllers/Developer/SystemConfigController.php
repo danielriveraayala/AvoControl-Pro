@@ -431,7 +431,7 @@ class SystemConfigController extends Controller
         $data = $notifications->map(function ($notification) {
             return [
                 'id' => $notification->id,
-                'type' => '<span class="badge badge-info">' . ucfirst($notification->type) . '</span>',
+                'type' => '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">' . ucfirst($notification->type) . '</span>',
                 'title' => $notification->title,
                 'message' => \Str::limit($notification->message, 50),
                 'user' => $notification->user ? $notification->user->name : 'Sistema',
@@ -477,14 +477,14 @@ class SystemConfigController extends Controller
     private function getPriorityBadge($priority)
     {
         $badges = [
-            'low' => 'badge-secondary',
-            'normal' => 'badge-primary',
-            'high' => 'badge-warning',
-            'critical' => 'badge-danger'
+            'low' => 'bg-gray-100 text-gray-800',
+            'normal' => 'bg-blue-100 text-blue-800',
+            'high' => 'bg-yellow-100 text-yellow-800',
+            'critical' => 'bg-red-100 text-red-800'
         ];
 
-        $class = $badges[$priority] ?? 'badge-secondary';
-        return '<span class="badge ' . $class . '">' . ucfirst($priority) . '</span>';
+        $class = $badges[$priority] ?? 'bg-gray-100 text-gray-800';
+        return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' . $class . '">' . ucfirst($priority) . '</span>';
     }
 
     /**
@@ -502,12 +502,12 @@ class SystemConfigController extends Controller
         foreach ($channelsArray as $channel) {
             $channel = trim($channel);
             $badgeClass = match($channel) {
-                'email' => 'badge-success',
-                'push' => 'badge-info',
-                'database' => 'badge-secondary',
-                default => 'badge-light'
+                'email' => 'bg-green-100 text-green-800',
+                'push' => 'bg-blue-100 text-blue-800',
+                'database' => 'bg-gray-100 text-gray-800',
+                default => 'bg-gray-100 text-gray-800'
             };
-            $badges[] = '<span class="badge ' . $badgeClass . '">' . ucfirst($channel) . '</span>';
+            $badges[] = '<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ' . $badgeClass . '">' . ucfirst($channel) . '</span>';
         }
 
         return implode(' ', $badges);
@@ -519,14 +519,14 @@ class SystemConfigController extends Controller
     private function getStatusBadge($status)
     {
         $badges = [
-            'pending' => 'badge-warning',
-            'sent' => 'badge-success',
-            'failed' => 'badge-danger',
-            'scheduled' => 'badge-info'
+            'pending' => 'bg-yellow-100 text-yellow-800',
+            'sent' => 'bg-green-100 text-green-800',
+            'failed' => 'bg-red-100 text-red-800',
+            'scheduled' => 'bg-blue-100 text-blue-800'
         ];
 
-        $class = $badges[$status] ?? 'badge-secondary';
-        return '<span class="badge ' . $class . '">' . ucfirst($status) . '</span>';
+        $class = $badges[$status] ?? 'bg-gray-100 text-gray-800';
+        return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' . $class . '">' . ucfirst($status) . '</span>';
     }
 
     /**
@@ -534,16 +534,21 @@ class SystemConfigController extends Controller
      */
     private function getNotificationActions($notification)
     {
-        $actions = '<div class="btn-group" role="group">';
+        $actions = '<div class="flex items-center space-x-2">';
         
         // View details button
-        $actions .= '<button type="button" class="btn btn-sm btn-outline-info" onclick="viewNotification(\'' . $notification->id . '\')" title="Ver detalles">';
-        $actions .= '<i class="fas fa-eye"></i>';
+        $actions .= '<button type="button" class="text-blue-600 hover:text-blue-800 font-medium" onclick="viewNotification(\'' . $notification->id . '\')" title="Ver detalles">';
+        $actions .= '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+        $actions .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>';
+        $actions .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+        $actions .= '</svg>';
         $actions .= '</button>';
         
         // Delete button
-        $actions .= '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteNotification(\'' . $notification->id . '\')" title="Eliminar">';
-        $actions .= '<i class="fas fa-trash"></i>';
+        $actions .= '<button type="button" class="text-red-600 hover:text-red-800 font-medium" onclick="deleteNotification(\'' . $notification->id . '\')" title="Eliminar">';
+        $actions .= '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+        $actions .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>';
+        $actions .= '</svg>';
         $actions .= '</button>';
         
         $actions .= '</div>';
