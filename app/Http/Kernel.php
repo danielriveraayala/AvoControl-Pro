@@ -67,5 +67,6 @@ class Kernel extends HttpKernel
         'developer' => \App\Http\Middleware\DeveloperOnly::class,
         'role' => \App\Http\Middleware\CheckRole::class,
         'permission' => \App\Http\Middleware\CheckPermission::class,
+        'rbac' => \App\Http\Middleware\RolePermissionMiddleware::class,
     ];
 }

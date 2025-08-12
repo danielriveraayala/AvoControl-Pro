@@ -3,22 +3,22 @@
 @section('title', isset($clonedFrom) ? 'Clonar Rol' : 'Crear Nuevo Rol')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
                             {{ isset($clonedFrom) ? 'Clonar Rol: ' . $clonedFrom->display_name : 'Crear Nuevo Rol' }}
                         </h1>
-                        <p class="text-sm text-gray-600">
+                        <p class="text-xs sm:text-sm text-gray-600">
                             {{ isset($clonedFrom) ? 'Crea un nuevo rol basado en uno existente' : 'Define un nuevo rol con permisos específicos' }}
                         </p>
                     </div>
-                    <a href="{{ route('developer.roles.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                        ← Volver
+                    <a href="{{ route('developer.roles.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
+                        ← <span class="ml-1">Volver</span>
                     </a>
                 </div>
             </div>
@@ -40,14 +40,14 @@
         <form action="{{ route('developer.roles.store') }}" method="POST">
             @csrf
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <!-- Basic Information -->
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-lg">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Información Básica</h3>
+                        <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900">Información Básica</h3>
                         </div>
-                        <div class="px-6 py-4 space-y-6">
+                        <div class="px-4 sm:px-6 py-4 space-y-4 sm:space-y-6">
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700">
                                     Nombre del Rol <span class="text-red-500">*</span>
@@ -104,9 +104,14 @@
                                        name="hierarchy_level" 
                                        value="{{ old('hierarchy_level', isset($clonedFrom) ? $clonedFrom->hierarchy_level : '') }}"
                                        min="1" 
-                                       max="99"
+                                       max="{{ $maxHierarchy ?? 99 }}"
                                        required>
-                                <p class="mt-1 text-sm text-gray-500">1-99 (Mayor número = mayor jerarquía)</p>
+                                <p class="mt-1 text-sm text-gray-500">
+                                    1-{{ $maxHierarchy ?? 99 }} (Mayor número = mayor jerarquía)
+                                    @if(!auth()->user()->isSuperAdmin())
+                                        <br><span class="text-orange-600">Tu nivel máximo: {{ auth()->user()->getHighestHierarchyLevel() - 1 }}</span>
+                                    @endif
+                                </p>
                                 @error('hierarchy_level')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -133,21 +138,21 @@
                 <!-- Permissions -->
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-lg">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <div class="flex justify-between items-center">
-                                <h3 class="text-lg font-semibold text-gray-900">Permisos</h3>
-                                <div class="flex space-x-2">
-                                    <button type="button" class="inline-flex items-center px-3 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700" id="select-all-btn">
+                        <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-0">Permisos</h3>
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                                    <button type="button" class="inline-flex items-center justify-center px-3 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700" id="select-all-btn">
                                         <i class="fas fa-check-square mr-1"></i>Todos
                                     </button>
-                                    <button type="button" class="inline-flex items-center px-3 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700" id="deselect-all-btn">
+                                    <button type="button" class="inline-flex items-center justify-center px-3 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700" id="deselect-all-btn">
                                         <i class="fas fa-square mr-1"></i>Ninguno
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="px-6 py-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="px-4 sm:px-6 py-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 @foreach($permissions as $module => $modulePermissions)
                                 <div class="border border-gray-200 rounded-lg">
                                     <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
@@ -197,12 +202,12 @@
             <!-- Actions -->
             <div class="mt-6">
                 <div class="bg-white shadow rounded-lg">
-                    <div class="px-6 py-4">
-                        <div class="flex justify-end space-x-3">
-                            <a href="{{ route('developer.roles.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <div class="px-4 sm:px-6 py-4">
+                        <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                            <a href="{{ route('developer.roles.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                 <i class="fas fa-times mr-2"></i>Cancelar
                             </a>
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                                 <i class="fas fa-save mr-2"></i>Crear Rol
                             </button>
                         </div>

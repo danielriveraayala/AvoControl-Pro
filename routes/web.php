@@ -50,12 +50,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/cleanup', [App\Http\Controllers\PushNotificationController::class, 'cleanup']);
     });
     
-    // Resources with permission middleware
-    Route::resource('lots', LotController::class)->middleware('permission:manage_lots');
-    Route::resource('sales', SaleController::class)->middleware('permission:manage_sales');
-    Route::resource('payments', PaymentController::class)->middleware('permission:manage_payments');
-    Route::resource('suppliers', SupplierController::class)->middleware('permission:manage_suppliers');
-    Route::resource('customers', CustomerController::class)->middleware('permission:manage_customers');
+    // Resources with RBAC permission middleware
+    Route::resource('lots', LotController::class)->middleware('rbac:permission,lots.create,lots.read,lots.update,lots.delete');
+    Route::resource('sales', SaleController::class)->middleware('rbac:permission,sales.create,sales.read,sales.update,sales.delete');
+    Route::resource('payments', PaymentController::class)->middleware('rbac:permission,payments.create,payments.read,payments.update,payments.delete');
+    Route::resource('suppliers', SupplierController::class)->middleware('rbac:permission,suppliers.create,suppliers.read,suppliers.update,suppliers.delete');
+    Route::resource('customers', CustomerController::class)->middleware('rbac:permission,customers.create,customers.read,customers.update,customers.delete');
     
     // Acopio routes - protected with view reports permission
     Route::prefix('acopio')->middleware('permission:view_reports')->group(function () {

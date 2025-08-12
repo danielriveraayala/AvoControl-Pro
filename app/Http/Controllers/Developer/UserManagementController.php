@@ -20,7 +20,19 @@ class UserManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with(['roles']);
+        $authUser = auth()->user();
+        
+        // Filter users based on hierarchy - users can only see users they can manage
+        if ($authUser->isSuperAdmin()) {
+            $query = User::with(['roles']);
+        } else {
+            $userHierarchy = $authUser->getHighestHierarchyLevel();
+            $query = User::with(['roles'])
+                ->whereHas('roles', function ($q) use ($userHierarchy) {
+                    $q->where('hierarchy_level', '<', $userHierarchy);
+                })
+                ->orWhere('id', $authUser->id); // Always include current user
+        }
         
         // Search functionality
         if ($request->filled('search')) {
@@ -31,7 +43,7 @@ class UserManagementController extends Controller
             });
         }
         
-        // Role filter
+        // Role filter - only show roles user can manage
         if ($request->filled('role')) {
             $query->whereHas('roles', function ($q) use ($request) {
                 $q->where('name', $request->get('role'));
@@ -49,7 +61,7 @@ class UserManagementController extends Controller
         }
         
         $users = $query->latest()->paginate(20);
-        $roles = Role::orderBy('hierarchy_level', 'desc')->get();
+        $roles = $authUser->getManageableRoles();
         
         return view('developer.users.index', compact('users', 'roles'));
     }
@@ -59,7 +71,15 @@ class UserManagementController extends Controller
      */
     public function create()
     {
-        $roles = Role::orderBy('hierarchy_level', 'desc')->get();
+        $user = auth()->user();
+        
+        // Only allow creating users if user has sufficient hierarchy
+        if (!$user->isSuperAdmin() && $user->getHighestHierarchyLevel() <= 1) {
+            return redirect()->route('developer.users.index')
+                ->with('error', 'No tienes permisos para crear usuarios.');
+        }
+        
+        $roles = $user->getManageableRoles();
         return view('developer.users.create', compact('roles'));
     }
 
@@ -68,6 +88,8 @@ class UserManagementController extends Controller
      */
     public function store(Request $request)
     {
+        $authUser = auth()->user();
+        
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -81,6 +103,16 @@ class UserManagementController extends Controller
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
+        }
+        
+        // Validate that user can assign all requested roles
+        $requestedRoles = Role::whereIn('id', $request->roles)->get();
+        foreach ($requestedRoles as $role) {
+            if (!$authUser->canAssignRole($role)) {
+                return redirect()->back()
+                    ->with('error', "No tienes permisos para asignar el rol '{$role->display_name}'.")
+                    ->withInput();
+            }
         }
 
         try {
@@ -132,6 +164,14 @@ class UserManagementController extends Controller
      */
     public function show(User $user)
     {
+        $authUser = auth()->user();
+        
+        // Check if user can view this user
+        if (!$authUser->canManageUser($user) && $user->id !== $authUser->id) {
+            return redirect()->route('developer.users.index')
+                ->with('error', 'No tienes permisos para ver este usuario.');
+        }
+        
         $user->load(['roles.permissions']);
         
         // Get user activity (example data - implement based on your needs)
@@ -150,8 +190,16 @@ class UserManagementController extends Controller
      */
     public function edit(User $user)
     {
+        $authUser = auth()->user();
+        
+        // Check if user can manage this user
+        if (!$authUser->canManageUser($user)) {
+            return redirect()->route('developer.users.index')
+                ->with('error', 'No tienes permisos para editar este usuario.');
+        }
+        
         $user->load('roles');
-        $roles = Role::orderBy('hierarchy_level', 'desc')->get();
+        $roles = $authUser->getManageableRoles();
         $userRoleIds = $user->roles->pluck('id')->toArray();
         
         return view('developer.users.edit', compact('user', 'roles', 'userRoleIds'));
@@ -162,8 +210,16 @@ class UserManagementController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $authUser = auth()->user();
+        
+        // Check if user can manage this user
+        if (!$authUser->canManageUser($user)) {
+            return redirect()->back()
+                ->with('error', 'No tienes permisos para modificar este usuario.');
+        }
+        
         // Prevent modifying other super_admin users unless you're the primary developer
-        if ($user->hasRole('super_admin') && auth()->user()->email !== 'developer@avocontrol.com') {
+        if ($user->hasRole('super_admin') && $authUser->email !== 'developer@avocontrol.com') {
             return redirect()->back()
                 ->with('error', 'No tienes permisos para modificar otros usuarios super admin.');
         }
@@ -200,6 +256,16 @@ class UserManagementController extends Controller
 
             $user->update($updateData);
 
+            // Validate that user can assign all requested roles
+            $requestedRoles = Role::whereIn('id', $request->roles)->get();
+            foreach ($requestedRoles as $role) {
+                if (!$authUser->canAssignRole($role)) {
+                    return redirect()->back()
+                        ->with('error', "No tienes permisos para asignar el rol '{$role->display_name}'.")
+                        ->withInput();
+                }
+            }
+            
             // Update roles
             $user->roles()->detach();
             $roleIds = $request->roles;
@@ -234,6 +300,14 @@ class UserManagementController extends Controller
      */
     public function destroy(User $user)
     {
+        $authUser = auth()->user();
+        
+        // Check if user can manage this user
+        if (!$authUser->canManageUser($user)) {
+            return redirect()->back()
+                ->with('error', 'No tienes permisos para eliminar este usuario.');
+        }
+        
         // Prevent deleting super_admin users
         if ($user->hasRole('super_admin')) {
             return redirect()->back()
@@ -241,7 +315,7 @@ class UserManagementController extends Controller
         }
 
         // Prevent deleting yourself
-        if ($user->id === auth()->id()) {
+        if ($user->id === $authUser->id) {
             return redirect()->back()
                 ->with('error', 'No puedes eliminarte a ti mismo.');
         }
@@ -264,6 +338,13 @@ class UserManagementController extends Controller
      */
     public function assignRoles(Request $request, User $user)
     {
+        $authUser = auth()->user();
+        
+        // Check if user can manage this user
+        if (!$authUser->canManageUser($user)) {
+            return response()->json(['success' => false, 'message' => 'No tienes permisos para gestionar este usuario']);
+        }
+        
         $validator = Validator::make($request->all(), [
             'roles' => 'required|array|min:1',
             'roles.*' => 'exists:roles,id',
@@ -271,6 +352,14 @@ class UserManagementController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'message' => 'Roles inválidos']);
+        }
+        
+        // Validate that user can assign all requested roles
+        $requestedRoles = Role::whereIn('id', $request->roles)->get();
+        foreach ($requestedRoles as $role) {
+            if (!$authUser->canAssignRole($role)) {
+                return response()->json(['success' => false, 'message' => "No tienes permisos para asignar el rol '{$role->display_name}'."]);
+            }
         }
 
         try {
@@ -311,6 +400,13 @@ class UserManagementController extends Controller
      */
     public function suspend(Request $request, User $user)
     {
+        $authUser = auth()->user();
+        
+        // Check if user can manage this user
+        if (!$authUser->canManageUser($user)) {
+            return response()->json(['success' => false, 'message' => 'No tienes permisos para suspender este usuario']);
+        }
+        
         if ($user->hasRole('super_admin')) {
             return response()->json(['success' => false, 'message' => 'No se pueden suspender usuarios super admin']);
         }
@@ -328,6 +424,13 @@ class UserManagementController extends Controller
      */
     public function activate(User $user)
     {
+        $authUser = auth()->user();
+        
+        // Check if user can manage this user
+        if (!$authUser->canManageUser($user)) {
+            return response()->json(['success' => false, 'message' => 'No tienes permisos para activar este usuario']);
+        }
+        
         $user->update([
             'suspended_at' => null,
             'suspension_reason' => null,
@@ -341,6 +444,13 @@ class UserManagementController extends Controller
      */
     public function resetPassword(Request $request, User $user)
     {
+        $authUser = auth()->user();
+        
+        // Check if user can manage this user
+        if (!$authUser->canManageUser($user)) {
+            return response()->json(['success' => false, 'message' => 'No tienes permisos para cambiar la contraseña de este usuario']);
+        }
+        
         $validator = Validator::make($request->all(), [
             'new_password' => 'required|string|min:8|confirmed',
         ]);

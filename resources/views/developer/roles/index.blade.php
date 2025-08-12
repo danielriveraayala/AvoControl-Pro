@@ -3,23 +3,26 @@
 @section('title', 'Gestión de Roles')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Gestión de Roles y Permisos</h1>
-                        <p class="text-sm text-gray-600">Administra los roles del sistema y sus permisos asociados</p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Gestión de Roles y Permisos</h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Administra los roles del sistema y sus permisos asociados</p>
                     </div>
-                    <div class="flex space-x-3">
-                        <a href="{{ route('developer.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                            ← Dashboard
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+                        <a href="{{ route('developer.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Dashboard</span>
                         </a>
-                        <a href="{{ route('developer.roles.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-                            + Crear Nuevo Rol
+                        @if(auth()->user()->isSuperAdmin() || auth()->user()->getHighestHierarchyLevel() > 1)
+                        <a href="{{ route('developer.roles.create') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                            <span class="sm:hidden">+</span>
+                            <span class="hidden sm:inline">+ Crear Nuevo Rol</span>
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -45,51 +48,51 @@
         @endif
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow p-6">
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                        <i class="fas fa-user-shield text-white text-2xl"></i>
+                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-2 sm:p-3">
+                        <i class="fas fa-user-shield text-white text-lg sm:text-2xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Roles</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $roles->count() }}</p>
+                    <div class="ml-3 sm:ml-4">
+                        <p class="text-xs sm:text-sm font-medium text-gray-600">Total Roles</p>
+                        <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ $roles->count() }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                        <i class="fas fa-lock text-white text-2xl"></i>
+                    <div class="flex-shrink-0 bg-green-500 rounded-md p-2 sm:p-3">
+                        <i class="fas fa-lock text-white text-lg sm:text-2xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Roles del Sistema</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $roles->where('is_system', true)->count() }}</p>
+                    <div class="ml-3 sm:ml-4">
+                        <p class="text-xs sm:text-sm font-medium text-gray-600">Roles del Sistema</p>
+                        <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ $roles->where('is_system', true)->count() }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                        <i class="fas fa-users-cog text-white text-2xl"></i>
+                    <div class="flex-shrink-0 bg-indigo-500 rounded-md p-2 sm:p-3">
+                        <i class="fas fa-users-cog text-white text-lg sm:text-2xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Roles Personalizados</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $roles->where('is_system', false)->count() }}</p>
+                    <div class="ml-3 sm:ml-4">
+                        <p class="text-xs sm:text-sm font-medium text-gray-600">Roles Personalizados</p>
+                        <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ $roles->where('is_system', false)->count() }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                        <i class="fas fa-key text-white text-2xl"></i>
+                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-2 sm:p-3">
+                        <i class="fas fa-key text-white text-lg sm:text-2xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Permisos</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $permissions->flatten()->count() }}</p>
+                    <div class="ml-3 sm:ml-4">
+                        <p class="text-xs sm:text-sm font-medium text-gray-600">Total Permisos</p>
+                        <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ $permissions->flatten()->count() }}</p>
                     </div>
                 </div>
             </div>
@@ -97,64 +100,65 @@
 
         <!-- Roles Table -->
         <div class="bg-white shadow rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Roles del Sistema</h3>
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Roles del Sistema</h3>
             </div>
 
-            <div class="overflow-x-auto p-3">
+            <div class="overflow-x-auto p-2 sm:p-3">
                 <table class="table table-striped min-w-full divide-y divide-gray-200" id="rolesTable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Descripción</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jerarquía</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Usuarios</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Permisos</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Tipo</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            <th class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                            <th class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Descripción</th>
+                            <th class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Jerarquía</th>
+                            <th class="px-3 sm:px-6 py-2 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Usuarios</th>
+                            <th class="px-3 sm:px-6 py-2 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Permisos</th>
+                            <th class="px-3 sm:px-6 py-2 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Tipo</th>
+                            <th class="px-3 sm:px-6 py-2 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($roles as $role)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     @if($role->name === 'super_admin')
-                                        <i class="fas fa-crown text-yellow-500 mr-2"></i>
+                                        <i class="fas fa-crown text-yellow-500 mr-2 text-sm"></i>
                                     @elseif($role->hierarchy_level >= 90)
-                                        <i class="fas fa-star text-blue-500 mr-2"></i>
+                                        <i class="fas fa-star text-blue-500 mr-2 text-sm"></i>
                                     @elseif($role->hierarchy_level >= 70)
-                                        <i class="fas fa-user-tie text-indigo-500 mr-2"></i>
+                                        <i class="fas fa-user-tie text-indigo-500 mr-2 text-sm"></i>
                                     @else
-                                        <i class="fas fa-user text-gray-400 mr-2"></i>
+                                        <i class="fas fa-user text-gray-400 mr-2 text-sm"></i>
                                     @endif
                                     <div>
-                                        <div class="text-sm font-medium text-gray-900">{{ $role->display_name }}</div>
-                                        <div class="text-sm text-gray-500">{{ $role->name }}</div>
+                                        <div class="text-xs sm:text-sm font-medium text-gray-900">{{ $role->display_name }}</div>
+                                        <div class="text-xs text-gray-500 sm:hidden">{{ $role->users->count() }} users</div>
+                                        <div class="text-xs text-gray-500 hidden sm:block">{{ $role->name }}</div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 hidden md:table-cell">
+                            <td class="px-3 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
                                 <div class="text-sm text-gray-900">{{ $role->description ?? 'Sin descripción' }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
                                 <div class="w-full bg-gray-200 rounded-full h-2.5">
                                     <div class="bg-{{ $role->hierarchy_level >= 90 ? 'red' : ($role->hierarchy_level >= 70 ? 'yellow' : ($role->hierarchy_level >= 50 ? 'blue' : 'green')) }}-500 h-2.5 rounded-full"
                                          style="width: {{ $role->hierarchy_level }}%"></div>
                                 </div>
                                 <span class="text-xs text-gray-600 mt-1">{{ $role->hierarchy_level }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                     {{ $role->users->count() }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center hidden sm:table-cell">
+                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center hidden sm:table-cell">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
                                     {{ $role->permissions->count() }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center hidden lg:table-cell">
+                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center hidden lg:table-cell">
                                 @if($role->is_system)
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                         Sistema
@@ -165,47 +169,54 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <a href="{{ route('developer.roles.show', $role) }}"
-                                       class="text-indigo-600 hover:text-indigo-900"
-                                       title="Ver detalles">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
+                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center space-x-1 sm:space-x-2">
+                                    @if(auth()->user()->canManageRole($role))
+                                        <a href="{{ route('developer.roles.show', $role) }}"
+                                           class="text-indigo-600 hover:text-indigo-900 p-1"
+                                           title="Ver detalles">
+                                            <i class="fas fa-eye text-xs sm:text-sm"></i>
+                                        </a>
 
-                                    @if(!$role->is_system || $role->name === 'super_admin')
-                                    <button type="button"
-                                            class="text-yellow-600 hover:text-yellow-900 edit-permissions-btn"
-                                            data-role-id="{{ $role->id }}"
-                                            data-role-name="{{ $role->display_name }}"
-                                            title="Editar permisos">
-                                        <i class="fas fa-key"></i>
-                                    </button>
-                                    @endif
+                                        @if(!$role->is_system || $role->name === 'super_admin')
+                                        <button type="button"
+                                                class="text-yellow-600 hover:text-yellow-900 edit-permissions-btn p-1"
+                                                data-role-id="{{ $role->id }}"
+                                                data-role-name="{{ $role->display_name }}"
+                                                title="Editar permisos">
+                                            <i class="fas fa-key text-xs sm:text-sm"></i>
+                                        </button>
+                                        @endif
 
-                                    @if(!$role->is_system)
-                                    <a href="{{ route('developer.roles.edit', $role) }}"
-                                       class="text-blue-600 hover:text-blue-900"
-                                       title="Editar rol">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    @endif
+                                        @if(!$role->is_system)
+                                        <a href="{{ route('developer.roles.edit', $role) }}"
+                                           class="text-blue-600 hover:text-blue-900 p-1"
+                                           title="Editar rol">
+                                            <i class="fas fa-edit text-xs sm:text-sm"></i>
+                                        </a>
+                                        @endif
 
-                                    <a href="{{ route('developer.roles.clone', $role) }}"
-                                       class="text-green-600 hover:text-green-900"
-                                       title="Clonar rol">
-                                        <i class="fas fa-copy"></i>
-                                    </a>
+                                        <a href="{{ route('developer.roles.clone', $role) }}"
+                                           class="text-green-600 hover:text-green-900 p-1 hidden sm:inline-block"
+                                           title="Clonar rol">
+                                            <i class="fas fa-copy text-xs sm:text-sm"></i>
+                                        </a>
 
-                                    @if(!$role->is_system)
-                                    <button type="button"
-                                            class="text-red-600 hover:text-red-900 delete-role-btn"
-                                            data-role-id="{{ $role->id }}"
-                                            data-role-name="{{ $role->display_name }}"
-                                            data-users-count="{{ $role->users->count() }}"
-                                            title="Eliminar rol">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                        @if(!$role->is_system)
+                                        <button type="button"
+                                                class="text-red-600 hover:text-red-900 delete-role-btn p-1"
+                                                data-role-id="{{ $role->id }}"
+                                                data-role-name="{{ $role->display_name }}"
+                                                data-users-count="{{ $role->users->count() }}"
+                                                title="Eliminar rol">
+                                            <i class="fas fa-trash text-xs sm:text-sm"></i>
+                                        </button>
+                                        @endif
+                                    @else
+                                        <!-- Read-only view for roles user cannot manage -->
+                                        <span class="text-gray-400 p-1" title="Solo lectura - Nivel de jerarquía insuficiente">
+                                            <i class="fas fa-eye-slash text-xs sm:text-sm"></i>
+                                        </span>
                                     @endif
                                 </div>
                             </td>

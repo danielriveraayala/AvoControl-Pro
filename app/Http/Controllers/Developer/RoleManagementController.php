@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\Permission;
 use App\Models\User;
+use App\Models\RoleAudit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,9 +19,20 @@ class RoleManagementController extends Controller
      */
     public function index()
     {
-        $roles = Role::with('permissions', 'users')
-            ->orderBy('hierarchy_level', 'desc')
-            ->get();
+        $user = auth()->user();
+        
+        // Filter roles based on user's hierarchy level
+        if ($user->isSuperAdmin()) {
+            $roles = Role::with('permissions', 'users')
+                ->orderBy('hierarchy_level', 'desc')
+                ->get();
+        } else {
+            $userHierarchy = $user->getHighestHierarchyLevel();
+            $roles = Role::with('permissions', 'users')
+                ->where('hierarchy_level', '<=', $userHierarchy)
+                ->orderBy('hierarchy_level', 'desc')
+                ->get();
+        }
         
         $permissions = Permission::orderBy('module')
             ->orderBy('name')
@@ -35,12 +47,19 @@ class RoleManagementController extends Controller
      */
     public function create()
     {
+        $user = auth()->user();
+        
         $permissions = Permission::orderBy('module')
             ->orderBy('name')
             ->get()
             ->groupBy('module');
         
-        $maxHierarchy = Role::max('hierarchy_level') ?? 0;
+        // Limit hierarchy level based on user's level
+        if ($user->isSuperAdmin()) {
+            $maxHierarchy = Role::max('hierarchy_level') ?? 0;
+        } else {
+            $maxHierarchy = min($user->getHighestHierarchyLevel() - 1, Role::max('hierarchy_level') ?? 0);
+        }
         
         return view('developer.roles.create', compact('permissions', 'maxHierarchy'));
     }
@@ -61,6 +80,17 @@ class RoleManagementController extends Controller
             'name.regex' => 'El nombre del rol debe contener solo letras minúsculas y guiones bajos.'
         ]);
 
+        $user = auth()->user();
+        
+        // Validate hierarchy level restrictions
+        if (!$user->isSuperAdmin()) {
+            $userHierarchy = $user->getHighestHierarchyLevel();
+            if ($request->hierarchy_level >= $userHierarchy) {
+                return back()->withInput()
+                    ->with('error', 'No puedes crear un rol con nivel de jerarquía igual o superior al tuyo.');
+            }
+        }
+
         DB::beginTransaction();
         
         try {
@@ -78,6 +108,15 @@ class RoleManagementController extends Controller
 
             // Clear permissions cache for all users
             $this->clearAllUsersPermissionsCache();
+
+            // Create audit log
+            RoleAudit::log('created', $role, null, [
+                'name' => $role->name,
+                'display_name' => $role->display_name,
+                'description' => $role->description,
+                'hierarchy_level' => $role->hierarchy_level,
+                'permissions' => $request->permissions ?? []
+            ]);
 
             DB::commit();
 
@@ -106,6 +145,14 @@ class RoleManagementController extends Controller
      */
     public function show(Role $role)
     {
+        $user = auth()->user();
+        
+        // Check if user can view this role
+        if (!$user->canManageRole($role)) {
+            return redirect()->route('developer.roles.index')
+                ->with('error', 'No tienes permisos para ver este rol.');
+        }
+        
         $role->load('permissions', 'users');
         
         $allPermissions = Permission::orderBy('module')
@@ -121,6 +168,14 @@ class RoleManagementController extends Controller
      */
     public function edit(Role $role)
     {
+        $user = auth()->user();
+        
+        // Check if user can manage this role
+        if (!$user->canManageRole($role)) {
+            return redirect()->route('developer.roles.index')
+                ->with('error', 'No tienes permisos para editar este rol.');
+        }
+        
         // Prevent editing system roles
         if ($role->is_system) {
             return redirect()->route('developer.roles.index')
@@ -142,6 +197,14 @@ class RoleManagementController extends Controller
      */
     public function update(Request $request, Role $role)
     {
+        $user = auth()->user();
+        
+        // Check if user can manage this role
+        if (!$user->canManageRole($role)) {
+            return redirect()->route('developer.roles.index')
+                ->with('error', 'No tienes permisos para editar este rol.');
+        }
+        
         // Prevent updating system roles
         if ($role->is_system) {
             return redirect()->route('developer.roles.index')
@@ -155,6 +218,23 @@ class RoleManagementController extends Controller
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,id'
         ]);
+
+        // Validate hierarchy level restrictions
+        if (!$user->isSuperAdmin()) {
+            $userHierarchy = $user->getHighestHierarchyLevel();
+            if ($request->hierarchy_level >= $userHierarchy) {
+                return back()->withInput()
+                    ->with('error', 'No puedes asignar un nivel de jerarquía igual o superior al tuyo.');
+            }
+        }
+
+        // Store old values for audit
+        $oldValues = [
+            'display_name' => $role->display_name,
+            'description' => $role->description,
+            'hierarchy_level' => $role->hierarchy_level,
+            'permissions' => $role->permissions->pluck('id')->toArray()
+        ];
 
         DB::beginTransaction();
         
@@ -170,6 +250,14 @@ class RoleManagementController extends Controller
 
             // Clear permissions cache for all users with this role
             $this->clearRoleUsersPermissionsCache($role);
+
+            // Create audit log
+            RoleAudit::log('updated', $role, $oldValues, [
+                'display_name' => $request->display_name,
+                'description' => $request->description,
+                'hierarchy_level' => $request->hierarchy_level,
+                'permissions' => $request->permissions ?? []
+            ]);
 
             DB::commit();
 
@@ -199,6 +287,16 @@ class RoleManagementController extends Controller
      */
     public function destroy(Role $role)
     {
+        $user = auth()->user();
+        
+        // Check if user can manage this role
+        if (!$user->canManageRole($role)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para eliminar este rol.'
+            ], 403);
+        }
+        
         // Prevent deleting system roles
         if ($role->is_system) {
             return response()->json([
@@ -219,6 +317,16 @@ class RoleManagementController extends Controller
         
         try {
             $roleName = $role->name;
+            
+            // Create audit log before deletion
+            RoleAudit::log('deleted', $role, [
+                'name' => $role->name,
+                'display_name' => $role->display_name,
+                'description' => $role->description,
+                'hierarchy_level' => $role->hierarchy_level,
+                'permissions' => $role->permissions->pluck('id')->toArray()
+            ]);
+            
             $role->permissions()->detach();
             $role->delete();
 
@@ -253,6 +361,16 @@ class RoleManagementController extends Controller
      */
     public function updatePermissions(Request $request, Role $role)
     {
+        $user = auth()->user();
+        
+        // Check if user can manage this role
+        if (!$user->canManageRole($role)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para editar los permisos de este rol.'
+            ], 403);
+        }
+        
         // Prevent updating system roles except super_admin
         if ($role->is_system && $role->name !== 'super_admin') {
             return response()->json([
@@ -266,6 +384,9 @@ class RoleManagementController extends Controller
             'permissions.*' => 'exists:permissions,id'
         ]);
 
+        // Store old permissions for audit
+        $oldPermissions = $role->permissions->pluck('id')->toArray();
+
         DB::beginTransaction();
         
         try {
@@ -273,6 +394,12 @@ class RoleManagementController extends Controller
 
             // Clear permissions cache for all users with this role
             $this->clearRoleUsersPermissionsCache($role);
+
+            // Create audit log for permission changes
+            RoleAudit::log('permissions_changed', $role, 
+                ['permissions' => $oldPermissions], 
+                ['permissions' => $request->permissions ?? []]
+            );
 
             DB::commit();
 

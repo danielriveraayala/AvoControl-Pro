@@ -271,6 +271,77 @@ class User extends Authenticatable
         return $this->hasRole('super_admin');
     }
 
+    /**
+     * Check if user can manage a specific role (based on hierarchy).
+     */
+    public function canManageRole(Role $role): bool
+    {
+        // Super admin can manage all roles
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Can only manage roles with lower hierarchy level
+        return $this->getHighestHierarchyLevel() > $role->hierarchy_level;
+    }
+
+    /**
+     * Check if user can assign a specific role to another user.
+     */
+    public function canAssignRole(Role $role): bool
+    {
+        // Super admin can assign any role
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Can only assign roles with lower hierarchy level than own
+        return $this->getHighestHierarchyLevel() > $role->hierarchy_level;
+    }
+
+    /**
+     * Check if user can manage another user (based on hierarchy).
+     */
+    public function canManageUser(User $targetUser): bool
+    {
+        // Super admin can manage all users
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Cannot manage users with equal or higher hierarchy
+        return $this->getHighestHierarchyLevel() > $targetUser->getHighestHierarchyLevel();
+    }
+
+    /**
+     * Get roles that this user can manage (assign/edit).
+     */
+    public function getManageableRoles()
+    {
+        if ($this->isSuperAdmin()) {
+            return Role::all();
+        }
+
+        $userHierarchy = $this->getHighestHierarchyLevel();
+        return Role::where('hierarchy_level', '<', $userHierarchy)->get();
+    }
+
+    /**
+     * Get users that this user can manage.
+     */
+    public function getManageableUsers()
+    {
+        if ($this->isSuperAdmin()) {
+            return User::where('id', '!=', $this->id);
+        }
+
+        $userHierarchy = $this->getHighestHierarchyLevel();
+        
+        return User::whereHas('roles', function ($query) use ($userHierarchy) {
+            $query->where('hierarchy_level', '<', $userHierarchy);
+        })->where('id', '!=', $this->id);
+    }
+
     public function isAdmin()
     {
         return $this->role === 'admin';

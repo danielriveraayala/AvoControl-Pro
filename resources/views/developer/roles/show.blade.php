@@ -202,6 +202,107 @@
                 </div>
             </div>
         </div>
+
+        <!-- Audit Log Section -->
+        <div class="bg-white shadow rounded-lg mt-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Historial de Cambios</h3>
+                <p class="text-sm text-gray-600">Registro de todas las modificaciones realizadas a este rol</p>
+            </div>
+            <div class="px-6 py-4">
+                @php
+                    $audits = $role->audits()->limit(10)->get();
+                @endphp
+                
+                @if($audits->count() > 0)
+                    <div class="flow-root">
+                        <ul class="-mb-8">
+                            @foreach($audits as $index => $audit)
+                            <li>
+                                <div class="relative pb-8">
+                                    @if($index < $audits->count() - 1)
+                                    <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                    @endif
+                                    <div class="relative flex space-x-3">
+                                        <div>
+                                            <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white
+                                                @if($audit->action === 'created') bg-green-500
+                                                @elseif($audit->action === 'updated') bg-blue-500
+                                                @elseif($audit->action === 'deleted') bg-red-500
+                                                @elseif($audit->action === 'permissions_changed') bg-yellow-500
+                                                @else bg-gray-500 @endif">
+                                                @if($audit->action === 'created')
+                                                    <i class="fas fa-plus text-white text-sm"></i>
+                                                @elseif($audit->action === 'updated')
+                                                    <i class="fas fa-edit text-white text-sm"></i>
+                                                @elseif($audit->action === 'deleted')
+                                                    <i class="fas fa-trash text-white text-sm"></i>
+                                                @elseif($audit->action === 'permissions_changed')
+                                                    <i class="fas fa-key text-white text-sm"></i>
+                                                @else
+                                                    <i class="fas fa-circle text-white text-sm"></i>
+                                                @endif
+                                            </span>
+                                        </div>
+                                        <div class="min-w-0 flex-1 pt-1.5">
+                                            <div>
+                                                <p class="text-sm text-gray-900">
+                                                    <span class="font-medium">{{ $audit->user->name ?? 'Usuario desconocido' }}</span>
+                                                    {{ strtolower($audit->formatted_action) }} el rol
+                                                </p>
+                                                <p class="mt-0.5 text-xs text-gray-500">
+                                                    {{ $audit->created_at->format('d/m/Y H:i:s') }}
+                                                    @if($audit->ip_address)
+                                                        desde {{ $audit->ip_address }}
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            
+                                            @if($audit->action === 'permissions_changed' && $audit->old_values && $audit->new_values)
+                                            <div class="mt-2 text-xs text-gray-600">
+                                                @php
+                                                    $oldPermissions = collect($audit->old_values['permissions'] ?? []);
+                                                    $newPermissions = collect($audit->new_values['permissions'] ?? []);
+                                                    $added = $newPermissions->diff($oldPermissions);
+                                                    $removed = $oldPermissions->diff($newPermissions);
+                                                @endphp
+                                                
+                                                @if($added->count() > 0)
+                                                    <div class="text-green-600">
+                                                        + {{ $added->count() }} permisos agregados
+                                                    </div>
+                                                @endif
+                                                
+                                                @if($removed->count() > 0)
+                                                    <div class="text-red-600">
+                                                        - {{ $removed->count() }} permisos removidos
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    
+                    @if($role->audits()->count() > 10)
+                    <div class="mt-4 text-center">
+                        <p class="text-sm text-gray-500">
+                            Mostrando los últimos 10 cambios de {{ $role->audits()->count() }} total
+                        </p>
+                    </div>
+                    @endif
+                @else
+                    <div class="text-center py-8">
+                        <i class="fas fa-history text-gray-400 text-4xl mb-4"></i>
+                        <p class="text-gray-500">No hay historial de cambios para este rol</p>
+                    </div>
+                @endif
+            </div>
+        </div>
     </div>
 </div>
 

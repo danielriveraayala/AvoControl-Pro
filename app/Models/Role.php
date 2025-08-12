@@ -169,4 +169,12 @@ class Role extends Model
     {
         return $query->where('is_system', true);
     }
+
+    /**
+     * Get audit logs for this role.
+     */
+    public function audits()
+    {
+        return $this->hasMany(RoleAudit::class)->with('user')->latest();
+    }
 }
