@@ -1,94 +1,89 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Acceso Denegado')
+@section('page-title', 'Acceso Denegado')
+
+@section('breadcrumb')
+    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Error 403</li>
+@endsection
 
 @section('content')
-<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <!-- Logo/Icon -->
-        <div class="flex justify-center">
-            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-                <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m8-7V9a4 4 0 00-8 0v2m0 0V9a4 4 0 014-4 4 4 0 014 4v2m-8 0h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2z"></path>
-                </svg>
-            </div>
-        </div>
-        
-        <!-- Title -->
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Acceso Denegado
-        </h2>
-        
-        <!-- Error Code -->
-        <p class="mt-2 text-center text-sm text-gray-600">
-            Error 403
-        </p>
-    </div>
-
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <!-- Message -->
-            <div class="text-center">
-                <div class="mb-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">
-                        Permisos Insuficientes
-                    </h3>
-                    <p class="text-sm text-gray-600">
-                        No tienes los permisos necesarios para acceder a esta página o realizar esta acción.
-                    </p>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="error-page text-center">
+                <!-- Error Icon -->
+                <div class="error-icon mb-4">
+                    <i class="fas fa-shield-alt text-danger" style="font-size: 4rem;"></i>
                 </div>
+                
+                <!-- Error Code and Title -->
+                <h2 class="headline text-danger font-weight-bold">403</h2>
+                <h3>Acceso Denegado</h3>
+                <p class="text-muted mb-4">
+                    No tienes los permisos necesarios para acceder a esta página o realizar esta acción.
+                </p>
 
-                <!-- User Info -->
+                <!-- User Information Card -->
                 @auth
-                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <p class="text-sm text-gray-700">
-                        <span class="font-medium">Usuario:</span> {{ auth()->user()->name }}
-                    </p>
-                    <p class="text-sm text-gray-700 mt-1">
-                        <span class="font-medium">Roles:</span> 
-                        @if(auth()->user()->roles->count() > 0)
-                            {{ auth()->user()->roles->pluck('display_name')->join(', ') }}
-                        @else
-                            {{ ucfirst(auth()->user()->role) }}
-                        @endif
-                    </p>
+                <div class="card card-outline card-warning mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user mr-2"></i>
+                            Información del Usuario
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Usuario:</strong> {{ auth()->user()->name }}
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>Roles:</strong>
+                                @if(auth()->user()->roles->count() > 0)
+                                    <span class="badge badge-info">
+                                        {{ auth()->user()->roles->pluck('display_name')->join(', ') }}
+                                    </span>
+                                @else
+                                    <span class="badge badge-secondary">
+                                        {{ ucfirst(auth()->user()->role) }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 @endauth
 
                 <!-- Action Buttons -->
-                <div class="space-y-3">
-                    <!-- Dashboard Button -->
-                    <a href="{{ route('dashboard') }}" 
-                       class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                        </svg>
-                        Ir al Dashboard
-                    </a>
-
-                    <!-- Go Back Button -->
-                    <button onclick="window.history.back()" 
-                            class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                        </svg>
-                        Regresar
-                    </button>
-
-                    <!-- Contact Admin (if not admin) -->
-                    @auth
-                    @if(!auth()->user()->isSuperAdmin() && !auth()->user()->hasRole('admin'))
-                    <div class="pt-4 border-t border-gray-200">
-                        <p class="text-xs text-gray-500 mb-2">
-                            ¿Necesitas acceso a esta función?
-                        </p>
-                        <p class="text-xs text-gray-400">
-                            Contacta al administrador del sistema para solicitar permisos adicionales.
-                        </p>
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <a href="{{ route('dashboard') }}" class="btn btn-primary btn-lg btn-block">
+                            <i class="fas fa-home mr-2"></i>
+                            Ir al Dashboard
+                        </a>
                     </div>
-                    @endif
-                    @endauth
+                    <div class="col-sm-6 mb-3">
+                        <button onclick="window.history.back()" class="btn btn-secondary btn-lg btn-block">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Regresar
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Help Text for Non-Admin Users -->
+                @auth
+                @if(!auth()->user()->isSuperAdmin() && !auth()->user()->hasRole('admin'))
+                <div class="alert alert-info mt-4">
+                    <h6><i class="fas fa-info-circle mr-2"></i>¿Necesitas acceso a esta función?</h6>
+                    <small>
+                        Contacta al administrador del sistema para solicitar permisos adicionales.
+                        Tu solicitud será revisada y procesada según las políticas de la empresa.
+                    </small>
+                </div>
+                @endif
+                @endauth
             </div>
         </div>
     </div>
