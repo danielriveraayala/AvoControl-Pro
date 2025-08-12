@@ -2,12 +2,22 @@
 
 ## 📋 Información del Sistema
 
-- **Dominio**: avocontrol.pro
+- **Dominio**: avocontrol.pro / VPS: 69.62.65.243  
 - **Framework**: Laravel 12.x
-- **Base de datos**: MySQL 8.0+
+- **Base de datos**: MySQL 8.0+ (avocontrol_prod)
 - **PHP**: 8.3+
 - **Node**: 18+
 - **SSL**: Let's Encrypt (automático)
+- **Estado**: ✅ **DEPLOYED Y OPERATIVO EN PRODUCCIÓN**
+
+### Sistema Actual Deployed:
+- ✅ **Sistema RBAC**: 100% funcional con 8 roles y 52 permisos
+- ✅ **Sistema de Notificaciones**: 60% completado (6/10 fases)
+- ✅ **Panel de Desarrollador**: Completamente funcional  
+- ✅ **Panel de Usuario**: Sistema de roles operativo
+- ✅ **Base de Datos**: avocontrol_prod configurada y poblada
+- ✅ **CRON Jobs**: 8 tareas automáticas programadas
+- ✅ **Email + Push Notifications**: Sistema dual operativo
 
 ## 📦 Preparación para Producción
 
