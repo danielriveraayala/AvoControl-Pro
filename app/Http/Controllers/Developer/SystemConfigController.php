@@ -64,7 +64,7 @@ class SystemConfigController extends Controller
                 'MAIL_HOST' => $request->mail_host,
                 'MAIL_PORT' => $request->mail_port,
                 'MAIL_USERNAME' => $request->mail_username,
-                'MAIL_PASSWORD' => $request->mail_password,
+                'MAIL_PASSWORD' => '"' . $request->mail_password . '"',
                 'MAIL_ENCRYPTION' => $request->mail_encryption,
                 'MAIL_FROM_ADDRESS' => $request->mail_from_address,
                 'MAIL_FROM_NAME' => '"' . $request->mail_from_name . '"',
