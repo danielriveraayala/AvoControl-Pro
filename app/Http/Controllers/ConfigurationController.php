@@ -165,11 +165,11 @@ class ConfigurationController extends Controller
                                ? $quality->weight_min . 'g - ' . $quality->weight_max . 'g'
                                : ($quality->weight_min ? $quality->weight_min . 'g+' : ($quality->weight_max ? $quality->weight_max . 'g-' : 'Sin especificar')),
                     'status' => '<span class="badge badge-'.($quality->active ? 'success' : 'secondary').'">'.($quality->active ? 'Activo' : 'Inactivo').'</span>',
-                    'actions' => '<div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-info" onclick="editQuality('.$quality->id.')" title="Editar">
+                    'actions' => '<div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-info" onclick="editQuality('.$quality->id.')" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button type="button" class="btn btn-danger" onclick="deleteQuality('.$quality->id.', \''.addslashes($quality->name).'\')" title="Eliminar">
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteQuality('.$quality->id.', \''.addslashes($quality->name).'\')" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                   </div>'

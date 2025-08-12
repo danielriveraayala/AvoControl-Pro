@@ -1151,6 +1151,260 @@ class ReportController extends Controller
             ->values();
     }
 
+    /**
+     * Reporte de Rentabilidad por Lotes Detallado
+     * Muestra la utilidad de cada lote vendido en un período
+     */
+    public function lotProfitability(Request $request)
+    {
+        // Configuración de fechas - por defecto última semana
+        $startDate = $request->get('start_date', Carbon::now()->subWeek()->startOfDay());
+        $endDate = $request->get('end_date', Carbon::now()->endOfDay());
+        $lotSearch = $request->get('lot_search', '');
+        $qualityFilter = $request->get('quality_filter', '');
+        
+        if (!$startDate instanceof Carbon) {
+            $startDate = Carbon::parse($startDate)->startOfDay();
+        }
+        if (!$endDate instanceof Carbon) {
+            $endDate = Carbon::parse($endDate)->endOfDay();
+        }
+
+        // Obtener todas las asignaciones de lotes a ventas en el período
+        $query = \App\Models\SaleLotAllocation::with([
+            'lot.supplier',
+            'lot.qualityGrade',
+            'saleItem.sale.customer'
+        ])
+        ->whereHas('saleItem.sale', function($q) use ($startDate, $endDate) {
+            $q->whereBetween('sale_date', [$startDate, $endDate])
+              ->whereIn('status', ['confirmed', 'shipped', 'delivered']);
+        });
+        
+        // Filtrar por lote específico si se proporciona
+        if (!empty($lotSearch)) {
+            $query->whereHas('lot', function($q) use ($lotSearch) {
+                $q->where('lot_code', 'LIKE', '%' . $lotSearch . '%');
+            });
+        }
+        
+        // Filtrar por calidad específica si se proporciona
+        if (!empty($qualityFilter)) {
+            $query->whereHas('lot.qualityGrade', function($q) use ($qualityFilter) {
+                $q->where('name', $qualityFilter);
+            });
+        }
+        
+        $allocations = $query->get();
+
+        // Agrupar por lote para análisis detallado
+        $lotProfitability = [];
+        $summaryByQuality = [];
+        $summaryBySupplier = [];
+        $summaryByCustomer = [];
+        
+        foreach ($allocations as $allocation) {
+            $lot = $allocation->lot;
+            $saleItem = $allocation->saleItem;
+            $sale = $saleItem->sale;
+            
+            // Cálculo de rentabilidad para esta asignación
+            $purchaseCost = $allocation->allocated_weight * $lot->purchase_price_per_kg;
+            $saleRevenue = $allocation->allocated_weight * $saleItem->price_per_kg;
+            $profit = $saleRevenue - $purchaseCost;
+            $margin = $saleRevenue > 0 ? ($profit / $saleRevenue) * 100 : 0;
+            
+            // Agregar al detalle por lote
+            $lotKey = $lot->id;
+            if (!isset($lotProfitability[$lotKey])) {
+                $lotProfitability[$lotKey] = [
+                    'lot_id' => $lot->id,
+                    'lot_code' => $lot->lot_code,
+                    'supplier' => $lot->supplier->name ?? 'N/A',
+                    'quality' => $lot->qualityGrade->name ?? 'N/A',
+                    'quality_color' => $lot->qualityGrade->color ?? '#6c757d',
+                    'entry_date' => $lot->entry_date->format('d/m/Y'),
+                    'purchase_price' => $lot->purchase_price_per_kg,
+                    'total_weight' => $lot->total_weight,
+                    'sales' => []
+                ];
+            }
+            
+            // Agregar detalle de venta
+            $lotProfitability[$lotKey]['sales'][] = [
+                'sale_id' => $sale->id,
+                'sale_code' => $sale->sale_code,
+                'sale_date' => $sale->sale_date->format('d/m/Y'),
+                'customer' => $sale->customer->name ?? 'N/A',
+                'weight_sold' => $allocation->allocated_weight,
+                'sale_price' => $saleItem->price_per_kg,
+                'revenue' => $saleRevenue,
+                'cost' => $purchaseCost,
+                'profit' => $profit,
+                'margin' => $margin
+            ];
+            
+            // Agregar a resúmenes
+            $qualityName = $lot->qualityGrade->name ?? 'Sin calidad';
+            if (!isset($summaryByQuality[$qualityName])) {
+                $summaryByQuality[$qualityName] = [
+                    'quality' => $qualityName,
+                    'color' => $lot->qualityGrade->color ?? '#6c757d',
+                    'total_weight' => 0,
+                    'total_revenue' => 0,
+                    'total_cost' => 0,
+                    'total_profit' => 0,
+                    'lot_count' => 0,
+                    'sale_count' => 0
+                ];
+            }
+            $summaryByQuality[$qualityName]['total_weight'] += $allocation->allocated_weight;
+            $summaryByQuality[$qualityName]['total_revenue'] += $saleRevenue;
+            $summaryByQuality[$qualityName]['total_cost'] += $purchaseCost;
+            $summaryByQuality[$qualityName]['total_profit'] += $profit;
+            $summaryByQuality[$qualityName]['sale_count']++;
+            
+            // Por proveedor
+            $supplierName = $lot->supplier->name ?? 'Sin proveedor';
+            if (!isset($summaryBySupplier[$supplierName])) {
+                $summaryBySupplier[$supplierName] = [
+                    'supplier' => $supplierName,
+                    'total_weight' => 0,
+                    'total_revenue' => 0,
+                    'total_cost' => 0,
+                    'total_profit' => 0,
+                    'lot_count' => 0,
+                    'sale_count' => 0
+                ];
+            }
+            $summaryBySupplier[$supplierName]['total_weight'] += $allocation->allocated_weight;
+            $summaryBySupplier[$supplierName]['total_revenue'] += $saleRevenue;
+            $summaryBySupplier[$supplierName]['total_cost'] += $purchaseCost;
+            $summaryBySupplier[$supplierName]['total_profit'] += $profit;
+            $summaryBySupplier[$supplierName]['sale_count']++;
+            
+            // Por cliente
+            $customerName = $sale->customer->name ?? 'Sin cliente';
+            if (!isset($summaryByCustomer[$customerName])) {
+                $summaryByCustomer[$customerName] = [
+                    'customer' => $customerName,
+                    'total_weight' => 0,
+                    'total_revenue' => 0,
+                    'total_cost' => 0,
+                    'total_profit' => 0,
+                    'purchase_count' => 0
+                ];
+            }
+            $summaryByCustomer[$customerName]['total_weight'] += $allocation->allocated_weight;
+            $summaryByCustomer[$customerName]['total_revenue'] += $saleRevenue;
+            $summaryByCustomer[$customerName]['total_cost'] += $purchaseCost;
+            $summaryByCustomer[$customerName]['total_profit'] += $profit;
+            $summaryByCustomer[$customerName]['purchase_count']++;
+        }
+        
+        // Calcular totales y promedios para cada lote
+        foreach ($lotProfitability as &$lot) {
+            $lot['total_weight_sold'] = array_sum(array_column($lot['sales'], 'weight_sold'));
+            $lot['total_revenue'] = array_sum(array_column($lot['sales'], 'revenue'));
+            $lot['total_cost'] = array_sum(array_column($lot['sales'], 'cost'));
+            $lot['total_profit'] = array_sum(array_column($lot['sales'], 'profit'));
+            $lot['avg_margin'] = $lot['total_revenue'] > 0 ? 
+                ($lot['total_profit'] / $lot['total_revenue']) * 100 : 0;
+            $lot['sales_count'] = count($lot['sales']);
+            
+            // Contar lotes únicos para resúmenes
+            $qualityName = null;
+            $supplierName = null;
+            foreach ($allocations as $alloc) {
+                if ($alloc->lot->id == $lot['lot_id']) {
+                    $qualityName = $alloc->lot->qualityGrade->name ?? 'Sin calidad';
+                    $supplierName = $alloc->lot->supplier->name ?? 'Sin proveedor';
+                    break;
+                }
+            }
+            if ($qualityName && !isset($summaryByQuality[$qualityName]['lots'])) {
+                $summaryByQuality[$qualityName]['lots'] = [];
+            }
+            if ($qualityName && !in_array($lot['lot_id'], $summaryByQuality[$qualityName]['lots'] ?? [])) {
+                $summaryByQuality[$qualityName]['lots'][] = $lot['lot_id'];
+                $summaryByQuality[$qualityName]['lot_count']++;
+            }
+            if ($supplierName && !isset($summaryBySupplier[$supplierName]['lots'])) {
+                $summaryBySupplier[$supplierName]['lots'] = [];
+            }
+            if ($supplierName && !in_array($lot['lot_id'], $summaryBySupplier[$supplierName]['lots'] ?? [])) {
+                $summaryBySupplier[$supplierName]['lots'][] = $lot['lot_id'];
+                $summaryBySupplier[$supplierName]['lot_count']++;
+            }
+        }
+        
+        // Limpiar arrays temporales
+        foreach ($summaryByQuality as &$summary) {
+            unset($summary['lots']);
+            $summary['margin'] = $summary['total_revenue'] > 0 ? 
+                ($summary['total_profit'] / $summary['total_revenue']) * 100 : 0;
+        }
+        foreach ($summaryBySupplier as &$summary) {
+            unset($summary['lots']);
+            $summary['margin'] = $summary['total_revenue'] > 0 ? 
+                ($summary['total_profit'] / $summary['total_revenue']) * 100 : 0;
+        }
+        foreach ($summaryByCustomer as &$summary) {
+            $summary['margin'] = $summary['total_revenue'] > 0 ? 
+                ($summary['total_profit'] / $summary['total_revenue']) * 100 : 0;
+        }
+        
+        // Ordenar por rentabilidad
+        $lotProfitability = collect($lotProfitability)->sortByDesc('total_profit')->values()->toArray();
+        $summaryByQuality = collect($summaryByQuality)->sortByDesc('total_profit')->values()->toArray();
+        $summaryBySupplier = collect($summaryBySupplier)->sortByDesc('total_profit')->values()->toArray();
+        $summaryByCustomer = collect($summaryByCustomer)->sortByDesc('total_profit')->values()->toArray();
+        
+        // Calcular métricas generales
+        $totalRevenue = array_sum(array_column($lotProfitability, 'total_revenue'));
+        $totalCost = array_sum(array_column($lotProfitability, 'total_cost'));
+        $totalProfit = array_sum(array_column($lotProfitability, 'total_profit'));
+        $totalWeight = array_sum(array_column($lotProfitability, 'total_weight_sold'));
+        
+        $generalMetrics = [
+            'total_revenue' => $totalRevenue,
+            'total_cost' => $totalCost,
+            'total_profit' => $totalProfit,
+            'profit_margin' => $totalRevenue > 0 ? ($totalProfit / $totalRevenue) * 100 : 0,
+            'total_weight' => $totalWeight,
+            'lots_sold' => count($lotProfitability),
+            'avg_profit_per_kg' => $totalWeight > 0 ? $totalProfit / $totalWeight : 0,
+            'roi' => $totalCost > 0 ? ($totalProfit / $totalCost) * 100 : 0
+        ];
+        
+        // Obtener lista de calidades para los filtros
+        $qualityGrades = \App\Models\QualityGrade::where('active', true)
+            ->orderBy('name')
+            ->get();
+
+        // Si es petición AJAX
+        if ($request->ajax()) {
+            return response()->json([
+                'generalMetrics' => $generalMetrics,
+                'lotProfitability' => $lotProfitability,
+                'summaryByQuality' => $summaryByQuality,
+                'summaryBySupplier' => $summaryBySupplier,
+                'summaryByCustomer' => $summaryByCustomer
+            ]);
+        }
+        
+        return view('reports.lot-profitability', compact(
+            'generalMetrics',
+            'lotProfitability',
+            'summaryByQuality',
+            'summaryBySupplier',
+            'summaryByCustomer',
+            'qualityGrades',
+            'startDate',
+            'endDate'
+        ));
+    }
+
     // ==================== MÉTODOS DE ANÁLISIS DE PROVEEDORES ====================
 
     private function getSupplierRanking($startDate, $endDate, $supplierId = null)

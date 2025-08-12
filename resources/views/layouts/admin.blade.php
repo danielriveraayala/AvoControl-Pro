@@ -146,11 +146,6 @@
                 font-size: 0.875rem;
             }
 
-            .btn-group-sm .btn {
-                padding: 0.125rem 0.25rem;
-                font-size: 0.75rem;
-            }
-
             .card-tools .btn-group {
                 flex-direction: column;
             }
@@ -314,6 +309,12 @@
                                 <a href="{{ route('reports.profitability') }}" class="nav-link {{ request()->routeIs('reports.profitability') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon text-success"></i>
                                     <p>Rentabilidad</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('reports.lot-profitability') }}" class="nav-link {{ request()->routeIs('reports.lot-profitability') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon text-primary"></i>
+                                    <p>Rentabilidad por Lotes</p>
                                 </a>
                             </li>
                             <li class="nav-item">

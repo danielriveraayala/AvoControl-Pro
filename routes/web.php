@@ -118,6 +118,7 @@ Route::middleware(['auth'])->group(function () {
     // Reports routes
     Route::prefix('reportes')->name('reports.')->group(function () {
         Route::get('rentabilidad', [ReportController::class, 'profitability'])->name('profitability');
+        Route::get('rentabilidad-lotes', [ReportController::class, 'lotProfitability'])->name('lot-profitability');
         Route::get('analisis-clientes', [ReportController::class, 'customerAnalysis'])->name('customer-analysis');
         Route::get('analisis-proveedores', [ReportController::class, 'supplierAnalysis'])->name('supplier-analysis');
     });

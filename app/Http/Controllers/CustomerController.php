@@ -93,21 +93,21 @@ class CustomerController extends Controller
                 // Actions with credit status color
                 $actionColor = $creditStatus === 'exceeded' ? 'danger' : ($creditStatus === 'critical' ? 'warning' : 'info');
                 $actions = '
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-'.$actionColor.'" onclick="viewCustomer('.$customer->id.')" title="Ver Detalles">
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-'.$actionColor.'" onclick="viewCustomer('.$customer->id.')" title="Ver Detalles">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-secondary" onclick="editCustomer('.$customer->id.')" title="Editar">
+                        <button class="btn btn-sm btn-secondary" onclick="editCustomer('.$customer->id.')" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>';
                 
                 // Show credit adjustment for exceeded credit
                 if ($creditStatus === 'exceeded') {
-                    $actions .= '<button class="btn btn-warning" onclick="adjustCreditLimit('.$customer->id.')" title="Ajustar Crédito">
+                    $actions .= '<button class="btn btn-sm btn-warning" onclick="adjustCreditLimit('.$customer->id.')" title="Ajustar Crédito">
                             <i class="fas fa-exclamation-triangle"></i>
                         </button>';
                 } else {
-                    $actions .= '<button class="btn btn-danger" onclick="deleteCustomer('.$customer->id.', \''.addslashes($customer->name).'\')" title="Eliminar">
+                    $actions .= '<button class="btn btn-sm btn-danger" onclick="deleteCustomer('.$customer->id.', \''.addslashes($customer->name).'\')" title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>';
                 }

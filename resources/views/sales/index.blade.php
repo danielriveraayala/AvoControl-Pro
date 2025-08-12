@@ -566,28 +566,28 @@ function initializeSalesTable() {
                 data: null,
                 orderable: false,
                 render: function(data, type, row) {
-                    let html = '<div class="btn-group btn-group-sm">';
+                    let html = '<div class="btn-group">';
 
                     console.log('Rendering actions for row:', row); // Debug log
 
-                    html += `<button type="button" class="btn btn-info" onclick="showSaleDetails(${row.id})" data-toggle="tooltip" title="Ver detalles">
+                    html += `<button type="button" class="btn btn-sm btn-info" onclick="showSaleDetails(${row.id})" data-toggle="tooltip" title="Ver detalles">
                         <i class="fas fa-eye"></i>
                     </button>`;
 
                     if (row.can_edit) {
-                        html += `<button type="button" class="btn btn-primary" onclick="editSale(${row.id})" data-toggle="tooltip" title="Editar">
+                        html += `<button type="button" class="btn btn-sm btn-primary" onclick="editSale(${row.id})" data-toggle="tooltip" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>`;
                     }
 
                     // Botón de Timeline de Pagos
-                    html += `<button type="button" class="btn btn-warning" onclick="showPaymentTimeline(${row.id})" data-toggle="tooltip" title="Timeline de Pagos">
+                    html += `<button type="button" class="btn btn-sm btn-warning" onclick="showPaymentTimeline(${row.id})" data-toggle="tooltip" title="Timeline de Pagos">
                         <i class="fas fa-history"></i>
                     </button>`;
 
                     if (row.status !== 'cancelled') {
-                        html += `<div class="btn-group btn-group-sm">
-                            <button type="button" class="btn btn-secondary dropdown-toggle dropdown-icon" data-toggle="dropdown"></button>
+                        html += `<div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-icon" data-toggle="dropdown"></button>
                             <div class="dropdown-menu">`;
 
                         if (row.status === 'draft') {

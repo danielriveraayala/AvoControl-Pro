@@ -76,14 +76,14 @@ class SupplierController extends Controller
 
                 // Actions
                 $actions = '
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-info" onclick="viewSupplier('.$supplier->id.')" title="Ver Detalles">
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-info" onclick="viewSupplier('.$supplier->id.')" title="Ver Detalles">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-secondary" onclick="editSupplier('.$supplier->id.')" title="Editar">
+                        <button class="btn btn-sm btn-secondary" onclick="editSupplier('.$supplier->id.')" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-danger" onclick="deleteSupplier('.$supplier->id.', \''.addslashes($supplier->name).'\')" title="Eliminar">
+                        <button class="btn btn-sm btn-danger" onclick="deleteSupplier('.$supplier->id.', \''.addslashes($supplier->name).'\')" title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>';

@@ -631,17 +631,17 @@
                         searchable: false,
                         render: function (data, type, row) {
                             return `
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-info" onclick="openViewLotModal(${data})" title="Ver reporte">
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-info" onclick="openViewLotModal(${data})" title="Ver reporte">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-primary" onclick="openEditLotModal(${data})" title="Editar">
+                            <button class="btn btn-sm btn-primary" onclick="openEditLotModal(${data})" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-success" onclick="openLotPaymentTimeline(${data})" title="Timeline de Pagos">
+                            <button class="btn btn-sm btn-success" onclick="openLotPaymentTimeline(${data})" title="Timeline de Pagos">
                                 <i class="fas fa-money-bill-wave"></i>
                             </button>
-                            <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+                            <button class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <div class="dropdown-menu">
