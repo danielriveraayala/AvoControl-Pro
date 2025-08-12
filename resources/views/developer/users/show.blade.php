@@ -3,30 +3,30 @@
 @section('title', 'Perfil de Usuario')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0 h-12 w-12">
-                            <div class="h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                                <span class="text-lg font-bold text-white">
+                        <div class="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12">
+                            <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                                <span class="text-sm sm:text-lg font-bold text-white">
                                     {{ substr($user->name, 0, 2) }}
                                 </span>
                             </div>
                         </div>
-                        <div class="ml-4">
-                            <h1 class="text-2xl font-bold text-gray-900">{{ $user->name }}</h1>
-                            <p class="text-sm text-gray-600">{{ $user->email }}</p>
+                        <div class="ml-3 sm:ml-4 min-w-0">
+                            <h1 class="text-lg sm:text-2xl font-bold text-gray-900 truncate">{{ $user->name }}</h1>
+                            <p class="text-xs sm:text-sm text-gray-600 truncate">{{ $user->email }}</p>
                         </div>
                     </div>
-                    <div class="flex space-x-3">
-                        <a href="{{ route('developer.users.edit', $user) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                    <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.users.edit', $user) }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                             Editar Usuario
                         </a>
-                        <a href="{{ route('developer.users.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        <a href="{{ route('developer.users.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                             ← Volver a Usuarios
                         </a>
                     </div>

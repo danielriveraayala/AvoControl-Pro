@@ -221,13 +221,13 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-12">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center">
-                <div class="text-sm text-gray-500">
+    <footer class="bg-white border-t border-gray-200 mt-8 sm:mt-12">
+        <div class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+                <div class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
                     &copy; {{ date('Y') }} AvoControl Pro. Developer Panel by Daniel Rivera Ayala.
                 </div>
-                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500 text-center sm:text-right">
                     <span>Laravel {{ app()->version() }}</span>
                     <span>PHP {{ PHP_VERSION }}</span>
                     <span>Built with ❤️</span>
