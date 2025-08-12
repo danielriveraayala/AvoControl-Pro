@@ -371,17 +371,18 @@ class SystemConfigController extends Controller
      */
     public function getNotificationsData(Request $request)
     {
-        $query = \App\Models\Notification::query()->with(['user', 'notifiable']);
+        $query = \App\Models\Notification::query()->with(['notifiable']);
         
         // Search functionality
         if ($request->has('search') && $request->search['value']) {
             $search = $request->search['value'];
             $query->where(function($q) use ($search) {
                 $q->where('type', 'like', "%{$search}%")
-                  ->orWhere('title', 'like', "%{$search}%")
-                  ->orWhere('message', 'like', "%{$search}%")
-                  ->orWhere('channels', 'like', "%{$search}%")
-                  ->orWhere('priority', 'like', "%{$search}%");
+                  ->orWhere('category', 'like', "%{$search}%")
+                  ->orWhere('channel', 'like', "%{$search}%")
+                  ->orWhere('priority', 'like', "%{$search}%")
+                  ->orWhereJsonContains('data->title', $search)
+                  ->orWhereJsonContains('data->message', $search);
             });
         }
 
@@ -397,7 +398,7 @@ class SystemConfigController extends Controller
 
         // Filter by channels
         if ($request->has('channels') && $request->channels !== '') {
-            $query->where('channels', 'like', "%{$request->channels}%");
+            $query->where('channel', 'like', "%{$request->channels}%");
         }
 
         // Filter by date range
@@ -431,13 +432,13 @@ class SystemConfigController extends Controller
         $data = $notifications->map(function ($notification) {
             return [
                 'id' => $notification->id,
-                'type' => '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">' . ucfirst($notification->type) . '</span>',
+                'type' => '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">' . ucfirst($notification->type ?? 'system') . '</span>',
                 'title' => $notification->title,
                 'message' => \Str::limit($notification->message, 50),
-                'user' => $notification->user ? $notification->user->name : 'Sistema',
-                'priority' => $this->getPriorityBadge($notification->priority),
-                'channels' => $this->getChannelsBadges($notification->channels),
-                'status' => $this->getStatusBadge($notification->status),
+                'user' => $notification->notifiable_type ? class_basename($notification->notifiable_type) : 'Sistema',
+                'priority' => $this->getPriorityBadge($notification->priority ?? 'normal'),
+                'channels' => $this->getChannelsBadges($notification->channel ?? 'database'),
+                'status' => $this->getStatusBadge($this->getNotificationStatus($notification)),
                 'created_at' => $notification->created_at->format('d/m/Y H:i'),
                 'actions' => $this->getNotificationActions($notification)
             ];
@@ -554,6 +555,22 @@ class SystemConfigController extends Controller
         $actions .= '</div>';
         
         return $actions;
+    }
+
+    /**
+     * Get notification status based on notification data.
+     */
+    private function getNotificationStatus($notification)
+    {
+        if ($notification->sent_email || $notification->sent_push) {
+            return 'sent';
+        }
+        
+        if ($notification->scheduled_at && $notification->scheduled_at->isFuture()) {
+            return 'scheduled';
+        }
+        
+        return 'pending';
     }
 
     /**
