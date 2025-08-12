@@ -24,7 +24,7 @@ use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return redirect('/dashboard');
-});
+})->name('home');
 
 
 // Public push notification endpoint (needed before auth)

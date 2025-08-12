@@ -311,12 +311,12 @@
                                     <p>Rentabilidad</p>
                                 </a>
                             </li>
-                            <!-- <li class="nav-item">
+                            <li class="nav-item">
                                 <a href="{{ route('reports.lot-profitability') }}" class="nav-link {{ request()->routeIs('reports.lot-profitability') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon text-primary"></i>
                                     <p>Rentabilidad por Lotes</p>
                                 </a>
-                            </li> -->
+                            </li>
                             <li class="nav-item">
                                 <a href="{{ route('reports.customer-analysis') }}" class="nav-link {{ request()->routeIs('reports.customer-analysis') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon text-info"></i>
