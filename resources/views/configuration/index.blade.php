@@ -187,7 +187,7 @@
                         <!-- Push Notifications Configuration Tab -->
                         <div class="tab-pane fade" id="push" role="tabpanel" aria-labelledby="push-tab">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4><i class="fas fa-bell text-warning"></i> Configuración de Push Notifications</h4>
+                                <h4><i class="fas fa-bell text-warning"></i> Notificaciones Push</h4>
                                 <div id="push-status" class="ml-2">
                                     <span class="badge badge-secondary">⭕ Cargando...</span>
                                 </div>
@@ -195,86 +195,77 @@
                             
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle"></i>
-                                <strong>Información:</strong> Las notificaciones push permiten enviar alertas en tiempo real al navegador del usuario, incluso cuando no está activamente usando la aplicación.
+                                <strong>Información:</strong> Las notificaciones push te permiten recibir alertas importantes del sistema directamente en tu navegador, incluso cuando no estés usando la aplicación.
                             </div>
                             
                             <!-- Push Notification Controls -->
-                            <div class="row">
+                            <div class="row justify-content-center">
                                 <div class="col-md-8">
                                     <div class="card">
                                         <div class="card-header">
                                             <h5 class="card-title mb-0">
-                                                <i class="fas fa-cog"></i> Control de Notificaciones
+                                                <i class="fas fa-bell-o"></i> Suscripción a Notificaciones
                                             </h5>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <h6>Estado de Suscripción</h6>
-                                                    <p class="text-muted mb-3">Administra tu suscripción a notificaciones push para este dispositivo.</p>
-                                                    
-                                                    <button type="button" id="enable-push-btn" class="btn btn-success btn-sm mb-2" style="display: none;">
-                                                        <i class="fas fa-bell"></i> Activar Notificaciones
-                                                    </button>
-                                                    
-                                                    <button type="button" id="disable-push-btn" class="btn btn-danger btn-sm mb-2" style="display: none;">
-                                                        <i class="fas fa-bell-slash"></i> Desactivar Notificaciones
-                                                    </button>
-                                                </div>
-                                                
-                                                <div class="col-md-6">
-                                                    <h6>Prueba de Sistema</h6>
-                                                    <p class="text-muted mb-3">Envía una notificación de prueba para verificar el funcionamiento.</p>
-                                                    
-                                                    <button type="button" id="test-push-btn" class="btn btn-info btn-sm mb-2" style="display: none;">
-                                                        <i class="fas fa-paper-plane"></i> Enviar Prueba
-                                                    </button>
-                                                </div>
+                                        <div class="card-body text-center">
+                                            <div class="mb-4">
+                                                <i class="fas fa-mobile-alt fa-3x text-muted mb-3"></i>
+                                                <h6>Estado de tu Suscripción</h6>
+                                                <p class="text-muted mb-4">Administra tu suscripción a notificaciones push para este dispositivo.</p>
                                             </div>
                                             
-                                            <div class="row mt-3">
-                                                <div class="col-12">
-                                                    <div class="alert alert-warning" id="browser-unsupported" style="display: none;">
-                                                        <i class="fas fa-exclamation-triangle"></i>
-                                                        <strong>Navegador no soportado:</strong> Tu navegador no soporta notificaciones push. Considera actualizarlo.
-                                                    </div>
-                                                </div>
+                                            <div class="mb-3" id="push-controls">
+                                                <button type="button" id="enable-push-btn" class="btn btn-success btn-lg mb-2" style="display: none;">
+                                                    <i class="fas fa-bell"></i> Activar Notificaciones
+                                                </button>
+                                                
+                                                <button type="button" id="disable-push-btn" class="btn btn-outline-danger btn-lg mb-2" style="display: none;">
+                                                    <i class="fas fa-bell-slash"></i> Desactivar Notificaciones
+                                                </button>
+                                                
+                                                <button type="button" id="test-push-btn" class="btn btn-outline-info ml-2" style="display: none;">
+                                                    <i class="fas fa-paper-plane"></i> Enviar Prueba
+                                                </button>
+                                            </div>
+                                            
+                                            <div id="browser-unsupported" class="alert alert-warning" style="display: none;">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                <strong>Navegador no compatible:</strong> Tu navegador no soporta notificaciones push. Considera actualizarlo o usar Chrome, Firefox, Safari o Edge.
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle"></i> 
+                                                    Las notificaciones funcionan incluso cuando no tienes la aplicación abierta
+                                                </small>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <div class="col-md-4">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h5 class="card-title mb-0">
-                                                <i class="fas fa-chart-bar"></i> Estadísticas
-                                            </h5>
-                                        </div>
+                            </div>
+                            
+                            <!-- Benefits Section -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card border-left-primary">
                                         <div class="card-body">
-                                            <div id="push-stats-loading" class="text-center">
-                                                <i class="fas fa-spinner fa-spin"></i> Cargando...
-                                            </div>
-                                            
-                                            <div id="push-stats" style="display: none;">
-                                                <div class="stat-item mb-2">
-                                                    <small class="text-muted">Total Subscripciones</small>
-                                                    <div class="h5 mb-0" id="total-subscriptions">0</div>
+                                            <h6 class="text-primary"><i class="fas fa-star"></i> Beneficios de las Notificaciones Push</h6>
+                                            <div class="row mt-3">
+                                                <div class="col-md-3 text-center">
+                                                    <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                                                    <p class="small">Alertas de <strong>Inventario Bajo</strong></p>
                                                 </div>
-                                                
-                                                <div class="stat-item mb-2">
-                                                    <small class="text-muted">Subscripciones Activas</small>
-                                                    <div class="h5 mb-0" id="active-subscriptions">0</div>
+                                                <div class="col-md-3 text-center">
+                                                    <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                                                    <p class="small">Recordatorios de <strong>Pagos Pendientes</strong></p>
                                                 </div>
-                                                
-                                                <div class="stat-item mb-2">
-                                                    <small class="text-muted">Usuarios con Notificaciones</small>
-                                                    <div class="h5 mb-0" id="users-with-subscriptions">0</div>
+                                                <div class="col-md-3 text-center">
+                                                    <i class="fas fa-truck fa-2x text-info mb-2"></i>
+                                                    <p class="small">Notificaciones de <strong>Nuevos Lotes</strong></p>
                                                 </div>
-                                                
-                                                <div class="stat-item">
-                                                    <small class="text-muted">Nuevas esta semana</small>
-                                                    <div class="h5 mb-0" id="recent-subscriptions">0</div>
+                                                <div class="col-md-3 text-center">
+                                                    <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                                                    <p class="small">Reportes <strong>Automáticos</strong></p>
                                                 </div>
                                             </div>
                                         </div>
@@ -282,8 +273,8 @@
                                 </div>
                             </div>
                             
-                            <!-- User Subscriptions Table -->
-                            <div class="row mt-4">
+                            <!-- My Devices Section (only if user has subscriptions) -->
+                            <div class="row mt-4" id="my-devices-section" style="display: none;">
                                 <div class="col-12">
                                     <div class="card">
                                         <div class="card-header">
@@ -297,15 +288,13 @@
                                                     <thead>
                                                         <tr>
                                                             <th>Navegador</th>
-                                                            <th>IP</th>
                                                             <th>Fecha Registro</th>
-                                                            <th>Último Uso</th>
                                                             <th>Estado</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="user-subscriptions-tbody">
                                                         <tr>
-                                                            <td colspan="5" class="text-center text-muted">
+                                                            <td colspan="3" class="text-center text-muted">
                                                                 <i class="fas fa-spinner fa-spin"></i> Cargando subscripciones...
                                                             </td>
                                                         </tr>
@@ -316,59 +305,6 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Admin Tools (only for admin users) -->
-                            @if(auth()->user()->role === 'admin')
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <div class="card border-warning">
-                                        <div class="card-header bg-warning">
-                                            <h5 class="card-title mb-0 text-dark">
-                                                <i class="fas fa-tools"></i> Herramientas de Administración
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="text-muted">Herramientas avanzadas para gestionar las notificaciones push del sistema.</p>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <h6>Notificaciones de Prueba</h6>
-                                                    <div class="btn-group-vertical d-block">
-                                                        <button type="button" class="btn btn-outline-info btn-sm mb-1" onclick="sendTestNotification('low_inventory')">
-                                                            📦 Inventario Bajo
-                                                        </button>
-                                                        <button type="button" class="btn btn-outline-warning btn-sm mb-1" onclick="sendTestNotification('payment_reminder')">
-                                                            💰 Recordatorio de Pago
-                                                        </button>
-                                                        <button type="button" class="btn btn-outline-success btn-sm mb-1" onclick="sendTestNotification('daily_report')">
-                                                            📊 Reporte Diario
-                                                        </button>
-                                                        <button type="button" class="btn btn-outline-primary btn-sm mb-1" onclick="sendTestNotification('new_lot')">
-                                                            🚚 Nuevo Lote
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-md-6">
-                                                    <h6>Gestión del Sistema</h6>
-                                                    <div class="btn-group-vertical d-block">
-                                                        <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="refreshPushStats()">
-                                                            <i class="fas fa-sync"></i> Actualizar Estadísticas
-                                                        </button>
-                                                        <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="cleanupInactiveSubscriptions()">
-                                                            <i class="fas fa-broom"></i> Limpiar Subscripciones Inactivas
-                                                        </button>
-                                                        <button type="button" class="btn btn-outline-dark btn-sm mb-1" onclick="exportPushStats()">
-                                                            <i class="fas fa-download"></i> Exportar Estadísticas
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -812,42 +748,14 @@
 
         // Push Notification Functions
         function loadPushNotificationConfig() {
-            // Load push notification stats
-            loadPushStats();
-            
             // Load user subscriptions
             loadUserSubscriptions();
             
             // Check push notification support and status
             checkPushSupport();
-        }
-
-        function loadPushStats() {
-            fetch('/push/stats', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const stats = data.stats;
-                    $('#total-subscriptions').text(stats.total_subscriptions || 0);
-                    $('#active-subscriptions').text(stats.active_subscriptions || 0);
-                    $('#users-with-subscriptions').text(stats.users_with_subscriptions || 0);
-                    $('#recent-subscriptions').text(stats.recent_subscriptions || 0);
-                    
-                    $('#push-stats-loading').hide();
-                    $('#push-stats').show();
-                } else {
-                    $('#push-stats-loading').html('<i class="fas fa-exclamation-triangle text-warning"></i> Error al cargar estadísticas');
-                }
-            })
-            .catch(error => {
-                console.error('Error loading push stats:', error);
-                $('#push-stats-loading').html('<i class="fas fa-exclamation-triangle text-danger"></i> Error de conexión');
-            });
+            
+            // Initialize push notification controls
+            initializePushControls();
         }
 
         function loadUserSubscriptions() {
@@ -865,23 +773,16 @@
                     tbody.empty();
                     
                     if (subscriptions.length === 0) {
-                        tbody.append(`
-                            <tr>
-                                <td colspan="5" class="text-center text-muted">
-                                    <i class="fas fa-mobile-alt"></i> No tienes dispositivos suscritos
-                                </td>
-                            </tr>
-                        `);
+                        $('#my-devices-section').hide();
                     } else {
+                        $('#my-devices-section').show();
                         subscriptions.forEach(sub => {
                             tbody.append(`
                                 <tr>
                                     <td>
                                         <i class="fas fa-globe"></i> ${sub.browser}
                                     </td>
-                                    <td>${sub.ip_address}</td>
                                     <td>${sub.created_at}</td>
-                                    <td>${sub.last_used_at || 'Nunca'}</td>
                                     <td>
                                         <span class="badge badge-success">
                                             <i class="fas fa-check"></i> Activo
@@ -894,7 +795,7 @@
                 } else {
                     $('#user-subscriptions-tbody').html(`
                         <tr>
-                            <td colspan="5" class="text-center text-danger">
+                            <td colspan="3" class="text-center text-danger">
                                 <i class="fas fa-exclamation-triangle"></i> Error al cargar subscripciones
                             </td>
                         </tr>
@@ -905,7 +806,7 @@
                 console.error('Error loading user subscriptions:', error);
                 $('#user-subscriptions-tbody').html(`
                     <tr>
-                        <td colspan="5" class="text-center text-danger">
+                        <td colspan="3" class="text-center text-danger">
                             <i class="fas fa-exclamation-triangle"></i> Error de conexión
                         </td>
                     </tr>
@@ -917,37 +818,183 @@
             if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
                 $('#browser-unsupported').show();
                 $('#push-status').html('<span class="badge badge-danger">❌ No Soportado</span>');
-                return;
+                $('#push-controls').hide();
+                return false;
             }
             
             // Check permission status
             if (Notification.permission === 'denied') {
                 $('#push-status').html('<span class="badge badge-danger">🚫 Permisos Denegados</span>');
-            } else if (window.avoControlPush && window.avoControlPush.isSubscribed) {
-                $('#push-status').html('<span class="badge badge-success">✅ Notificaciones Activas</span>');
+                showDeniedState();
             } else {
-                $('#push-status').html('<span class="badge badge-secondary">⭕ Notificaciones Inactivas</span>');
+                checkSubscriptionStatus();
             }
-        }
-
-        function refreshPushStats() {
-            $('#push-stats').hide();
-            $('#push-stats-loading').show().html('<i class="fas fa-spinner fa-spin"></i> Actualizando...');
             
-            setTimeout(() => {
-                loadPushStats();
-                loadUserSubscriptions();
-                toastr.success('Estadísticas actualizadas');
-            }, 1000);
+            return true;
         }
 
-        function sendTestNotification(type) {
-            const messages = {
-                'low_inventory': '⚠️ Hay productos con inventario crítico que requieren atención inmediata',
-                'payment_reminder': '💰 Tienes pagos pendientes que requieren tu atención', 
-                'daily_report': '📊 Tu reporte diario de operaciones está listo para revisar',
-                'new_lot': '🚚 Se ha registrado un nuevo lote de aguacates en el sistema'
-            };
+        function checkSubscriptionStatus() {
+            // Check if user is already subscribed
+            navigator.serviceWorker.ready.then(registration => {
+                return registration.pushManager.getSubscription();
+            })
+            .then(subscription => {
+                if (subscription) {
+                    // User is subscribed
+                    $('#push-status').html('<span class="badge badge-success">✅ Notificaciones Activas</span>');
+                    showSubscribedState();
+                } else {
+                    // User is not subscribed
+                    $('#push-status').html('<span class="badge badge-secondary">⭕ Notificaciones Inactivas</span>');
+                    showUnsubscribedState();
+                }
+            })
+            .catch(error => {
+                console.error('Error checking subscription status:', error);
+                $('#push-status').html('<span class="badge badge-warning">⚠️ Error</span>');
+                showUnsubscribedState();
+            });
+        }
+
+        function initializePushControls() {
+            // Enable push notification button
+            $('#enable-push-btn').click(() => {
+                enablePushNotifications();
+            });
+
+            // Disable push notification button
+            $('#disable-push-btn').click(() => {
+                disablePushNotifications();
+            });
+
+            // Test push notification button
+            $('#test-push-btn').click(() => {
+                sendTestPushNotification();
+            });
+        }
+
+        function showUnsubscribedState() {
+            $('#enable-push-btn').show();
+            $('#disable-push-btn').hide();
+            $('#test-push-btn').hide();
+        }
+
+        function showSubscribedState() {
+            $('#enable-push-btn').hide();
+            $('#disable-push-btn').show();
+            $('#test-push-btn').show();
+            loadUserSubscriptions(); // Refresh the devices list
+        }
+
+        function showDeniedState() {
+            $('#enable-push-btn').hide();
+            $('#disable-push-btn').hide();
+            $('#test-push-btn').hide();
+        }
+
+        function enablePushNotifications() {
+            if (!checkPushSupport()) return;
+
+            $('#enable-push-btn').html('<i class="fas fa-spinner fa-spin"></i> Activando...').prop('disabled', true);
+
+            // Request permission
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    subscribeUserToPush();
+                } else {
+                    toastr.error('Necesitas permitir las notificaciones en tu navegador');
+                    $('#enable-push-btn').html('<i class="fas fa-bell"></i> Activar Notificaciones').prop('disabled', false);
+                }
+            });
+        }
+
+        function subscribeUserToPush() {
+            // Get VAPID public key
+            fetch('/push/vapid-key')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.public_key) {
+                        throw new Error('No se pudo obtener la clave VAPID');
+                    }
+
+                    return navigator.serviceWorker.ready.then(registration => {
+                        const applicationServerKey = urlBase64ToUint8Array(data.public_key);
+                        return registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: applicationServerKey
+                        });
+                    });
+                })
+                .then(subscription => {
+                    return fetch('/push/subscribe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        body: JSON.stringify({ subscription: subscription })
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        toastr.success('¡Notificaciones activadas correctamente!');
+                        showSubscribedState();
+                        $('#push-status').html('<span class="badge badge-success">✅ Notificaciones Activas</span>');
+                    } else {
+                        throw new Error(data.message || 'Error del servidor');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error enabling push notifications:', error);
+                    toastr.error('Error al activar notificaciones: ' + error.message);
+                })
+                .finally(() => {
+                    $('#enable-push-btn').html('<i class="fas fa-bell"></i> Activar Notificaciones').prop('disabled', false);
+                });
+        }
+
+        function disablePushNotifications() {
+            $('#disable-push-btn').html('<i class="fas fa-spinner fa-spin"></i> Desactivando...').prop('disabled', true);
+
+            navigator.serviceWorker.ready.then(registration => {
+                return registration.pushManager.getSubscription();
+            })
+            .then(subscription => {
+                if (subscription) {
+                    return subscription.unsubscribe();
+                }
+            })
+            .then(() => {
+                return fetch('/push/unsubscribe', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success('Notificaciones desactivadas correctamente');
+                    showUnsubscribedState();
+                    $('#push-status').html('<span class="badge badge-secondary">⭕ Notificaciones Inactivas</span>');
+                    $('#my-devices-section').hide();
+                } else {
+                    throw new Error(data.message || 'Error del servidor');
+                }
+            })
+            .catch(error => {
+                console.error('Error disabling push notifications:', error);
+                toastr.error('Error al desactivar notificaciones: ' + error.message);
+            })
+            .finally(() => {
+                $('#disable-push-btn').html('<i class="fas fa-bell-slash"></i> Desactivar Notificaciones').prop('disabled', false);
+            });
+        }
+
+        function sendTestPushNotification() {
+            $('#test-push-btn').html('<i class="fas fa-spinner fa-spin"></i> Enviando...').prop('disabled', true);
 
             fetch('/push/test', {
                 method: 'POST',
@@ -958,8 +1005,8 @@
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    message: messages[type] || 'Notificación de prueba desde AvoControl Pro',
-                    type: type
+                    message: 'Esta es una notificación de prueba desde AvoControl Pro',
+                    type: 'test'
                 })
             })
             .then(response => response.json())
@@ -973,66 +1020,26 @@
             .catch(error => {
                 console.error('Error sending test notification:', error);
                 toastr.error('Error al enviar notificación de prueba');
+            })
+            .finally(() => {
+                $('#test-push-btn').html('<i class="fas fa-paper-plane"></i> Enviar Prueba').prop('disabled', false);
             });
         }
 
-        function cleanupInactiveSubscriptions() {
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: 'Esta acción eliminará todas las subscripciones inactivas permanentemente.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sí, limpiar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch('/push/cleanup', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            toastr.success(`Se eliminaron ${data.deleted_count} subscripciones inactivas`);
-                            refreshPushStats();
-                        } else {
-                            toastr.error(data.message || 'Error al limpiar subscripciones');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error cleaning subscriptions:', error);
-                        toastr.error('Error al limpiar subscripciones');
-                    });
-                }
-            });
-        }
+        // Helper function to convert VAPID key
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
 
-        function exportPushStats() {
-            const stats = {
-                total_subscriptions: $('#total-subscriptions').text(),
-                active_subscriptions: $('#active-subscriptions').text(),
-                users_with_subscriptions: $('#users-with-subscriptions').text(),
-                recent_subscriptions: $('#recent-subscriptions').text(),
-                generated_at: new Date().toISOString()
-            };
-            
-            const blob = new Blob([JSON.stringify(stats, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `push-notifications-stats-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            toastr.success('Estadísticas exportadas correctamente');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
         }
     </script>
 @endpush
