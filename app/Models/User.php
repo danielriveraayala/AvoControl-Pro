@@ -150,6 +150,11 @@ class User extends Authenticatable
      */
     public function hasPermission(string $permissionName): bool
     {
+        // Super admin has all permissions
+        if ($this->hasRole('super_admin')) {
+            return true;
+        }
+        
         $permissions = $this->getCachedPermissions();
         return in_array($permissionName, $permissions);
     }
@@ -159,6 +164,11 @@ class User extends Authenticatable
      */
     public function hasAnyPermission(array $permissions): bool
     {
+        // Super admin has all permissions
+        if ($this->hasRole('super_admin')) {
+            return true;
+        }
+        
         $userPermissions = $this->getCachedPermissions();
         return !empty(array_intersect($permissions, $userPermissions));
     }
@@ -168,6 +178,11 @@ class User extends Authenticatable
      */
     public function hasAllPermissions(array $permissions): bool
     {
+        // Super admin has all permissions
+        if ($this->hasRole('super_admin')) {
+            return true;
+        }
+        
         $userPermissions = $this->getCachedPermissions();
         return count(array_intersect($permissions, $userPermissions)) === count($permissions);
     }
