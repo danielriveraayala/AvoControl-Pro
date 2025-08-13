@@ -61,25 +61,26 @@ class ProcessScheduledNotificationsCommand extends Command
                 $users = $this->getTargetUsers($scheduled);
                 
                 if ($users->isEmpty()) {
-                    $this->warn("⚠️  No users found for scheduled notification: {$scheduled->template->name ?? $scheduled->id}");
+                    $templateName = $scheduled->template ? $scheduled->template->name : $scheduled->id;
+                    $this->warn("⚠️  No users found for scheduled notification: {$templateName}");
                     continue;
                 }
                 
                 // Send notification to each user
                 foreach ($users as $user) {
                     $notification = Notification::create([
-                        'type' => $scheduled->template->type ?? 'system',
+                        'type' => $scheduled->template ? $scheduled->template->type : 'system',
                         'notifiable_type' => User::class,
                         'notifiable_id' => $user->id,
                         'data' => [
-                            'title' => $scheduled->template->subject ?? 'Notificación Programada',
-                            'message' => $this->processTemplate($scheduled->template->body ?? '', $user),
+                            'title' => $scheduled->template ? $scheduled->template->subject : 'Notificación Programada',
+                            'message' => $this->processTemplate($scheduled->template ? $scheduled->template->body : '', $user),
                             'action_url' => $scheduled->template->action_url,
-                            'action_text' => $scheduled->template->action_text ?? 'Ver más'
+                            'action_text' => $scheduled->template && $scheduled->template->action_text ? $scheduled->template->action_text : 'Ver más'
                         ],
                         'priority' => $scheduled->priority,
                         'channels' => $scheduled->channels,
-                        'category' => $scheduled->template->category ?? 'system',
+                        'category' => $scheduled->template && $scheduled->template->category ? $scheduled->template->category : 'system',
                         'metadata' => [
                             'scheduled_notification_id' => $scheduled->id,
                             'template_id' => $scheduled->template_id,
@@ -101,7 +102,8 @@ class ProcessScheduledNotificationsCommand extends Command
                     $this->scheduleNext($scheduled);
                 }
                 
-                $this->info("✅ Processed scheduled notification: {$scheduled->template->name ?? $scheduled->id}");
+                $templateName = $scheduled->template ? $scheduled->template->name : $scheduled->id;
+                $this->info("✅ Processed scheduled notification: {$templateName}");
             }
 
             $this->info("✅ Sent {$notificationsSent} scheduled notifications via email, push and database");
