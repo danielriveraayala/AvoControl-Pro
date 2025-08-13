@@ -165,7 +165,14 @@ class TenantResolver
             'api/health',
             'telescope/*',
             'horizon/*',
-            '_debugbar/*'
+            '_debugbar/*',
+            '/',
+            'pricing',
+            'features',
+            'contact',
+            'login',
+            'register',
+            'password/*'
         ];
 
         foreach ($skipRoutes as $route) {
