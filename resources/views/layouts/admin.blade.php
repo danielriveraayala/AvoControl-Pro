@@ -538,8 +538,9 @@ function updateNotificationUI(notifications) {
 function createNotificationItem(notification) {
     const data = typeof notification.data === 'string' ? JSON.parse(notification.data) : notification.data;
     const icon = getNotificationIcon(notification.type);
-    // Ensure proper date format for moment.js
-    const timeAgo = moment(notification.created_at, moment.ISO_8601).fromNow();
+    // Use ISO date if available, otherwise fallback to created_at with ISO format
+    const dateToUse = notification.created_at_iso || notification.created_at;
+    const timeAgo = moment(dateToUse, moment.ISO_8601).fromNow();
     
     return `
         <a href="${data.action_url || '#'}" class="dropdown-item">

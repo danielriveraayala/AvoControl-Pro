@@ -60,7 +60,16 @@ class NotificationController extends Controller
             ->whereNull('read_at')
             ->orderBy('created_at', 'desc')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function($notification) {
+                // Ensure dates are in ISO 8601 format
+                $notification->created_at_iso = $notification->created_at->toIso8601String();
+                $notification->updated_at_iso = $notification->updated_at->toIso8601String();
+                if ($notification->read_at) {
+                    $notification->read_at_iso = $notification->read_at->toIso8601String();
+                }
+                return $notification;
+            });
 
         $count = Notification::where('notifiable_type', 'App\Models\User')
             ->where('notifiable_id', Auth::id())
