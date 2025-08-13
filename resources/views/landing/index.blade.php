@@ -829,11 +829,17 @@
                         </a>
                     </div>
                     <div class="mt-4">
-                        <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> Sin tarjeta de crédito
-                            <i class="fas fa-check-circle text-success ms-3"></i> 7 días gratis
-                            <i class="fas fa-check-circle text-success ms-3"></i> Cancela cuando quieras
-                        </small>
+                        <div class="d-flex flex-column gap-1">
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success"></i> Sin tarjeta de crédito
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success"></i> 7 días gratis
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success"></i> Cancela cuando quieras
+                            </small>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6" data-aos="fade-left">
@@ -1083,7 +1089,7 @@
             }
         });
         
-        // Smooth scroll for anchor links
+        // Smooth scroll for anchor links and close mobile menu
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -1093,6 +1099,13 @@
                         behavior: 'smooth',
                         block: 'start'
                     });
+                }
+                
+                // Close mobile navbar if open
+                const navbarCollapse = document.getElementById('navbarNav');
+                const navbarToggler = document.querySelector('.navbar-toggler');
+                if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+                    navbarToggler.click(); // Trigger Bootstrap collapse
                 }
             });
         });
