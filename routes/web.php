@@ -23,9 +23,14 @@ use App\Http\Controllers\NotificationController;
 |
 */
 
-Route::get('/', function () {
-    return redirect('/dashboard');
-})->name('home');
+// Landing Page Routes (Public - redirect if authenticated)
+Route::middleware([\App\Http\Middleware\RedirectAuthenticatedFromLanding::class])->group(function () {
+    Route::get('/', [App\Http\Controllers\LandingPageController::class, 'index'])->name('home');
+    Route::get('/pricing', [App\Http\Controllers\LandingPageController::class, 'pricing'])->name('pricing');
+    Route::get('/features', [App\Http\Controllers\LandingPageController::class, 'features'])->name('features');
+    Route::get('/contact', [App\Http\Controllers\LandingPageController::class, 'contact'])->name('contact');
+    Route::post('/contact', [App\Http\Controllers\LandingPageController::class, 'contactSubmit'])->name('contact.submit');
+});
 
 // Ping route for connectivity checks
 Route::get('/ping', function () {
