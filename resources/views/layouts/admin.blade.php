@@ -193,6 +193,29 @@
 
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
+            <!-- Notifications Dropdown Menu -->
+            <li class="nav-item dropdown" id="notificationDropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#" onclick="markNotificationsAsRead()">
+                    <i class="far fa-bell"></i>
+                    <span class="badge badge-danger navbar-badge" id="notificationCount" style="display: none;">0</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                    <span class="dropdown-item dropdown-header">
+                        <span id="notificationHeader">0 Notificaciones</span>
+                    </span>
+                    <div class="dropdown-divider"></div>
+                    
+                    <div id="notificationsList" style="max-height: 300px; overflow-y: auto;">
+                        <!-- Notifications will be loaded here -->
+                    </div>
+                    
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ route('notifications.index') }}" class="dropdown-item dropdown-footer">
+                        Ver todas las notificaciones
+                    </a>
+                </div>
+            </li>
+            
             <!-- User Menu -->
             <li class="nav-item dropdown">
                 <a class="nav-link" data-toggle="dropdown" href="#">
@@ -465,6 +488,109 @@ toastr.options = {
     "showMethod": "fadeIn",
     "hideMethod": "fadeOut"
 };
+
+// Notification System
+let unreadCount = 0;
+
+function loadNotifications() {
+    $.ajax({
+        url: '{{ route("notifications.unread") }}',
+        method: 'GET',
+        success: function(response) {
+            if (response.success) {
+                unreadCount = response.count;
+                updateNotificationUI(response.notifications);
+            }
+        },
+        error: function() {
+            console.error('Error loading notifications');
+        }
+    });
+}
+
+function updateNotificationUI(notifications) {
+    const countBadge = $('#notificationCount');
+    const header = $('#notificationHeader');
+    const list = $('#notificationsList');
+    
+    // Update count
+    if (unreadCount > 0) {
+        countBadge.text(unreadCount).show();
+        header.text(unreadCount + ' Notificaciones nuevas');
+    } else {
+        countBadge.hide();
+        header.text('No hay notificaciones nuevas');
+    }
+    
+    // Clear and populate list
+    list.empty();
+    
+    if (notifications.length === 0) {
+        list.html('<div class="dropdown-item text-center text-muted">No hay notificaciones</div>');
+    } else {
+        notifications.forEach(function(notification) {
+            const item = createNotificationItem(notification);
+            list.append(item);
+        });
+    }
+}
+
+function createNotificationItem(notification) {
+    const data = JSON.parse(notification.data);
+    const icon = getNotificationIcon(notification.type);
+    const timeAgo = moment(notification.created_at).fromNow();
+    
+    return `
+        <a href="${data.action_url || '#'}" class="dropdown-item">
+            <div class="d-flex">
+                <div class="flex-shrink-0">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="flex-grow-1 ml-3">
+                    <h6 class="mb-1">${data.title}</h6>
+                    <p class="mb-1 text-sm">${data.message}</p>
+                    <p class="mb-0 text-xs text-muted">${timeAgo}</p>
+                </div>
+            </div>
+        </a>
+        <div class="dropdown-divider"></div>
+    `;
+}
+
+function getNotificationIcon(type) {
+    const icons = {
+        'test_daily': 'fas fa-info-circle text-info',
+        'inventory_low': 'fas fa-exclamation-triangle text-warning',
+        'payment_overdue': 'fas fa-dollar-sign text-danger',
+        'sale_completed': 'fas fa-check-circle text-success',
+        'system': 'fas fa-cog text-secondary'
+    };
+    return icons[type] || 'fas fa-bell text-primary';
+}
+
+function markNotificationsAsRead() {
+    if (unreadCount > 0) {
+        $.ajax({
+            url: '{{ route("notifications.markAsRead") }}',
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function() {
+                unreadCount = 0;
+                $('#notificationCount').hide();
+            }
+        });
+    }
+}
+
+// Load notifications on page load
+$(document).ready(function() {
+    loadNotifications();
+    
+    // Refresh notifications every 60 seconds
+    setInterval(loadNotifications, 60000);
+});
 </script>
 
 @stack('scripts')

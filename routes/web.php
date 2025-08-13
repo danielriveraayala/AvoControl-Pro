@@ -10,6 +10,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\AcopioController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,6 +98,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('cash-flow', [PaymentController::class, 'dailyCashFlow'])->name('payments.cash-flow')->middleware('permission:view_financial_reports');
         Route::post('sale-payment', [PaymentController::class, 'storeSalePayment'])->name('payments.store-sale-payment');
         Route::post('lot-payment', [PaymentController::class, 'storeLotPayment'])->name('payments.store-lot-payment');
+    });
+    
+    // Notification routes - available to all authenticated users
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/unread', [NotificationController::class, 'unread'])->name('notifications.unread');
+        Route::post('/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+        Route::post('/{id}/mark-as-read', [NotificationController::class, 'markOneAsRead'])->name('notifications.markOneAsRead');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+        Route::get('/preferences', [NotificationController::class, 'preferences'])->name('notifications.preferences');
+        Route::post('/preferences', [NotificationController::class, 'updatePreferences'])->name('notifications.updatePreferences');
     });
     
     // Configuration routes - protected with manage company config permission
