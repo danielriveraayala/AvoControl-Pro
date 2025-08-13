@@ -106,6 +106,15 @@ class PayPalSyncPlans extends Command
     {
         $productConfig = config('paypal.product');
         
+        // Fallback to default product config if not found
+        if (!$productConfig) {
+            $productConfig = [
+                'name' => 'AvoControl Pro Subscription',
+                'description' => 'Subscription to AvoControl Pro - Complete avocado collection center management system',
+                'type' => 'SERVICE',
+            ];
+        }
+        
         // Try to create product (will fail if already exists, which is fine)
         $result = $this->paypalService->createProduct(
             $productConfig['name'],
