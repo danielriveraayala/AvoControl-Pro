@@ -42,7 +42,8 @@
       "Bash(redis-cli:*)",
       "Bash(ssh:*)",
       "WebFetch(domain:dev.avocontrol.pro)",
-      "Bash(telnet:*)"
+      "Bash(telnet:*)",
+      "WebFetch(domain:momentjs.com)"
     ],
     "deny": []
   }

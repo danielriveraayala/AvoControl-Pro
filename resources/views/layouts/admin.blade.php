@@ -538,9 +538,23 @@ function updateNotificationUI(notifications) {
 function createNotificationItem(notification) {
     const data = typeof notification.data === 'string' ? JSON.parse(notification.data) : notification.data;
     const icon = getNotificationIcon(notification.type);
-    // Use ISO date if available, otherwise fallback to created_at with ISO format
-    const dateToUse = notification.created_at_iso || notification.created_at;
-    const timeAgo = moment(dateToUse, moment.ISO_8601).fromNow();
+    
+    // Use proper format specification to avoid deprecation warning
+    // We prioritize formatted date, then ISO, then fallback with explicit format
+    let timeAgo;
+    if (notification.created_at_formatted) {
+        // Use the pre-formatted date with explicit format (most reliable)
+        timeAgo = moment(notification.created_at_formatted, 'YYYY-MM-DD HH:mm:ss', true).fromNow();
+    } else if (notification.created_at_iso) {
+        // If we have ISO format, use it
+        timeAgo = moment(notification.created_at_iso, moment.ISO_8601, true).fromNow();
+    } else if (notification.created_at) {
+        // Fallback: parse with the exact format Laravel uses
+        timeAgo = moment(notification.created_at, 'YYYY-MM-DD HH:mm:ss', true).fromNow();
+    } else {
+        // Ultimate fallback
+        timeAgo = 'Hace un momento';
+    }
     
     return `
         <a href="${data.action_url || '#'}" class="dropdown-item">

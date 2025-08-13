@@ -62,11 +62,18 @@ class NotificationController extends Controller
             ->limit(10)
             ->get()
             ->map(function($notification) {
-                // Ensure dates are in ISO 8601 format
+                // Provide dates in multiple formats for maximum compatibility
+                // ISO 8601 format for modern browsers
                 $notification->created_at_iso = $notification->created_at->toIso8601String();
                 $notification->updated_at_iso = $notification->updated_at->toIso8601String();
+                
+                // Also provide formatted dates for moment.js
+                $notification->created_at_formatted = $notification->created_at->format('Y-m-d H:i:s');
+                $notification->updated_at_formatted = $notification->updated_at->format('Y-m-d H:i:s');
+                
                 if ($notification->read_at) {
                     $notification->read_at_iso = $notification->read_at->toIso8601String();
+                    $notification->read_at_formatted = $notification->read_at->format('Y-m-d H:i:s');
                 }
                 return $notification;
             });
