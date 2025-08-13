@@ -491,27 +491,274 @@
             color: rgba(255,255,255,0.6);
         }
         
-        /* Responsive */
+        /* Responsive - Tablets */
+        @media (max-width: 991px) {
+            .hero {
+                padding: 100px 0 60px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .pricing-card.highlighted {
+                transform: scale(1.02);
+            }
+            
+            .features, .pricing, .testimonials, .faq, .cta {
+                padding: 60px 0;
+            }
+            
+            footer {
+                padding: 40px 0 20px;
+            }
+        }
+        
+        /* Responsive - Mobile Landscape & Small Tablets */
         @media (max-width: 768px) {
+            .hero {
+                padding: 80px 0 40px;
+                margin-top: 60px;
+            }
+            
             .hero h1 {
                 font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .hero-image {
+                margin-top: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .section-subtitle {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .features, .pricing, .testimonials, .faq, .cta {
+                padding: 50px 0;
+            }
+            
+            .feature-card {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .feature-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .pricing-card {
+                margin-bottom: 2rem;
+                padding: 1.5rem;
+            }
+            
+            .pricing-card.highlighted {
+                transform: none;
+                margin-bottom: 2rem;
+            }
+            
+            .plan-price {
+                font-size: 2.5rem;
+            }
+            
+            .testimonial-card {
+                margin-bottom: 1.5rem;
+            }
+            
+            .cta h2 {
+                font-size: 2rem;
+            }
+            
+            .cta p {
+                font-size: 1rem;
+            }
+            
+            .btn-cta {
+                padding: 0.75rem 2rem;
+                font-size: 1rem;
+            }
+            
+            .navbar-nav {
+                text-align: center;
+                padding: 1rem 0;
+                background: rgba(255,255,255,0.98);
+            }
+            
+            .navbar-nav .nav-item {
+                margin: 0.5rem 0;
+            }
+            
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+            
+            footer h5 {
+                margin-top: 2rem;
+            }
+        }
+        
+        /* Responsive - Mobile Portrait */
+        @media (max-width: 576px) {
+            .hero {
+                padding: 70px 0 30px;
+            }
+            
+            .hero h1 {
+                font-size: 1.75rem;
+                line-height: 1.3;
             }
             
             .hero p {
                 font-size: 1rem;
             }
             
-            .section-title {
-                font-size: 1.8rem;
+            .hero .btn-lg {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
             }
             
-            .pricing-card.highlighted {
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .section-subtitle {
+                font-size: 0.9rem;
+                padding: 0 15px;
+            }
+            
+            .features, .pricing, .testimonials, .faq, .cta {
+                padding: 40px 0;
+            }
+            
+            .feature-card h3 {
+                font-size: 1.1rem;
+            }
+            
+            .feature-card p {
+                font-size: 0.9rem;
+            }
+            
+            .pricing-card {
+                padding: 1.25rem;
+            }
+            
+            .plan-name {
+                font-size: 1.3rem;
+            }
+            
+            .plan-price {
+                font-size: 2rem;
+            }
+            
+            .pricing-features li {
+                font-size: 0.9rem;
+                padding: 0.5rem 0;
+            }
+            
+            .testimonial-content {
+                font-size: 0.95rem;
+            }
+            
+            .testimonial-author img {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .accordion-button {
+                font-size: 1rem;
+                padding: 1rem;
+            }
+            
+            .accordion-body {
+                font-size: 0.9rem;
+            }
+            
+            .cta h2 {
+                font-size: 1.5rem;
+            }
+            
+            .cta p {
+                font-size: 0.9rem;
+            }
+            
+            .btn-cta {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .social-links {
+                justify-content: center;
+            }
+            
+            .footer-bottom {
+                font-size: 0.85rem;
+            }
+            
+            /* Stack buttons on mobile */
+            .hero .d-flex {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .hero .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+        
+        /* Responsive - Very Small Devices */
+        @media (max-width: 375px) {
+            .hero h1 {
+                font-size: 1.5rem;
+            }
+            
+            .hero p {
+                font-size: 0.9rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .plan-price {
+                font-size: 1.75rem;
+            }
+            
+            .btn-primary-custom {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Touch-friendly adjustments */
+        @media (hover: none) {
+            .feature-card:hover,
+            .pricing-card:hover {
                 transform: none;
             }
             
-            .navbar-nav {
-                text-align: center;
-                padding: 1rem 0;
+            .btn-primary-custom:hover {
+                transform: none;
+            }
+            
+            .social-links a:hover {
+                transform: none;
             }
         }
         
