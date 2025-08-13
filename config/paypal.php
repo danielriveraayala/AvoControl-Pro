@@ -68,7 +68,7 @@ return [
         'basic' => [
             'name' => 'Plan Básico',
             'description' => 'Perfecto para centros de acopio pequeños',
-            'amount' => 29,
+            'amount' => 39,
             'currency' => 'USD',
             'interval_unit' => 'month',
             'interval_count' => 1,
@@ -86,7 +86,7 @@ return [
         'premium' => [
             'name' => 'Plan Premium',
             'description' => 'Para empresas medianas con más funcionalidades',
-            'amount' => 79,
+            'amount' => 89,
             'currency' => 'USD',
             'interval_unit' => 'month',
             'interval_count' => 1,
@@ -106,7 +106,7 @@ return [
         'enterprise' => [
             'name' => 'Plan Enterprise',
             'description' => 'Para empresas grandes con necesidades avanzadas',
-            'amount' => 199,
+            'amount' => 249,
             'currency' => 'USD',
             'interval_unit' => 'month',
             'interval_count' => 1,
@@ -128,7 +128,7 @@ return [
         'corporate' => [
             'name' => 'Plan Corporativo',
             'description' => 'Solución personalizada para corporativos',
-            'amount' => 'custom',
+            'amount' => 499,
             'currency' => 'USD',
             'interval_unit' => 'month',
             'interval_count' => 1,

@@ -222,7 +222,7 @@
 - **Soporte**: No incluido
 - **Flujo**: Registro → Trial automático → Cobro PayPal después de 7 días
 
-##### 🥉 **BASIC - $29 USD/mes**
+##### 🥉 **BASIC - $39 USD/mes** 📈 **+$10 optimizado**
 - **Usuarios**: 5
 - **Lotes**: 500/mes
 - **Almacenamiento**: 2GB
@@ -230,7 +230,7 @@
 - **Soporte**: Email
 - **Target**: Centros de acopio pequeños
 
-##### 🥈 **PREMIUM - $79 USD/mes**
+##### 🥈 **PREMIUM - $89 USD/mes** 📈 **+$10 sweet spot**
 - **Usuarios**: 25
 - **Lotes**: 2,000/mes
 - **Almacenamiento**: 10GB
@@ -238,7 +238,7 @@
 - **Soporte**: Prioritario
 - **Target**: Empresas medianas
 
-##### 🥇 **ENTERPRISE - $199 USD/mes**
+##### 🥇 **ENTERPRISE - $249 USD/mes** 📈 **+$50 valor empresarial**
 - **Usuarios**: 100
 - **Lotes**: Ilimitados
 - **Almacenamiento**: 50GB
@@ -246,7 +246,7 @@
 - **Soporte**: Telefónico 24/7
 - **Target**: Empresas grandes
 
-##### 🏢 **CORPORATE - Precio personalizado**
+##### 🏢 **CORPORATE - $499 USD/mes** 📈 **Precio fijo competitivo**
 - **Usuarios**: Ilimitados
 - **Multi-tenant**: Ilimitado
 - **Almacenamiento**: Ilimitado
@@ -281,6 +281,10 @@
 - [x] Exportación de logs con filtros personalizables
 - [x] Testing automatizado con comando php artisan paypal:test-webhooks
 - [x] Manejo robusto de errores y eventos desconocidos
+- [x] **Vista de configuración PayPal completamente funcional** (`config.blade.php`)
+- [x] **Formulario completo para credenciales sandbox/live**
+- [x] **Toggle de ambiente con validación visual**
+- [x] **Instrucciones paso a paso para obtener credenciales**
 
 #### Sprint 6.5: Automatic Subscription Monitoring ✅ **COMPLETADO**
 - [x] CRON job para verificar estados de suscripción (cada 4h + diario 7:00 AM)
