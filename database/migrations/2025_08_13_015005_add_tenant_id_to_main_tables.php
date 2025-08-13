@@ -49,7 +49,7 @@ return new class extends Migration
         Schema::table('sale_items', function (Blueprint $table) {
             $table->foreignId('tenant_id')->nullable()->constrained('tenants')->onDelete('cascade')->after('id');
             $table->index(['tenant_id', 'sale_id']);
-            $table->index(['tenant_id', 'lot_id']);
+            $table->index(['tenant_id', 'quality_grade']);
         });
 
         // Agregar tenant_id a tabla payments
@@ -93,7 +93,7 @@ return new class extends Migration
         Schema::table('sale_items', function (Blueprint $table) {
             $table->dropForeign(['tenant_id']);
             $table->dropIndex(['tenant_id', 'sale_id']);
-            $table->dropIndex(['tenant_id', 'lot_id']);
+            $table->dropIndex(['tenant_id', 'quality_grade']);
             $table->dropColumn('tenant_id');
         });
 

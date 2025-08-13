@@ -60,7 +60,7 @@ return new class extends Migration
             Schema::table('sale_items', function (Blueprint $table) {
                 $table->foreignId('tenant_id')->nullable()->constrained('tenants')->onDelete('cascade')->after('id');
                 $table->index(['tenant_id', 'sale_id']);
-                $table->index(['tenant_id', 'lot_id']);
+                $table->index(['tenant_id', 'quality_grade']);
             });
         }
 
