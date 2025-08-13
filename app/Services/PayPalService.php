@@ -49,9 +49,14 @@ class PayPalService
                 : config('paypal.live.client_secret'),
         ];
 
-        // Validate credentials are present
+        // Log warning if credentials are missing but don't throw exception
+        // This allows the service to be instantiated without breaking the app
         if (empty($this->config['client_id']) || empty($this->config['client_secret'])) {
-            throw new \Exception("PayPal credentials not configured for {$this->mode} environment");
+            Log::warning("PayPal credentials not configured for {$this->mode} environment", [
+                'mode' => $this->mode,
+                'client_id_present' => !empty($this->config['client_id']),
+                'client_secret_present' => !empty($this->config['client_secret'])
+            ]);
         }
 
         $this->client = new Client([
@@ -73,6 +78,16 @@ class PayPalService
      */
     private function getAccessToken(): ?string
     {
+        // Check if credentials are available
+        if (empty($this->config['client_id']) || empty($this->config['client_secret'])) {
+            $this->logPayPalAction('token_missing_credentials', 'error', 'PayPal credentials not configured', [
+                'mode' => $this->mode,
+                'client_id_present' => !empty($this->config['client_id']),
+                'client_secret_present' => !empty($this->config['client_secret'])
+            ]);
+            return null;
+        }
+
         // Return cached token if still valid
         if ($this->accessToken && $this->tokenExpiry && $this->tokenExpiry->isFuture()) {
             return $this->accessToken;
