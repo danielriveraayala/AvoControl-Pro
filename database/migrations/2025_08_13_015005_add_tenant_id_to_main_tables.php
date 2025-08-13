@@ -34,7 +34,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->nullable()->constrained('tenants')->onDelete('cascade')->after('id');
             $table->index(['tenant_id', 'status']);
             $table->index(['tenant_id', 'supplier_id']);
-            $table->index(['tenant_id', 'quality_id']);
+            $table->index(['tenant_id', 'quality_grade_id']);
         });
 
         // Agregar tenant_id a tabla sales
@@ -109,7 +109,7 @@ return new class extends Migration
             $table->dropForeign(['tenant_id']);
             $table->dropIndex(['tenant_id', 'status']);
             $table->dropIndex(['tenant_id', 'supplier_id']);
-            $table->dropIndex(['tenant_id', 'quality_id']);
+            $table->dropIndex(['tenant_id', 'quality_grade_id']);
             $table->dropColumn('tenant_id');
         });
 
