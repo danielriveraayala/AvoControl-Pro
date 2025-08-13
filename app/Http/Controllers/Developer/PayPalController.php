@@ -55,19 +55,29 @@ class PayPalController extends Controller
      */
     public function config()
     {
+        // Read directly from environment variables as fallback
         $config = [
-            'environment' => config('paypal.mode', 'sandbox'),
+            'environment' => env('PAYPAL_ENVIRONMENT', 'sandbox'),
             'sandbox' => [
-                'client_id' => config('paypal.sandbox.client_id', ''),
-                'client_secret' => config('paypal.sandbox.client_secret', ''),
-                'webhook_id' => config('paypal.sandbox.webhook_id', ''),
+                'client_id' => env('PAYPAL_SANDBOX_CLIENT_ID', ''),
+                'client_secret' => env('PAYPAL_SANDBOX_CLIENT_SECRET', ''),
+                'webhook_id' => env('PAYPAL_SANDBOX_WEBHOOK_ID', ''),
             ],
             'live' => [
-                'client_id' => config('paypal.live.client_id', ''),
-                'client_secret' => config('paypal.live.client_secret', ''),
-                'webhook_id' => config('paypal.live.webhook_id', ''),
+                'client_id' => env('PAYPAL_LIVE_CLIENT_ID', ''),
+                'client_secret' => env('PAYPAL_LIVE_CLIENT_SECRET', ''),
+                'webhook_id' => env('PAYPAL_LIVE_WEBHOOK_ID', ''),
             ],
         ];
+
+        // Try to get from config first, fallback to env
+        $config['environment'] = config('paypal.mode', $config['environment']);
+        $config['sandbox']['client_id'] = config('paypal.sandbox.client_id', $config['sandbox']['client_id']);
+        $config['sandbox']['client_secret'] = config('paypal.sandbox.client_secret', $config['sandbox']['client_secret']);
+        $config['sandbox']['webhook_id'] = config('paypal.sandbox.webhook_id', $config['sandbox']['webhook_id']);
+        $config['live']['client_id'] = config('paypal.live.client_id', $config['live']['client_id']);
+        $config['live']['client_secret'] = config('paypal.live.client_secret', $config['live']['client_secret']);
+        $config['live']['webhook_id'] = config('paypal.live.webhook_id', $config['live']['webhook_id']);
 
         return view('developer.paypal.config', compact('config'));
     }
