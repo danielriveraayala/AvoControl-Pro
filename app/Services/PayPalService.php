@@ -35,19 +35,24 @@ class PayPalService
         // Force refresh config cache to get latest values
         config()->offsetUnset('paypal');
         
-        $this->mode = config('paypal.mode', 'sandbox');
+        // Try config first, fallback to env() for compatibility
+        $this->mode = config('paypal.mode') ?: env('PAYPAL_ENVIRONMENT', 'sandbox');
         $this->baseUrl = $this->mode === 'sandbox' 
             ? 'https://api-m.sandbox.paypal.com'
             : 'https://api-m.paypal.com';
             
-        $this->config = [
-            'client_id' => $this->mode === 'sandbox' 
-                ? config('paypal.sandbox.client_id') 
-                : config('paypal.live.client_id'),
-            'client_secret' => $this->mode === 'sandbox' 
-                ? config('paypal.sandbox.client_secret') 
-                : config('paypal.live.client_secret'),
-        ];
+        // Get credentials with fallback strategy: config() first, then env()
+        if ($this->mode === 'sandbox') {
+            $this->config = [
+                'client_id' => config('paypal.sandbox.client_id') ?: env('PAYPAL_SANDBOX_CLIENT_ID', ''),
+                'client_secret' => config('paypal.sandbox.client_secret') ?: env('PAYPAL_SANDBOX_CLIENT_SECRET', ''),
+            ];
+        } else {
+            $this->config = [
+                'client_id' => config('paypal.live.client_id') ?: env('PAYPAL_LIVE_CLIENT_ID', ''),
+                'client_secret' => config('paypal.live.client_secret') ?: env('PAYPAL_LIVE_CLIENT_SECRET', ''),
+            ];
+        }
 
         // Log warning if credentials are missing but don't throw exception
         // This allows the service to be instantiated without breaking the app
@@ -938,6 +943,7 @@ class PayPalService
         return [
             'mode' => $this->mode,
             'client_id' => $this->config['client_id'],
+            'client_secret' => $this->config['client_secret'], // For debugging
             'base_url' => $this->baseUrl,
             'webhook_url' => route('paypal.webhook'),
             'return_url' => route('subscription.success'),
