@@ -1053,10 +1053,10 @@
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h5>Legal</h5>
                     <ul>
-                        <li><a href="#">Privacidad</a></li>
-                        <li><a href="#">Términos</a></li>
-                        <li><a href="#">Cookies</a></li>
-                        <li><a href="#">Licencias</a></li>
+                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="privacy">Privacidad</a></li>
+                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="terms">Términos</a></li>
+                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="cookies">Cookies</a></li>
+                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="licenses">Licencias</a></li>
                     </ul>
                 </div>
             </div>
@@ -1128,8 +1128,313 @@
         document.querySelectorAll('section').forEach(section => {
             observer.observe(section);
         });
+        
+        // Handle legal modal tab switching
+        document.addEventListener('DOMContentLoaded', function() {
+            const legalModal = document.getElementById('legalModal');
+            
+            legalModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const targetTab = button.getAttribute('data-bs-tab');
+                
+                if (targetTab) {
+                    // Find and activate the corresponding tab
+                    const tabButton = document.getElementById(targetTab + '-tab');
+                    const tabPane = document.getElementById(targetTab);
+                    
+                    if (tabButton && tabPane) {
+                        // Remove active from all tabs and panes
+                        document.querySelectorAll('#legalTabs .nav-link').forEach(tab => {
+                            tab.classList.remove('active');
+                        });
+                        document.querySelectorAll('#legalTabsContent .tab-pane').forEach(pane => {
+                            pane.classList.remove('show', 'active');
+                        });
+                        
+                        // Activate target tab
+                        tabButton.classList.add('active');
+                        tabPane.classList.add('show', 'active');
+                    }
+                }
+            });
+        });
     </script>
     
+    <!-- Legal Information Modal -->
+    <div class="modal fade" id="legalModal" tabindex="-1" aria-labelledby="legalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="legalModalLabel">Información Legal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Navigation Tabs -->
+                    <ul class="nav nav-tabs" id="legalTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="privacy-tab" data-bs-toggle="tab" data-bs-target="#privacy" type="button" role="tab">
+                                Privacidad
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="terms-tab" data-bs-toggle="tab" data-bs-target="#terms" type="button" role="tab">
+                                Términos
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="cookies-tab" data-bs-toggle="tab" data-bs-target="#cookies" type="button" role="tab">
+                                Cookies
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="licenses-tab" data-bs-toggle="tab" data-bs-target="#licenses" type="button" role="tab">
+                                Licencias
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content mt-3" id="legalTabsContent">
+                        <!-- Privacy Policy -->
+                        <div class="tab-pane fade show active" id="privacy" role="tabpanel">
+                            <h6 class="fw-bold">Política de Privacidad</h6>
+                            <p><small class="text-muted">Última actualización: 13 de agosto de 2025</small></p>
+                            
+                            <h6>1. Información que Recopilamos</h6>
+                            <p><strong>Información Personal:</strong></p>
+                            <ul>
+                                <li>Nombre completo y información de contacto</li>
+                                <li>Dirección de correo electrónico</li>
+                                <li>Número de teléfono</li>
+                                <li>Información de la empresa</li>
+                                <li>Datos de uso del sistema</li>
+                            </ul>
+
+                            <h6>2. Cómo Usamos su Información</h6>
+                            <ul>
+                                <li>Proporcionar y mantener nuestro servicio</li>
+                                <li>Procesar transacciones y pagos</li>
+                                <li>Enviar notificaciones técnicas y actualizaciones</li>
+                                <li>Proporcionar soporte técnico</li>
+                                <li>Mejorar nuestros servicios</li>
+                                <li>Cumplir con obligaciones legales</li>
+                            </ul>
+
+                            <h6>3. Compartir Información</h6>
+                            <p>No vendemos, comercializamos ni transferimos su información personal a terceros, excepto:</p>
+                            <ul>
+                                <li>Cuando sea necesario para proporcionar el servicio</li>
+                                <li>Para cumplir con la ley</li>
+                                <li>Para proteger nuestros derechos</li>
+                                <li>Con su consentimiento expreso</li>
+                            </ul>
+
+                            <h6>4. Seguridad de Datos</h6>
+                            <p>Implementamos medidas de seguridad técnicas y organizativas apropiadas:</p>
+                            <ul>
+                                <li>Encriptación SSL/TLS</li>
+                                <li>Respaldos automáticos diarios</li>
+                                <li>Control de acceso basado en roles</li>
+                                <li>Monitoreo continuo de seguridad</li>
+                            </ul>
+
+                            <h6>5. Sus Derechos</h6>
+                            <ul>
+                                <li>Acceso a sus datos personales</li>
+                                <li>Rectificación de datos inexactos</li>
+                                <li>Eliminación de sus datos</li>
+                                <li>Portabilidad de datos</li>
+                                <li>Oposición al procesamiento</li>
+                            </ul>
+
+                            <h6>6. Contacto</h6>
+                            <p>Para consultas sobre privacidad: <a href="mailto:privacy@avocontrol.pro">privacy@avocontrol.pro</a></p>
+                        </div>
+
+                        <!-- Terms of Service -->
+                        <div class="tab-pane fade" id="terms" role="tabpanel">
+                            <h6 class="fw-bold">Términos y Condiciones de Uso</h6>
+                            <p><small class="text-muted">Última actualización: 13 de agosto de 2025</small></p>
+                            
+                            <h6>1. Aceptación de Términos</h6>
+                            <p>Al acceder y usar AvoControl Pro, usted acepta estar sujeto a estos términos y condiciones. Si no está de acuerdo, no use nuestro servicio.</p>
+
+                            <h6>2. Descripción del Servicio</h6>
+                            <p>AvoControl Pro es un sistema de gestión para centros de acopio de aguacate que incluye:</p>
+                            <ul>
+                                <li>Gestión de inventarios y lotes</li>
+                                <li>Control de proveedores y clientes</li>
+                                <li>Procesamiento de ventas y pagos</li>
+                                <li>Generación de reportes y análisis</li>
+                                <li>Sistema de notificaciones automáticas</li>
+                            </ul>
+
+                            <h6>3. Cuentas de Usuario</h6>
+                            <ul>
+                                <li>Debe proporcionar información precisa y completa</li>
+                                <li>Es responsable de mantener la seguridad de su cuenta</li>
+                                <li>Debe notificar inmediatamente cualquier uso no autorizado</li>
+                                <li>Una persona o entidad puede tener solo una cuenta</li>
+                            </ul>
+
+                            <h6>4. Planes y Pagos</h6>
+                            <ul>
+                                <li><strong>Trial:</strong> 7 días gratis, sin compromiso</li>
+                                <li><strong>Suscripciones:</strong> Facturación mensual automática</li>
+                                <li><strong>Cancelación:</strong> Puede cancelar en cualquier momento</li>
+                                <li><strong>Reembolsos:</strong> No se otorgan reembolsos por meses parciales</li>
+                            </ul>
+
+                            <h6>5. Uso Aceptable</h6>
+                            <p>No debe usar el servicio para:</p>
+                            <ul>
+                                <li>Actividades ilegales o fraudulentas</li>
+                                <li>Interferir con la operación del servicio</li>
+                                <li>Intentar acceder a cuentas de otros usuarios</li>
+                                <li>Transmitir malware o código malicioso</li>
+                                <li>Violar derechos de propiedad intelectual</li>
+                            </ul>
+
+                            <h6>6. Limitación de Responsabilidad</h6>
+                            <p>El servicio se proporciona "tal como está". No garantizamos que será ininterrumpido o libre de errores.</p>
+
+                            <h6>7. Terminación</h6>
+                            <p>Podemos suspender o terminar su cuenta si viola estos términos o por otras razones comerciales legítimas.</p>
+
+                            <h6>8. Ley Aplicable</h6>
+                            <p>Estos términos se rigen por las leyes de México.</p>
+                        </div>
+
+                        <!-- Cookie Policy -->
+                        <div class="tab-pane fade" id="cookies" role="tabpanel">
+                            <h6 class="fw-bold">Política de Cookies</h6>
+                            <p><small class="text-muted">Última actualización: 13 de agosto de 2025</small></p>
+                            
+                            <h6>¿Qué son las Cookies?</h6>
+                            <p>Las cookies son pequeños archivos de texto que se almacenan en su dispositivo cuando visita nuestro sitio web.</p>
+
+                            <h6>Cookies que Utilizamos</h6>
+                            
+                            <h6>1. Cookies Esenciales</h6>
+                            <p>Necesarias para el funcionamiento básico del sitio:</p>
+                            <ul>
+                                <li><strong>Sesión:</strong> Mantiene su sesión de usuario activa</li>
+                                <li><strong>Autenticación:</strong> Verifica su identidad</li>
+                                <li><strong>CSRF:</strong> Protege contra ataques de falsificación</li>
+                                <li><strong>Tenant:</strong> Mantiene el contexto de su empresa</li>
+                            </ul>
+
+                            <h6>2. Cookies de Funcionalidad</h6>
+                            <ul>
+                                <li><strong>Preferencias:</strong> Guarda sus configuraciones</li>
+                                <li><strong>Idioma:</strong> Recuerda su idioma preferido</li>
+                                <li><strong>Tema:</strong> Mantiene su preferencia de tema</li>
+                            </ul>
+
+                            <h6>3. Cookies de Rendimiento</h6>
+                            <ul>
+                                <li><strong>Análisis:</strong> Ayudan a mejorar el rendimiento</li>
+                                <li><strong>Monitoreo:</strong> Detectan errores y problemas</li>
+                                <li><strong>Uso:</strong> Comprenden cómo usa el servicio</li>
+                            </ul>
+
+                            <h6>4. Cookies de Terceros</h6>
+                            <ul>
+                                <li><strong>PayPal:</strong> Para procesamiento de pagos</li>
+                                <li><strong>CDN:</strong> Para entrega de contenido</li>
+                            </ul>
+
+                            <h6>Control de Cookies</h6>
+                            <p>Puede controlar las cookies a través de:</p>
+                            <ul>
+                                <li>Configuración de su navegador</li>
+                                <li>Herramientas de privacidad</li>
+                                <li>Nuestro panel de preferencias</li>
+                            </ul>
+
+                            <p><strong>Nota:</strong> Deshabilitar cookies esenciales puede afectar la funcionalidad del sitio.</p>
+                        </div>
+
+                        <!-- Licenses -->
+                        <div class="tab-pane fade" id="licenses" role="tabpanel">
+                            <h6 class="fw-bold">Información de Licencias</h6>
+                            <p><small class="text-muted">Última actualización: 13 de agosto de 2025</small></p>
+                            
+                            <h6>AvoControl Pro</h6>
+                            <p><strong>Software Propietario</strong><br>
+                            © 2025 Kreativos Pro - Agencia de Marketing Digital y Desarrollo Web<br>
+                            Todos los derechos reservados.</p>
+                            
+                            <p>Este software es propiedad exclusiva de Kreativos Pro y está protegido por las leyes de derechos de autor de México y tratados internacionales.</p>
+
+                            <h6>Licencia de Uso</h6>
+                            <p>Se le otorga una licencia limitada, no exclusiva e intransferible para:</p>
+                            <ul>
+                                <li>Usar el software según su plan de suscripción</li>
+                                <li>Acceder a las funciones incluidas en su plan</li>
+                                <li>Almacenar y procesar sus datos comerciales</li>
+                            </ul>
+
+                            <h6>Restricciones</h6>
+                            <p>No puede:</p>
+                            <ul>
+                                <li>Copiar, modificar o distribuir el software</li>
+                                <li>Realizar ingeniería inversa</li>
+                                <li>Crear trabajos derivados</li>
+                                <li>Sublicenciar o transferir la licencia</li>
+                                <li>Usar el software para desarrollar productos competidores</li>
+                            </ul>
+
+                            <h6>Tecnologías de Terceros</h6>
+                            <p>Este software utiliza las siguientes tecnologías bajo sus respectivas licencias:</p>
+                            
+                            <div class="mt-3">
+                                <h6>Backend</h6>
+                                <ul class="small">
+                                    <li><strong>Laravel Framework</strong> - MIT License</li>
+                                    <li><strong>PHP</strong> - PHP License v3.01</li>
+                                    <li><strong>MySQL</strong> - GPL v2</li>
+                                    <li><strong>Composer Dependencies</strong> - Various licenses</li>
+                                </ul>
+                            </div>
+
+                            <div class="mt-3">
+                                <h6>Frontend</h6>
+                                <ul class="small">
+                                    <li><strong>Bootstrap</strong> - MIT License</li>
+                                    <li><strong>Font Awesome</strong> - SIL OFL 1.1 / MIT License</li>
+                                    <li><strong>Alpine.js</strong> - MIT License</li>
+                                    <li><strong>Chart.js</strong> - MIT License</li>
+                                    <li><strong>AOS (Animate On Scroll)</strong> - MIT License</li>
+                                </ul>
+                            </div>
+
+                            <div class="mt-3">
+                                <h6>Servicios Externos</h6>
+                                <ul class="small">
+                                    <li><strong>PayPal API</strong> - Términos de servicio de PayPal</li>
+                                    <li><strong>Web Push Protocol</strong> - W3C Standard</li>
+                                </ul>
+                            </div>
+
+                            <h6>Propiedad Intelectual</h6>
+                            <p>Todas las marcas comerciales, logos y nombres de productos mencionados son propiedad de sus respectivos dueños.</p>
+
+                            <h6>Contacto Legal</h6>
+                            <p>Para consultas sobre licencias: <a href="mailto:legal@avocontrol.pro">legal@avocontrol.pro</a></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
     {
