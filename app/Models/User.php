@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'current_tenant_id',
         'suspended_at',
         'suspension_reason',
         'password_changed_at',
@@ -385,5 +386,171 @@ class User extends Authenticatable
     public function canManagePayments()
     {
         return in_array($this->role, ['admin', 'contador']);
+    }
+
+    // ================================
+    // Multi-Tenant Relationships
+    // ================================
+
+    /**
+     * Relationship: Tenants where this user is a member
+     */
+    public function tenants()
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_users')
+                    ->withPivot([
+                        'role_within_tenant', 
+                        'permissions', 
+                        'status', 
+                        'invited_at', 
+                        'joined_at', 
+                        'last_access_at',
+                        'settings'
+                    ])
+                    ->withTimestamps();
+    }
+
+    /**
+     * Relationship: Tenant users (pivot table records)
+     */
+    public function tenantUsers()
+    {
+        return $this->hasMany(TenantUser::class);
+    }
+
+    /**
+     * Relationship: Current tenant
+     */
+    public function currentTenant()
+    {
+        return $this->belongsTo(Tenant::class, 'current_tenant_id');
+    }
+
+    /**
+     * Get active tenants for this user
+     */
+    public function activeTenants()
+    {
+        return $this->tenants()->wherePivot('status', 'active');
+    }
+
+    /**
+     * Switch to a different tenant
+     */
+    public function switchToTenant($tenantId)
+    {
+        $tenantUser = $this->tenantUsers()->where('tenant_id', $tenantId)->first();
+        
+        if (!$tenantUser || !$tenantUser->isActive()) {
+            throw new \Exception('User does not have access to this tenant');
+        }
+
+        $this->current_tenant_id = $tenantId;
+        $this->save();
+
+        // Update session
+        session(['current_tenant_id' => $tenantId]);
+        
+        // Update last access
+        $tenantUser->updateLastAccess();
+
+        return $this;
+    }
+
+    /**
+     * Check if user belongs to a specific tenant
+     */
+    public function belongsToTenant($tenantId)
+    {
+        return $this->tenantUsers()
+                   ->where('tenant_id', $tenantId)
+                   ->where('status', 'active')
+                   ->exists();
+    }
+
+    /**
+     * Check if user is admin in any tenant
+     */
+    public function isAdminInAnyTenant()
+    {
+        return $this->tenantUsers()
+                   ->whereIn('role_within_tenant', ['admin', 'owner', 'super_admin'])
+                   ->where('status', 'active')
+                   ->exists();
+    }
+
+    /**
+     * Check if user is admin in specific tenant
+     */
+    public function isAdminInTenant($tenantId)
+    {
+        $tenantUser = $this->tenantUsers()
+                          ->where('tenant_id', $tenantId)
+                          ->where('status', 'active')
+                          ->first();
+
+        return $tenantUser && $tenantUser->isAdmin();
+    }
+
+    /**
+     * Get user's role in specific tenant
+     */
+    public function getRoleInTenant($tenantId)
+    {
+        $tenantUser = $this->tenantUsers()
+                          ->where('tenant_id', $tenantId)
+                          ->first();
+
+        return $tenantUser ? $tenantUser->role_within_tenant : null;
+    }
+
+    /**
+     * Get user's permissions in specific tenant
+     */
+    public function getPermissionsInTenant($tenantId)
+    {
+        $tenantUser = $this->tenantUsers()
+                          ->where('tenant_id', $tenantId)
+                          ->first();
+
+        return $tenantUser ? ($tenantUser->permissions ?: []) : [];
+    }
+
+    /**
+     * Check if user has permission in current tenant
+     */
+    public function hasPermissionInCurrentTenant($permission)
+    {
+        if (!$this->current_tenant_id) {
+            return false;
+        }
+
+        $tenantUser = $this->tenantUsers()
+                          ->where('tenant_id', $this->current_tenant_id)
+                          ->first();
+
+        return $tenantUser && $tenantUser->hasPermission($permission);
+    }
+
+    /**
+     * Get current tenant information
+     */
+    public function getCurrentTenantInfo()
+    {
+        if (!$this->current_tenant_id) {
+            return null;
+        }
+
+        $tenantUser = $this->tenantUsers()
+                          ->where('tenant_id', $this->current_tenant_id)
+                          ->with('tenant')
+                          ->first();
+
+        return $tenantUser ? [
+            'tenant' => $tenantUser->tenant,
+            'role' => $tenantUser->role_within_tenant,
+            'permissions' => $tenantUser->permissions,
+            'settings' => $tenantUser->settings
+        ] : null;
     }
 }

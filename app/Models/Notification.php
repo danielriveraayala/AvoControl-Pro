@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
+use App\Traits\BelongsToTenant;
 
 class Notification extends Model
 {
-    use HasUuids;
+    use HasUuids, BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'type',
         'notifiable_type',
         'notifiable_id',

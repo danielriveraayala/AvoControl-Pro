@@ -156,19 +156,21 @@
 
 ### **Fase 1: Arquitectura Multi-Tenant (Semana 6-7)**
 
-#### Sprint 4.1: Estructura de Tenants
-- [ ] Crear migración para tabla `tenants`
-- [ ] Crear migración para tabla `tenant_users`
-- [ ] Crear migración para tabla `tenant_settings`
-- [ ] Agregar campo `tenant_id` a todas las tablas principales
-- [ ] Crear índices para optimización de consultas
+#### Sprint 4.1: Estructura de Tenants ✅ **COMPLETADO**
+- [x] Crear migración para tabla `tenants` con UUID, slug, plans, status
+- [x] Crear migración para tabla `tenant_users` con roles y permisos
+- [x] Crear migración para tabla `tenant_settings` con configuración avanzada
+- [x] Agregar campo `tenant_id` a todas las tablas principales (suppliers, customers, lots, sales, payments, notifications)
+- [x] Crear índices para optimización de consultas multi-tenant
 
-#### Sprint 4.2: Modelos y Scopes
-- [ ] Crear modelo `Tenant` con relaciones
-- [ ] Crear modelo `TenantUser` 
-- [ ] Implementar trait `BelongsToTenant`
-- [ ] Crear Global Scope para filtrado automático
-- [ ] Modificar modelos existentes para incluir tenant
+#### Sprint 4.2: Modelos y Scopes ✅ **COMPLETADO**
+- [x] Crear modelo `Tenant` con relaciones completas y business logic
+- [x] Crear modelo `TenantUser` con sistema de invitaciones y permisos
+- [x] Crear modelo `TenantSetting` con soporte de encriptación y tipos
+- [x] Implementar trait `BelongsToTenant` con métodos helper
+- [x] Crear Global Scope `TenantScope` para filtrado automático
+- [x] Modificar modelos existentes para incluir tenant (Supplier, Customer, Lot, Sale, Payment, etc.)
+- [x] Actualizar modelo User con relaciones multi-tenant y tenant switching
 
 ### **Fase 2: Identificación y Aislamiento (Semana 7)**
 

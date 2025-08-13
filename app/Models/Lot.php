@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToTenant;
 
 class Lot extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     /**
      * Boot method to handle model events
@@ -27,6 +28,7 @@ class Lot extends Model
     }
 
     protected $fillable = [
+        'tenant_id',
         'lot_code',
         'supplier_id',
         'harvest_date',
