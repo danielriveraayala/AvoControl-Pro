@@ -108,6 +108,37 @@
                             </div>
                         </div>
                         
+                        <!-- Billing Dropdown -->
+                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                            <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.subscriptions.*') || request()->routeIs('developer.paypal.*') || request()->routeIs('developer.billing.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
+                                Billing
+                                <svg class="ml-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                <div class="py-1">
+                                    <a href="{{ route('developer.subscriptions.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.subscriptions.*') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fas fa-credit-card mr-2"></i>Suscripciones
+                                    </a>
+                                    <a href="{{ route('developer.paypal.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.paypal.*') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fab fa-paypal mr-2"></i>PayPal Config
+                                    </a>
+                                    <a href="{{ route('developer.billing.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.billing.*') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fas fa-chart-line mr-2"></i>Métricas
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- System Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
                             <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.config.*') || request()->routeIs('developer.backups.*') || request()->routeIs('developer.logs') ? 'border-indigo-500 text-indigo-600' : '' }}">
@@ -462,5 +493,7 @@
             DevAlert.error('Error de conexión', 'No se pudo conectar con el servidor. Por favor, intenta de nuevo.');
         };
     </script>
+    
+    @stack('scripts')
 </body>
 </html>

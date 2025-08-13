@@ -18,12 +18,20 @@ class Tenant extends Model
         'domain',
         'subdomain',
         'database_name',
+        'email',
+        'phone',
+        'address',
+        'logo_path',
         'plan',
         'status',
         'settings',
         'features',
+        'max_users',
+        'max_storage_mb',
         'expires_at',
-        'trial_ends_at'
+        'trial_ends_at',
+        'subscription_expires_at',
+        'last_activity_at'
     ];
 
     protected $casts = [

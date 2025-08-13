@@ -255,6 +255,66 @@ Route::prefix('developer')
             Route::post('/{tenant}/extend-trial', [App\Http\Controllers\Developer\TenantController::class, 'extendTrial'])->name('extend-trial');
             Route::post('/{tenant}/refresh-usage', [App\Http\Controllers\Developer\TenantController::class, 'refreshUsage'])->name('refresh-usage');
         });
+        
+        // Subscription Management (Enhanced)
+        Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Developer\SubscriptionController::class, 'index'])->name('index');
+            Route::get('/data', [App\Http\Controllers\Developer\SubscriptionController::class, 'getData'])->name('data');
+            Route::get('/{id}', [App\Http\Controllers\Developer\SubscriptionController::class, 'show'])->name('show');
+            Route::post('/{id}/suspend', [App\Http\Controllers\Developer\SubscriptionController::class, 'suspend'])->name('suspend');
+            Route::post('/{id}/reactivate', [App\Http\Controllers\Developer\SubscriptionController::class, 'reactivate'])->name('reactivate');
+            Route::post('/{id}/cancel', [App\Http\Controllers\Developer\SubscriptionController::class, 'cancel'])->name('cancel');
+            Route::post('/{id}/change-plan', [App\Http\Controllers\Developer\SubscriptionController::class, 'changePlan'])->name('change-plan');
+            Route::post('/{id}/sync-paypal', [App\Http\Controllers\Developer\SubscriptionController::class, 'syncPayPal'])->name('sync-paypal');
+            Route::post('/{id}/extend-trial', [App\Http\Controllers\Developer\SubscriptionController::class, 'extendTrial'])->name('extend-trial');
+            // Legacy support
+            Route::get('/data/table', [App\Http\Controllers\Developer\SubscriptionController::class, 'getData'])->name('data.table');
+        });
+        
+        // PayPal Management  
+        Route::prefix('paypal')->name('paypal.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Developer\PayPalController::class, 'index'])->name('index');
+            Route::get('/config', [App\Http\Controllers\Developer\PayPalController::class, 'config'])->name('config');
+            Route::post('/config', [App\Http\Controllers\Developer\PayPalController::class, 'updateConfig'])->name('config.update');
+            Route::post('/sync-plans', [App\Http\Controllers\Developer\PayPalController::class, 'syncPlans'])->name('sync-plans');
+            Route::post('/test-connection', [App\Http\Controllers\Developer\PayPalController::class, 'testConnection'])->name('test-connection');
+            Route::get('/webhooks', [App\Http\Controllers\Developer\PayPalController::class, 'webhooks'])->name('webhooks');
+            Route::post('/test-webhook', [App\Http\Controllers\Developer\PayPalController::class, 'testWebhook'])->name('test-webhook');
+            Route::post('/webhooks/{webhookLog}/retry', [App\Http\Controllers\Developer\PayPalController::class, 'retryWebhook'])->name('webhooks.retry');
+            Route::get('/webhooks/export', [App\Http\Controllers\Developer\PayPalController::class, 'exportWebhooks'])->name('webhooks.export');
+            Route::get('/webhooks/{webhookLog}/details', [App\Http\Controllers\Developer\PayPalController::class, 'webhookDetails'])->name('webhooks.details');
+        });
+        
+        // Billing & Analytics
+        Route::prefix('billing')->name('billing.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Developer\BillingController::class, 'index'])->name('index');
+            Route::get('/analytics', [App\Http\Controllers\Developer\BillingController::class, 'analytics'])->name('analytics');
+            Route::get('/mrr-report', [App\Http\Controllers\Developer\BillingController::class, 'mrrReport'])->name('mrr-report');
+            Route::get('/churn-analysis', [App\Http\Controllers\Developer\BillingController::class, 'churnAnalysis'])->name('churn-analysis');
+            Route::get('/payment-logs', [App\Http\Controllers\Developer\BillingController::class, 'paymentLogs'])->name('payment-logs');
+        });
     });
+
+// PayPal Subscription Routes
+Route::prefix('paypal')->name('paypal.')->group(function () {
+    Route::post('/webhook', [App\Http\Controllers\PayPalController::class, 'webhook'])->name('webhook');
+});
+
+// Subscription Routes (Public)
+Route::prefix('subscription')->name('subscription.')->group(function () {
+    Route::get('/success', [App\Http\Controllers\SubscriptionController::class, 'success'])->name('success');
+    Route::get('/cancelled', [App\Http\Controllers\SubscriptionController::class, 'cancelled'])->name('cancelled');
+    Route::get('/plans', [App\Http\Controllers\SubscriptionController::class, 'plans'])->name('plans');
+    
+    // Registration with trial
+    Route::post('/register-trial', [App\Http\Controllers\SubscriptionController::class, 'registerWithTrial'])->name('register-trial');
+    
+    // Authenticated subscription routes
+    Route::middleware('auth')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\SubscriptionController::class, 'dashboard'])->name('dashboard');
+        Route::post('/upgrade', [App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('upgrade');
+        Route::post('/cancel', [App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('cancel');
+    });
+});
 
 require __DIR__.'/auth.php';

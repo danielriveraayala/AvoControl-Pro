@@ -90,6 +90,54 @@ class Kernel extends ConsoleKernel
                  ->description('Crear respaldo de BD cada 6 horas y eliminar el anterior');
 
         // ===============================
+        // SISTEMA DE MONITOREO DE SUSCRIPCIONES
+        // ===============================
+        
+        // Monitoreo de suscripciones (cada 4 horas durante horario laboral)
+        $schedule->command('subscriptions:monitor')
+                 ->cron('0 */4 * * *')
+                 ->between('6:00', '22:00')
+                 ->description('Monitorear estados de suscripción y enviar alertas');
+                 
+        // Verificación intensiva de suscripciones (diario 7:00 AM)
+        $schedule->command('subscriptions:monitor')
+                 ->dailyAt('07:00')
+                 ->description('Verificación diaria completa de suscripciones');
+                 
+        // Reintentos automáticos de pagos fallidos (diario 10:00 AM)
+        $schedule->command('subscriptions:retry-payments')
+                 ->dailyAt('10:00')
+                 ->description('Reintentar pagos fallidos automáticamente');
+                 
+        // Reportes de suscripciones para super admin
+        $schedule->command('subscriptions:generate-reports --period=daily --email')
+                 ->dailyAt('08:30')
+                 ->description('Generar reporte diario de suscripciones');
+                 
+        $schedule->command('subscriptions:generate-reports --period=weekly --email')
+                 ->weeklyOn(1, '09:00')
+                 ->description('Generar reporte semanal de suscripciones');
+                 
+        $schedule->command('subscriptions:generate-reports --period=monthly --email')
+                 ->monthlyOn(1, '08:00')
+                 ->description('Generar reporte mensual de suscripciones');
+
+        // ===============================
+        // SISTEMA DE SUSPENSIÓN AUTOMÁTICA DE CUENTAS
+        // ===============================
+        
+        // Suspensión automática de cuentas (cada 6 horas durante horario laboral)
+        $schedule->command('accounts:auto-suspend')
+                 ->cron('0 */6 * * *')
+                 ->between('6:00', '22:00')
+                 ->description('Suspender automáticamente cuentas con pagos vencidos');
+                 
+        // Verificación nocturna de suspensiones (2:30 AM)
+        $schedule->command('accounts:auto-suspend')
+                 ->dailyAt('02:30')
+                 ->description('Verificación nocturna de cuentas para suspensión');
+
+        // ===============================
         // COMANDOS EXISTENTES
         // ===============================
         
