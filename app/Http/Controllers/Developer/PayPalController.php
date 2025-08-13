@@ -23,14 +23,27 @@ class PayPalController extends Controller
      */
     public function index()
     {
-        // Get current configuration
+        // Get current environment with fallback
+        $environment = config('paypal.mode') ?: env('PAYPAL_ENVIRONMENT', 'sandbox');
+        
+        // Get credentials with fallback strategy
+        $sandboxClientId = config('paypal.sandbox.client_id') ?: env('PAYPAL_SANDBOX_CLIENT_ID', '');
+        $sandboxClientSecret = config('paypal.sandbox.client_secret') ?: env('PAYPAL_SANDBOX_CLIENT_SECRET', '');
+        $liveClientId = config('paypal.live.client_id') ?: env('PAYPAL_LIVE_CLIENT_ID', '');
+        $liveClientSecret = config('paypal.live.client_secret') ?: env('PAYPAL_LIVE_CLIENT_SECRET', '');
+        
+        // Current environment credentials
+        $currentClientId = $environment === 'sandbox' ? $sandboxClientId : $liveClientId;
+        $currentClientSecret = $environment === 'sandbox' ? $sandboxClientSecret : $liveClientSecret;
+        
         $config = [
-            'environment' => config('paypal.mode', 'sandbox'),
-            'client_id' => config('paypal.client_id') ? substr(config('paypal.client_id'), 0, 20) . '...' : 'Not configured',
-            'client_secret' => config('paypal.client_secret') ? '••••••••••••••••' : 'Not configured',
+            'environment' => $environment,
+            'client_id' => $currentClientId ? substr($currentClientId, 0, 20) . '...' : 'Not configured',
+            'client_secret' => $currentClientSecret ? '••••••••••••••••' : 'Not configured',
             'webhook_id' => config('paypal.webhook_id', 'Not configured'),
-            'sandbox_configured' => !empty(config('paypal.sandbox.client_id')),
-            'live_configured' => !empty(config('paypal.live.client_id')),
+            'sandbox_configured' => !empty($sandboxClientId) && !empty($sandboxClientSecret),
+            'live_configured' => !empty($liveClientId) && !empty($liveClientSecret),
+            'api_keys_configured' => !empty($currentClientId) && !empty($currentClientSecret),
         ];
 
         // Test connection status
@@ -288,16 +301,18 @@ class PayPalController extends Controller
     {
         try {
             $result = $this->paypalService->testConnection();
+            $environment = config('paypal.mode') ?: env('PAYPAL_ENVIRONMENT', 'sandbox');
             return [
                 'connected' => $result['success'],
                 'message' => $result['success'] ? 'Conexión exitosa' : ($result['error'] ?? 'No conectado'),
-                'environment' => config('paypal.environment'),
+                'environment' => $environment,
             ];
         } catch (\Exception $e) {
+            $environment = config('paypal.mode') ?: env('PAYPAL_ENVIRONMENT', 'sandbox');
             return [
                 'connected' => false,
                 'message' => 'Error: ' . $e->getMessage(),
-                'environment' => config('paypal.environment'),
+                'environment' => $environment,
             ];
         }
     }
@@ -314,7 +329,7 @@ class PayPalController extends Controller
             $status[$planKey] = [
                 'name' => $planConfig['name'] ?? ucfirst($planKey),
                 'price' => $planConfig['amount'] ?? 0,
-                'synced' => false, // This would check if plan exists in PayPal
+                'synced' => !empty($planConfig['paypal_plan_id']), // Check if plan has PayPal ID
                 'local_id' => $planConfig['paypal_plan_id'] ?? null,
             ];
         }

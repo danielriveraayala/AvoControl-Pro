@@ -3,197 +3,299 @@
 @section('title', 'Configuración PayPal')
 
 @section('content')
-<div class="bg-white shadow-sm">
-    <div class="px-4 sm:px-6 lg:mx-auto lg:max-w-7xl lg:px-8">
-        <div class="py-6">
-            <h1 class="text-2xl font-semibold text-gray-900">Configuración PayPal</h1>
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+                            <i class="fab fa-paypal text-blue-600 mr-2"></i>
+                            Configuración PayPal
+                        </h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Gestiona la integración de PayPal para suscripciones</p>
+                    </div>
+                    <a href="{{ route('developer.index') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
+                        ← <span class="ml-1">Dashboard</span>
+                    </a>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
-<div class="mt-8">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        <!-- Connection Status -->
-        <div class="mb-8">
-            <div class="bg-white shadow-lg rounded-lg p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Estado de Conexión</h2>
-                    <button onclick="testConnection()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
+        <!-- Connection Status & Environment Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+            <!-- Connection Status -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Estado de Conexión</h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $connectionStatus['connected'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} self-start">
+                            {{ $connectionStatus['connected'] ? 'Conectado' : 'Desconectado' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="px-4 sm:px-6 py-4">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-{{ $connectionStatus['connected'] ? 'check-circle text-green-500' : 'times-circle text-red-500' }} text-2xl"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-gray-900">{{ $connectionStatus['message'] }}</p>
+                        </div>
+                    </div>
+                    <button onclick="testConnection()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-md text-xs sm:text-sm font-medium">
                         <i class="fas fa-sync-alt mr-2"></i>Probar Conexión
                     </button>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-4 border rounded-lg {{ $connectionStatus['connected'] ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-{{ $connectionStatus['connected'] ? 'check-circle text-green-500' : 'times-circle text-red-500' }} text-2xl"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-gray-900">Estado</p>
-                                <p class="text-sm text-gray-500">{{ $connectionStatus['message'] }}</p>
-                            </div>
+            </div>
+
+            <!-- Environment -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Entorno Activo</h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['environment'] === 'sandbox' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }} self-start">
+                            {{ ucfirst($config['environment']) }}
+                        </span>
+                    </div>
+                </div>
+                <div class="px-4 sm:px-6 py-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">Modo:</span>
+                            <span class="text-sm text-gray-900">{{ $config['environment'] === 'sandbox' ? 'Pruebas' : 'Producción' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">API URL:</span>
+                            <span class="text-sm text-gray-900">{{ $config['environment'] === 'sandbox' ? 'sandbox.paypal.com' : 'paypal.com' }}</span>
                         </div>
                     </div>
-                    
-                    <div class="p-4 border rounded-lg bg-gray-50">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-server text-gray-500 text-2xl"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-gray-900">Entorno</p>
-                                <p class="text-sm text-gray-500">{{ ucfirst($config['environment']) }}</p>
-                            </div>
+                    <div class="mt-4">
+                        <a href="{{ route('developer.paypal.config') }}" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-2 px-3 rounded-md text-xs sm:text-sm font-medium block">
+                            <i class="fas fa-cog mr-2"></i>Configurar Entorno
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Keys -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">API Keys</h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['api_keys_configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} self-start">
+                            {{ $config['api_keys_configured'] ? 'Configuradas' : 'Sin Configurar' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="px-4 sm:px-6 py-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">Client ID:</span>
+                            <span class="text-sm text-gray-900">{{ $config['client_id'] !== 'Not configured' ? $config['client_id'] : 'No configurado' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">Client Secret:</span>
+                            <span class="text-sm text-gray-900">{{ $config['client_secret'] !== 'Not configured' ? '••••••••••••••••' : 'No configurado' }}</span>
                         </div>
                     </div>
-                    
-                    <div class="p-4 border rounded-lg bg-gray-50">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-key text-gray-500 text-2xl"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-gray-900">API Keys</p>
-                                <p class="text-sm text-gray-500">
-                                    {{ $config['client_id'] !== 'Not configured' ? 'Configuradas' : 'No configuradas' }}
-                                </p>
-                            </div>
-                        </div>
+                    <div class="mt-4">
+                        <a href="{{ route('developer.paypal.config') }}" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-3 rounded-md text-xs sm:text-sm font-medium block">
+                            <i class="fas fa-key mr-2"></i>Configurar Keys
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="mb-8">
-            <div class="bg-white shadow-lg rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <a href="{{ route('developer.paypal.config') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-md text-center">
-                        <i class="fas fa-cog mr-2"></i>Configurar API
-                    </a>
-                    
-                    <button onclick="syncPlans()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-md">
-                        <i class="fas fa-sync mr-2"></i>Sincronizar Planes
+        <!-- Configuration Details -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
+            <!-- Sandbox Configuration -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">
+                            <i class="fas fa-flask text-yellow-500 mr-2"></i>Sandbox (Pruebas)
+                        </h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['sandbox_configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} self-start">
+                            {{ $config['sandbox_configured'] ? 'Configurado' : 'Sin Configurar' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="px-4 sm:px-6 py-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">Estado:</span>
+                            <span class="text-sm text-gray-900">{{ $config['sandbox_configured'] ? 'Activo' : 'Inactivo' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">Client ID:</span>
+                            <span class="text-sm text-gray-900">{{ $config['sandbox_configured'] ? 'Configurado' : 'No configurado' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">Client Secret:</span>
+                            <span class="text-sm text-gray-900">{{ $config['sandbox_configured'] ? 'Configurado' : 'No configurado' }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ route('developer.paypal.config') }}" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white text-center py-2 px-3 rounded-md text-xs sm:text-sm font-medium block">
+                            <i class="fas fa-flask mr-2"></i>Configurar Sandbox
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Configuration -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">
+                            <i class="fas fa-globe text-green-500 mr-2"></i>Producción (Live)
+                        </h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['live_configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} self-start">
+                            {{ $config['live_configured'] ? 'Configurado' : 'Sin Configurar' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="px-4 sm:px-6 py-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">Estado:</span>
+                            <span class="text-sm text-gray-900">{{ $config['live_configured'] ? 'Activo' : 'Inactivo' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">Client ID:</span>
+                            <span class="text-sm text-gray-900">{{ $config['live_configured'] ? 'Configurado' : 'No configurado' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-600">Client Secret:</span>
+                            <span class="text-sm text-gray-900">{{ $config['live_configured'] ? 'Configurado' : 'No configurado' }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ route('developer.paypal.config') }}" class="w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 px-3 rounded-md text-xs sm:text-sm font-medium block">
+                            <i class="fas fa-globe mr-2"></i>Configurar Producción
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plans Management -->
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                    <div class="mb-4 sm:mb-0">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1">
+                            <i class="fas fa-list-ul text-gray-500 mr-2"></i>Gestión de Planes
+                        </h3>
+                        <p class="text-xs sm:text-sm text-gray-600">Administra los planes de suscripción PayPal</p>
+                    </div>
+                    <button onclick="syncPlans()" class="inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 self-start">
+                        <i class="fas fa-sync mr-1 sm:mr-2"></i>
+                        <span class="hidden sm:inline">Sincronizar</span> Planes
                     </button>
-                    
-                    <a href="{{ route('developer.paypal.webhooks') }}" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-md text-center">
-                        <i class="fas fa-webhook mr-2"></i>Ver Webhooks
-                    </a>
-                    
-                    <button onclick="openTestWebhook()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-md">
-                        <i class="fas fa-vial mr-2"></i>Test Webhook
-                    </button>
                 </div>
+            </div>
+            <div class="px-4 sm:px-6 py-4">
+                @if(count($plansStatus) > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PayPal ID</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($plansStatus as $key => $plan)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm font-medium text-gray-900">{{ $plan['name'] }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-500">${{ $plan['price'] }}/mes</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($plan['synced'])
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Sincronizado
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                No sincronizado
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $plan['local_id'] ?: 'No configurado' }}
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center py-8">
+                        <i class="fas fa-list-ul text-gray-400 text-4xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No hay planes configurados</h3>
+                        <p class="text-sm text-gray-500 mb-4">Los planes de suscripción no están definidos en la configuración.</p>
+                        <button onclick="syncPlans()" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-sm text-white hover:bg-blue-700">
+                            <i class="fas fa-sync mr-2"></i>Sincronizar Planes
+                        </button>
+                    </div>
+                @endif
             </div>
         </div>
 
-        <!-- Plans Status -->
-        <div class="mb-8">
-            <div class="bg-white shadow-lg rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Estado de Planes</h2>
-                
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PayPal ID</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($plansStatus as $key => $plan)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm font-medium text-gray-900">{{ $plan['name'] }}</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm text-gray-500">${{ $plan['price'] }}/mes</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($plan['synced'])
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Sincronizado
-                                        </span>
-                                    @else
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            No sincronizado
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $plan['local_id'] ?: 'No configurado' }}
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Configuration Info -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Sandbox Config -->
-            <div class="bg-white shadow-lg rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-flask mr-2 text-yellow-500"></i>Sandbox
-                </h3>
-                <div class="space-y-2">
-                    <div class="flex items-center">
-                        <span class="text-sm text-gray-500 w-24">Estado:</span>
-                        @if($config['sandbox_configured'])
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Configurado
-                            </span>
-                        @else
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                No configurado
-                            </span>
-                        @endif
+        <!-- Webhooks Management -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                    <div class="mb-4 sm:mb-0">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1">
+                            <i class="fas fa-webhook text-gray-500 mr-2"></i>Gestión de Webhooks
+                        </h3>
+                        <p class="text-xs sm:text-sm text-gray-600">Administra los eventos de webhook de PayPal</p>
                     </div>
-                    <div class="flex items-center">
-                        <span class="text-sm text-gray-500 w-24">Client ID:</span>
-                        <span class="text-sm text-gray-900">{{ $config['sandbox_configured'] ? '••••••••••••' : 'No configurado' }}</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span class="text-sm text-gray-500 w-24">Secret:</span>
-                        <span class="text-sm text-gray-900">{{ $config['sandbox_configured'] ? '••••••••••••' : 'No configurado' }}</span>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                        <a href="{{ route('developer.paypal.webhooks') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 self-start">
+                            <i class="fas fa-list mr-1 sm:mr-2"></i>
+                            <span class="hidden sm:inline">Ver</span> Webhooks
+                        </a>
+                        <button onclick="openTestWebhook()" class="inline-flex items-center px-3 sm:px-4 py-2 bg-orange-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-orange-700 self-start">
+                            <i class="fas fa-vial mr-1 sm:mr-2"></i>
+                            <span class="hidden sm:inline">Test</span> Webhook
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <!-- Live Config -->
-            <div class="bg-white shadow-lg rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-globe mr-2 text-green-500"></i>Producción
-                </h3>
-                <div class="space-y-2">
-                    <div class="flex items-center">
-                        <span class="text-sm text-gray-500 w-24">Estado:</span>
-                        @if($config['live_configured'])
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Configurado
-                            </span>
-                        @else
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                No configurado
-                            </span>
-                        @endif
+            <div class="px-4 sm:px-6 py-4">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">--</div>
+                        <div class="text-sm text-gray-600">Total Webhooks</div>
                     </div>
-                    <div class="flex items-center">
-                        <span class="text-sm text-gray-500 w-24">Client ID:</span>
-                        <span class="text-sm text-gray-900">{{ $config['live_configured'] ? '••••••••••••' : 'No configurado' }}</span>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">--</div>
+                        <div class="text-sm text-gray-600">Procesados</div>
                     </div>
-                    <div class="flex items-center">
-                        <span class="text-sm text-gray-500 w-24">Secret:</span>
-                        <span class="text-sm text-gray-900">{{ $config['live_configured'] ? '••••••••••••' : 'No configurado' }}</span>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-yellow-600">--</div>
+                        <div class="text-sm text-gray-600">Pendientes</div>
                     </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-red-600">--</div>
+                        <div class="text-sm text-gray-600">Fallidos</div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-gray-500">
+                        URL del webhook: <code class="bg-gray-100 px-2 py-1 rounded text-xs">{{ url('/paypal/webhook') }}</code>
+                    </p>
                 </div>
             </div>
         </div>
@@ -241,16 +343,7 @@
 @push('scripts')
 <script>
 function testConnection() {
-    Swal.fire({
-        title: 'Probando conexión...',
-        text: 'Verificando credenciales PayPal',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+    DevAlert.loading('Probando conexión...', 'Verificando credenciales PayPal');
 
     fetch('{{ route('developer.paypal.test-connection') }}', {
         method: 'POST',
@@ -261,42 +354,32 @@ function testConnection() {
     })
     .then(response => response.json())
     .then(data => {
+        DevAlert.close();
         if (data.success) {
-            Swal.fire({
-                title: '¡Conexión exitosa!',
-                text: data.message,
-                icon: 'success'
-            }).then(() => {
+            DevAlert.success('¡Conexión exitosa!', data.message).then(() => {
                 location.reload();
             });
         } else {
-            Swal.fire({
-                title: 'Error de conexión',
-                text: data.message,
-                icon: 'error'
-            });
+            DevAlert.error('Error de conexión', data.message);
         }
     })
     .catch(error => {
-        Swal.fire({
-            title: 'Error',
-            text: 'No se pudo conectar con el servidor',
-            icon: 'error'
-        });
+        DevAlert.close();
+        DevAlert.error('Error', 'No se pudo conectar con el servidor');
     });
 }
 
 function syncPlans() {
-    Swal.fire({
-        title: '¿Sincronizar planes?',
-        text: '¿Estás seguro de que quieres sincronizar los planes con PayPal?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, sincronizar',
-        cancelButtonText: 'Cancelar',
-        showLoaderOnConfirm: true,
-        preConfirm: () => {
-            return fetch('{{ route('developer.paypal.sync-plans') }}', {
+    DevAlert.confirm(
+        '¿Sincronizar planes?',
+        '¿Estás seguro de que quieres sincronizar los planes con PayPal?',
+        'Sí, sincronizar',
+        'Cancelar'
+    ).then((result) => {
+        if (result.isConfirmed) {
+            DevAlert.loading('Sincronizando...', 'Conectando con PayPal y sincronizando planes');
+            
+            fetch('{{ route('developer.paypal.sync-plans') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -305,29 +388,18 @@ function syncPlans() {
             })
             .then(response => response.json())
             .then(data => {
-                if (!data.success) {
-                    throw new Error(data.message || 'Error al sincronizar planes');
+                DevAlert.close();
+                if (data.success) {
+                    DevAlert.success('¡Éxito!', 'Planes sincronizados exitosamente').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    DevAlert.error('Error', data.message || 'Error al sincronizar planes');
                 }
-                return data;
             })
             .catch(error => {
-                Swal.showValidationMessage(`Error: ${error.message}`);
-            });
-        },
-        allowOutsideClick: () => !Swal.isLoading()
-    }).then((result) => {
-        if (result.isConfirmed) {
-            let message = 'Planes sincronizados exitosamente';
-            if (result.value.output) {
-                console.log('Sync output:', result.value.output);
-            }
-            
-            Swal.fire({
-                title: '¡Éxito!',
-                text: message,
-                icon: 'success'
-            }).then(() => {
-                location.reload();
+                DevAlert.close();
+                DevAlert.error('Error', 'Error al sincronizar planes');
             });
         }
     });
@@ -345,16 +417,7 @@ function sendTestWebhook() {
     const eventType = document.getElementById('event_type').value;
     const subscriptionId = document.getElementById('subscription_id').value;
     
-    Swal.fire({
-        title: 'Enviando webhook...',
-        text: 'Procesando webhook de prueba',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+    DevAlert.loading('Enviando webhook...', 'Procesando webhook de prueba');
 
     fetch('{{ route('developer.paypal.test-webhook') }}', {
         method: 'POST',
@@ -369,28 +432,18 @@ function sendTestWebhook() {
     })
     .then(response => response.json())
     .then(data => {
+        DevAlert.close();
         closeTestWebhook();
         if (data.success) {
-            Swal.fire({
-                title: '¡Éxito!',
-                text: data.message,
-                icon: 'success'
-            });
+            DevAlert.success('¡Éxito!', data.message);
         } else {
-            Swal.fire({
-                title: 'Error',
-                text: data.message,
-                icon: 'error'
-            });
+            DevAlert.error('Error', data.message);
         }
     })
     .catch(error => {
+        DevAlert.close();
         closeTestWebhook();
-        Swal.fire({
-            title: 'Error',
-            text: 'Error al enviar webhook de prueba',
-            icon: 'error'
-        });
+        DevAlert.error('Error', 'Error al enviar webhook de prueba');
     });
 }
 </script>
