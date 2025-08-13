@@ -148,13 +148,13 @@
 
 ---
 
-## 2. SISTEMA MULTI-TENANT
+## 2. SISTEMA MULTI-TENANT (70% COMPLETADO ✅)
 
 **Nota Importante:** El sistema multi-tenant funcionará con dos niveles de administración:
 1. **Super Admin (Desarrollador)**: Control total del sistema, gestión de empresas/tenants y suscripciones
 2. **Admin de Empresa**: Gestión de su propia empresa, usuarios y configuración limitada
 
-### **Fase 1: Arquitectura Multi-Tenant (Semana 6-7)**
+### **Fase 1: Arquitectura Multi-Tenant (Semana 6-7)** ✅ **COMPLETADO**
 
 #### Sprint 4.1: Estructura de Tenants ✅ **COMPLETADO**
 - [x] Crear migración para tabla `tenants` con UUID, slug, plans, status
@@ -172,56 +172,163 @@
 - [x] Modificar modelos existentes para incluir tenant (Supplier, Customer, Lot, Sale, Payment, etc.)
 - [x] Actualizar modelo User con relaciones multi-tenant y tenant switching
 
-### **Fase 2: Identificación y Aislamiento (Semana 7)**
+### **Fase 2: Identificación y Aislamiento (Semana 7)** ✅ **COMPLETADO**
 
-#### Sprint 5.1: Sistema de Identificación
-- [ ] Crear middleware `TenantMiddleware`
-- [ ] Implementar identificación por subdominio
-- [ ] Sistema de sesiones por tenant
-- [ ] Configurar rutas con subdominios
+#### Sprint 5.1: Sistema de Identificación ✅ **COMPLETADO**
+- [x] Crear middleware `TenantResolver` con multi-strategy identification
+- [x] Crear middleware `TenantContext` para configuración dinámica
+- [x] Implementar identificación por subdominio y dominio
+- [x] Sistema de sesiones por tenant con caché namespace isolation
+- [x] Configurar rutas con subdominios y tenant switching
 
-#### Sprint 5.2: Aislamiento de Datos
-- [ ] Implementar filtrado automático en queries
-- [ ] Verificar aislamiento en todos los controladores
-- [ ] Sistema de validación cross-tenant
-- [ ] Auditoría de seguridad de datos
+#### Sprint 5.2: Aislamiento de Datos ✅ **COMPLETADO**
+- [x] Implementar filtrado automático en queries via Global Scopes
+- [x] Verificar aislamiento en todos los controladores con trait BelongsToTenant
+- [x] Sistema de validación cross-tenant con middleware protection
+- [x] Auditoría de seguridad de datos con logging completo
 
-### **Fase 3: Gestión de Tenants (Semana 8-9)**
+### **Fase 3: UI y Service Provider (Semana 8)** ✅ **COMPLETADO**
 
-#### Sprint 6.1: Registro y Administración (Panel Desarrollador)
-- [ ] Sistema de registro de nuevos tenants (solo super_admin)
-- [ ] Panel de administración de tenants en `/developer/tenants`
-- [ ] Gestión de suscripciones y planes por tenant
-- [ ] Suspensión/activación de tenants
-- [ ] Métricas de uso por tenant
+#### Sprint 5.3: User Interface ✅ **COMPLETADO**
+- [x] Página de selección de tenant (`/tenant/select`) responsive
+- [x] Página de error tenant-not-found con sugerencias
+- [x] Tenant switching con validación de permisos
+- [x] Indicadores de trial y plan actual
+- [x] Mobile-friendly tenant cards con información completa
 
-#### Sprint 6.2: Administración por Tenant (Admin de Empresa)
-- [ ] Panel de administración limitado para admin de empresa
-- [ ] Gestión de usuarios de su propia empresa
-- [ ] Sistema de invitaciones dentro del tenant
-- [ ] Asignación de roles (excepto super_admin)
+#### Sprint 5.4: Service Provider y Blade ✅ **COMPLETADO**
+- [x] TenantServiceProvider con 15+ features implementadas
+- [x] Blade directives: @tenant, @currentTenant, @userCanAccessTenant
+- [x] View composers para inyección de información de tenant
+- [x] Request macros para acceso al contexto de tenant
+- [x] Helper methods para resolución de tenant
 
-#### Sprint 6.3: Configuración por Tenant
-- [ ] Configuraciones específicas por tenant (límites por admin de empresa)
-- [ ] Personalización de marca por tenant
-- [ ] Planes y limitaciones administrados desde panel desarrollador
-- [ ] Sistema de facturación básico controlado por super_admin
+#### Sprint 5.5: Seeding y Testing ✅ **COMPLETADO**
+- [x] TenantSeeder con 3 tenants de prueba (default, premium, trial)
+- [x] 15 categorías de tenant settings configuradas
+- [x] Asignación automática de usuarios a tenants
+- [x] Integración con roles y permisos existentes
+- [x] Testing de switching y aislamiento
 
-### **Fase 4: Migración y Testing (Semana 10)**
+### **Fase 4: PayPal Subscription Integration (Semana 9-11)** 🔄 **EN PROCESO**
 
-#### Sprint 7.1: Migración de Datos Existentes
-- [ ] Script de migración para datos actuales
-- [ ] Crear tenant por defecto para datos existentes
-- [ ] Verificar integridad después de migración
-- [ ] Backup y rollback procedures
+#### 📋 **Planes de Suscripción Definidos:**
 
-#### Sprint 7.2: Testing Integral
-- [ ] Tests de aislamiento de datos
-- [ ] Tests de performance con múltiples tenants
-- [ ] Tests de seguridad cross-tenant
+##### 🆓 **TRIAL - 7 días gratis**
+- **Usuarios**: 1
+- **Lotes**: 50 máximo  
+- **Almacenamiento**: 500MB
+- **Funciones**: Reportes básicos
+- **Soporte**: No incluido
+- **Flujo**: Registro → Trial automático → Cobro PayPal después de 7 días
+
+##### 🥉 **BASIC - $29 USD/mes**
+- **Usuarios**: 5
+- **Lotes**: 500/mes
+- **Almacenamiento**: 2GB
+- **Funciones**: Todos los reportes, notificaciones email
+- **Soporte**: Email
+- **Target**: Centros de acopio pequeños
+
+##### 🥈 **PREMIUM - $79 USD/mes**
+- **Usuarios**: 25
+- **Lotes**: 2,000/mes
+- **Almacenamiento**: 10GB
+- **Funciones**: Reportes avanzados, notificaciones push + SMS, API access, backup automático
+- **Soporte**: Prioritario
+- **Target**: Empresas medianas
+
+##### 🥇 **ENTERPRISE - $199 USD/mes**
+- **Usuarios**: 100
+- **Lotes**: Ilimitados
+- **Almacenamiento**: 50GB
+- **Funciones**: Reportes personalizados, multi-ubicación, API completo, marca personalizada
+- **Soporte**: Telefónico 24/7
+- **Target**: Empresas grandes
+
+##### 🏢 **CORPORATE - Precio personalizado**
+- **Usuarios**: Ilimitados
+- **Multi-tenant**: Ilimitado
+- **Almacenamiento**: Ilimitado
+- **Funciones**: Servidor dedicado, SLA garantizado
+- **Soporte**: Dedicado
+- **Target**: Corporativos
+
+#### Sprint 6.1: PayPal API Configuration
+- [ ] Configurar credenciales PayPal (sandbox y production)
+- [ ] Instalar SDK de PayPal para Laravel
+- [ ] Crear migraciones para subscription_payments y payment_logs
+- [ ] Implementar servicio PayPalService
+
+#### Sprint 6.2: Subscription Plans Creation
+- [ ] Crear planes en PayPal Dashboard
+- [ ] Sincronizar planes con base de datos local
+- [ ] Crear comando artisan para sync de planes
+- [ ] Implementar modelo Subscription
+
+#### Sprint 6.3: Tenant Registration with Trial
+- [ ] Flujo de registro unificado (usuario + tenant + trial)
+- [ ] Activación automática de trial 7 días
+- [ ] Envío de emails de bienvenida y recordatorios
+- [ ] Dashboard de estado de suscripción
+
+#### Sprint 6.4: PayPal Webhooks
+- [ ] Configurar webhooks endpoints
+- [ ] Procesar eventos: BILLING.SUBSCRIPTION.ACTIVATED, CANCELLED, SUSPENDED
+- [ ] Sistema de logs y auditoría de pagos
+- [ ] Notificaciones automáticas de cambios de estado
+
+#### Sprint 6.5: Automatic Subscription Monitoring
+- [ ] CRON job para verificar estados de suscripción
+- [ ] Alertas de vencimiento (3 días antes, 1 día antes)
+- [ ] Reintentos automáticos de cobro
+- [ ] Reportes de suscripciones para super_admin
+
+#### Sprint 6.6: Account Suspension System
+- [ ] Suspensión automática por falta de pago
+- [ ] Período de gracia configurable
+- [ ] Sistema de reactivación con pago
+- [ ] Backup de datos antes de suspensión
+
+#### Sprint 6.7: Subscription Management Panel
+- [ ] Panel de gestión en `/developer/subscriptions`
+- [ ] Cambio de planes (upgrade/downgrade)
+- [ ] Historial de pagos y facturas
+- [ ] Métricas de MRR y churn rate
+
+### **Fase 5: Gestión Avanzada de Tenants (Semana 12-13)**
+
+#### Sprint 7.1: Panel de Administración (Super Admin)
+- [ ] Dashboard de tenants en `/developer/tenants`
+- [ ] Métricas de uso por tenant (usuarios, storage, operaciones)
+- [ ] Suspensión/activación manual de tenants
+- [ ] Exportación de datos por tenant
+- [ ] Sistema de respaldos por tenant
+
+#### Sprint 7.2: Administración por Tenant (Admin Empresa)
+- [ ] Panel limitado para admin de empresa
+- [ ] Gestión de usuarios de su empresa
+- [ ] Sistema de invitaciones internas
+- [ ] Configuración de marca y personalización
+- [ ] Límites según plan contratado
+
+### **Fase 6: Testing y Deployment (Semana 14)**
+
+#### Sprint 8.1: Testing Multi-Tenant + PayPal
+- [ ] Tests de integración PayPal sandbox
+- [ ] Tests de aislamiento entre tenants
+- [ ] Tests de límites por plan
+- [ ] Tests de suspensión y reactivación
+- [ ] Performance testing con múltiples tenants
+
+#### Sprint 8.2: Production Deployment
+- [ ] Migración de datos a estructura multi-tenant
+- [ ] Configuración de subdominios en producción
+- [ ] PayPal production credentials
 - [ ] Documentación completa del sistema
+- [ ] Training para usuarios admin
 
-**Tiempo estimado: 6 semanas**
+**Tiempo estimado actualizado: 8 semanas (antes 6)**
 
 ---
 
@@ -301,16 +408,57 @@
 
 ---
 
-## CRONOGRAMA GENERAL
+## CRONOGRAMA GENERAL ACTUALIZADO
 
-| Semanas | Funcionalidad | Status | Entregables |
-|---------|---------------|---------|-------------|
-| ✅ 1-5 | **RBAC + Notificaciones** | **COMPLETADO** | Sistema completo de roles, permisos y notificaciones automáticas |
-| 🔄 6-11 | **Multi-Tenant** | **SIGUIENTE** | Aislamiento completo por empresa |
-| ⏳ 12-18 | **PWA** | PENDIENTE | App web instalable con funcionalidad offline |
+| Semanas | Funcionalidad | Status | Progreso | Entregables |
+|---------|---------------|---------|----------|-------------|
+| ✅ 1-5 | **RBAC + Notificaciones** | **COMPLETADO** | 100% | Sistema completo de roles, permisos y notificaciones automáticas de 3 canales |
+| ✅ 6-8 | **Multi-Tenant Core** | **COMPLETADO** | 70% | Base de datos, modelos, middleware, UI y service provider funcionando |
+| 🔄 9-14 | **PayPal + Tenant Admin** | **EN PROCESO** | 0% | Suscripciones PayPal, panel admin tenants, testing |
+| ⏳ 15-20 | **PWA** | PENDIENTE | 0% | App web instalable con funcionalidad offline |
 
-**Tiempo total estimado: 18 semanas (4.5 meses)**
-**Progreso actual: 5/18 semanas completadas (28%)**
+**Tiempo total estimado: 20 semanas (5 meses)**
+**Progreso actual: 8/20 semanas completadas (40%)**
+
+### 📊 **Resumen de Progreso por Sistema:**
+
+| Sistema | Completado | En Proceso | Pendiente | Total |
+|---------|------------|------------|-----------|-------|
+| **RBAC** | 100% ✅ | - | - | 100% |
+| **Notificaciones** | 100% ✅ | - | - | 100% |
+| **Multi-Tenant** | 70% | 30% | - | 100% |
+| **PayPal Subs** | - | - | 100% | 100% |
+| **PWA** | - | - | 100% | 100% |
+
+### 🎯 **Hitos Alcanzados:**
+
+✅ **Agosto 2025 - Semana 1-5:**
+- Sistema RBAC completo con 8 roles y 52 permisos
+- Panel de desarrollador exclusivo con 20+ funcionalidades
+- Sistema de notificaciones automáticas de 3 canales
+- 10 comandos CRON automatizados funcionando
+- Deploy en producción VPS exitoso
+
+✅ **Agosto 2025 - Semana 6-8:**
+- Arquitectura multi-tenant completa (DB + Models)
+- Sistema de middleware para tenant resolution
+- UI para selección y switching de tenants
+- Service Provider con 15+ Blade directives
+- 3 tenants de prueba configurados y funcionando
+
+🔄 **En Proceso - Semana 9-14:**
+- Integración con PayPal Subscriptions API
+- 5 planes de suscripción definidos (Trial → Corporate)
+- Sistema de registro unificado usuario + tenant
+- Panel de gestión de suscripciones
+- Testing integral y deployment
+
+⏳ **Pendiente - Semana 15-20:**
+- Progressive Web App completa
+- Funcionalidad offline con IndexedDB
+- Service Worker y Background Sync
+- Push notifications PWA
+- App instalable en dispositivos móviles
 
 ---
 
@@ -350,17 +498,28 @@
 
 ## CRITERIOS DE ÉXITO
 
-### RBAC
-- [ ] Usuarios solo acceden a funciones permitidas
-- [ ] Interface se adapta según permisos
-- [ ] Performance no se degrada
+### RBAC ✅ **LOGRADO**
+- [x] Usuarios solo acceden a funciones permitidas
+- [x] Interface se adapta según permisos
+- [x] Performance no se degrada
+- [x] Sistema de 8 roles jerárquicos funcionando
+- [x] 52 permisos granulares aplicados
 
-### Multi-Tenant
-- [ ] Aislamiento 100% entre tenants
-- [ ] Identificación automática por subdominio
-- [ ] Migración sin pérdida de datos
+### Multi-Tenant 🔄 **EN PROGRESO**
+- [x] Aislamiento 100% entre tenants
+- [x] Identificación automática por dominio/subdominio
+- [x] Middleware y Service Provider completos
+- [ ] Migración sin pérdida de datos (pendiente)
+- [ ] Panel de gestión de tenants (pendiente)
 
-### PWA
+### PayPal Integration ⏳ **PENDIENTE**
+- [ ] 5 planes de suscripción configurados
+- [ ] Trial de 7 días automático
+- [ ] Suspensión automática por falta de pago
+- [ ] Panel de gestión de suscripciones
+- [ ] Webhooks procesando eventos
+
+### PWA ⏳ **PENDIENTE**
 - [ ] Instalable en dispositivos móviles
 - [ ] Funciona offline completamente
 - [ ] Sincronización automática sin conflictos
@@ -369,5 +528,15 @@
 ---
 
 *Documento creado: Agosto 2025*  
+*Última actualización: 13 de Agosto 2025*  
 *Autor: Daniel Rivera - Kreativos Pro*  
-*Versión: 1.0*
+*Versión: 2.0*  
+
+## 📈 **Changelog v2.0:**
+- ✅ Sistema Multi-Tenant actualizado a 70% completado
+- ✅ Agregados planes de suscripción PayPal con precios
+- ✅ Definido flujo de registro usuario + tenant + trial
+- ✅ Actualizado cronograma general (20 semanas total)
+- ✅ Marcados hitos alcanzados hasta la fecha
+- ✅ Agregada tabla de progreso por sistema
+- ✅ Criterios de éxito actualizados con estado actual
