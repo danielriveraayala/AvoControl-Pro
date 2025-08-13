@@ -339,23 +339,59 @@
 @push('scripts')
 <script>
 function testWebhook() {
-    // Implement test webhook functionality
-    const eventType = prompt('Tipo de evento a probar:', 'BILLING.SUBSCRIPTION.ACTIVATED');
-    if (!eventType) return;
-    
-    $.post('{{ route('developer.paypal.test-webhook') }}', {
-        _token: '{{ csrf_token() }}',
-        event_type: eventType,
-        subscription_id: 'I-TEST-' + Date.now()
-    }).done(function(response) {
-        if (response.success) {
-            toastr.success('Webhook de prueba enviado exitosamente');
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            toastr.error(response.message);
+    // Use SweetAlert for input
+    Swal.fire({
+        title: 'Test Webhook',
+        input: 'select',
+        inputOptions: {
+            'BILLING.SUBSCRIPTION.ACTIVATED': 'BILLING.SUBSCRIPTION.ACTIVATED',
+            'BILLING.SUBSCRIPTION.CANCELLED': 'BILLING.SUBSCRIPTION.CANCELLED',
+            'BILLING.SUBSCRIPTION.SUSPENDED': 'BILLING.SUBSCRIPTION.SUSPENDED',
+            'PAYMENT.SALE.COMPLETED': 'PAYMENT.SALE.COMPLETED'
+        },
+        inputValue: 'BILLING.SUBSCRIPTION.ACTIVATED',
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Test',
+        showLoaderOnConfirm: true,
+        preConfirm: (eventType) => {
+            return fetch('{{ route('developer.paypal.test-webhook') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    event_type: eventType,
+                    subscription_id: 'I-TEST-' + Date.now()
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Error al procesar webhook');
+                }
+                return data;
+            })
+            .catch(error => {
+                Swal.showValidationMessage(`Error: ${error.message}`);
+            });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: '¡Éxito!',
+                text: 'Webhook de prueba enviado exitosamente',
+                icon: 'success'
+            }).then(() => {
+                location.reload();
+            });
         }
-    }).fail(function() {
-        toastr.error('Error al enviar webhook de prueba');
     });
 }
 
@@ -364,11 +400,20 @@ function refreshWebhooks() {
 }
 
 function viewWebhookDetails(webhookId) {
-    $('#webhookDetailsContent').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-indigo-600"></i><p class="mt-2 text-gray-600">Cargando detalles...</p></div>');
-    $('#webhookDetailsModal').removeClass('hidden');
+    // Show loading with SweetAlert
+    Swal.fire({
+        title: 'Cargando detalles...',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
     
-    $.get(`{{ url('/developer/paypal/webhooks') }}/${webhookId}/details`)
-        .done(function(response) {
+    fetch(`{{ url('/developer/paypal/webhooks') }}/${webhookId}/details`)
+        .then(response => response.json())
+        .then(response => {
             if (response.webhook) {
                 const webhook = response.webhook;
                 let content = `
@@ -429,36 +474,85 @@ function viewWebhookDetails(webhookId) {
                     </div>
                 `;
 
-                $('#webhookDetailsContent').html(content);
+                Swal.fire({
+                    title: 'Detalles del Webhook',
+                    html: content,
+                    width: '90%',
+                    showCloseButton: true,
+                    showConfirmButton: false,
+                    customClass: {
+                        popup: 'text-left'
+                    }
+                });
             }
         })
-        .fail(function() {
-            $('#webhookDetailsContent').html('<div class="text-center py-4 text-red-600"><i class="fas fa-exclamation-circle fa-2x"></i><p class="mt-2">Error al cargar los detalles</p></div>');
+        .catch(error => {
+            Swal.fire({
+                title: 'Error',
+                text: 'No se pudieron cargar los detalles del webhook',
+                icon: 'error'
+            });
         });
 }
 
 function closeWebhookDetails() {
-    $('#webhookDetailsModal').addClass('hidden');
+    Swal.close();
 }
 
 function retryWebhook(webhookId) {
-    if (!confirm('¿Reintentar procesamiento de este webhook?')) return;
-    
-    $.post(`{{ url('/developer/paypal/webhooks') }}/${webhookId}/retry`, {
-        _token: '{{ csrf_token() }}'
-    }).done(function(response) {
-        if (response.success) {
-            toastr.success(response.message);
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            toastr.error(response.message);
+    Swal.fire({
+        title: '¿Reintentar webhook?',
+        text: '¿Estás seguro de que quieres reintentar el procesamiento de este webhook?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, reintentar',
+        cancelButtonText: 'Cancelar',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+            return fetch(`{{ url('/developer/paypal/webhooks') }}/${webhookId}/retry`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Error al reintentar webhook');
+                }
+                return data;
+            })
+            .catch(error => {
+                Swal.showValidationMessage(`Error: ${error.message}`);
+            });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: '¡Éxito!',
+                text: 'Webhook reintentado exitosamente',
+                icon: 'success'
+            }).then(() => {
+                location.reload();
+            });
         }
-    }).fail(function() {
-        toastr.error('Error al reintentar webhook');
     });
 }
 
 function exportLogs() {
+    Swal.fire({
+        title: 'Exportando logs...',
+        text: 'Generando archivo CSV con los logs de webhooks',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
     // Create form for export with filters
     const form = document.createElement('form');
     form.method = 'GET';
@@ -479,7 +573,16 @@ function exportLogs() {
     form.submit();
     document.body.removeChild(form);
     
-    toastr.info('Descargando logs de webhooks...');
+    // Close loading and show success
+    setTimeout(() => {
+        Swal.fire({
+            title: '¡Descarga iniciada!',
+            text: 'El archivo CSV se está descargando',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }, 1000);
 }
 </script>
 @endpush

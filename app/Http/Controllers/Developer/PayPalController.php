@@ -291,7 +291,7 @@ class PayPalController extends Controller
         foreach ($plans as $planKey => $planConfig) {
             $status[$planKey] = [
                 'name' => $planConfig['name'] ?? ucfirst($planKey),
-                'price' => $planConfig['price'] ?? 0,
+                'price' => $planConfig['amount'] ?? 0,
                 'synced' => false, // This would check if plan exists in PayPal
                 'local_id' => $planConfig['paypal_plan_id'] ?? null,
             ];

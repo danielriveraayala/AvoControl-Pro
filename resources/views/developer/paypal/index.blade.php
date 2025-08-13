@@ -44,7 +44,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium text-gray-900">Entorno</p>
-                                <p class="text-sm text-gray-500">{{ ucfirst($connectionStatus['environment']) }}</p>
+                                <p class="text-sm text-gray-500">{{ ucfirst($config['environment']) }}</p>
                             </div>
                         </div>
                     </div>
@@ -241,37 +241,95 @@
 @push('scripts')
 <script>
 function testConnection() {
-    $.post('{{ route('developer.paypal.test-connection') }}', {
-        _token: '{{ csrf_token() }}'
-    }).done(function(response) {
-        if (response.success) {
-            toastr.success(response.message);
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            toastr.error(response.message);
+    Swal.fire({
+        title: 'Probando conexión...',
+        text: 'Verificando credenciales PayPal',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
-    }).fail(function() {
-        toastr.error('Error al probar la conexión');
+    });
+
+    fetch('{{ route('developer.paypal.test-connection') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: '¡Conexión exitosa!',
+                text: data.message,
+                icon: 'success'
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                title: 'Error de conexión',
+                text: data.message,
+                icon: 'error'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            title: 'Error',
+            text: 'No se pudo conectar con el servidor',
+            icon: 'error'
+        });
     });
 }
 
 function syncPlans() {
-    if (!confirm('¿Sincronizar planes con PayPal?')) return;
-    
-    $.post('{{ route('developer.paypal.sync-plans') }}', {
-        _token: '{{ csrf_token() }}'
-    }).done(function(response) {
-        if (response.success) {
-            toastr.success(response.message);
-            if (response.output) {
-                console.log(response.output);
+    Swal.fire({
+        title: '¿Sincronizar planes?',
+        text: '¿Estás seguro de que quieres sincronizar los planes con PayPal?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, sincronizar',
+        cancelButtonText: 'Cancelar',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+            return fetch('{{ route('developer.paypal.sync-plans') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Error al sincronizar planes');
+                }
+                return data;
+            })
+            .catch(error => {
+                Swal.showValidationMessage(`Error: ${error.message}`);
+            });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let message = 'Planes sincronizados exitosamente';
+            if (result.value.output) {
+                console.log('Sync output:', result.value.output);
             }
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            toastr.error(response.message);
+            
+            Swal.fire({
+                title: '¡Éxito!',
+                text: message,
+                icon: 'success'
+            }).then(() => {
+                location.reload();
+            });
         }
-    }).fail(function() {
-        toastr.error('Error al sincronizar planes');
     });
 }
 
@@ -287,19 +345,52 @@ function sendTestWebhook() {
     const eventType = document.getElementById('event_type').value;
     const subscriptionId = document.getElementById('subscription_id').value;
     
-    $.post('{{ route('developer.paypal.test-webhook') }}', {
-        _token: '{{ csrf_token() }}',
-        event_type: eventType,
-        subscription_id: subscriptionId
-    }).done(function(response) {
-        if (response.success) {
-            toastr.success(response.message);
-            closeTestWebhook();
-        } else {
-            toastr.error(response.message);
+    Swal.fire({
+        title: 'Enviando webhook...',
+        text: 'Procesando webhook de prueba',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
-    }).fail(function() {
-        toastr.error('Error al enviar webhook de prueba');
+    });
+
+    fetch('{{ route('developer.paypal.test-webhook') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            event_type: eventType,
+            subscription_id: subscriptionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        closeTestWebhook();
+        if (data.success) {
+            Swal.fire({
+                title: '¡Éxito!',
+                text: data.message,
+                icon: 'success'
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.message,
+                icon: 'error'
+            });
+        }
+    })
+    .catch(error => {
+        closeTestWebhook();
+        Swal.fire({
+            title: 'Error',
+            text: 'Error al enviar webhook de prueba',
+            icon: 'error'
+        });
     });
 }
 </script>
