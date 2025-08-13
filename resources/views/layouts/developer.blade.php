@@ -237,12 +237,34 @@
                 <a href="{{ route('developer.tenants.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.tenants.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
                     <i class="fas fa-building mr-2"></i>Tenants
                 </a>
-                <a href="{{ route('developer.backups.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.backups.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                    <i class="fas fa-database mr-2"></i>Backups
-                </a>
-                <a href="{{ route('developer.logs') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.logs') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                    <i class="fas fa-file-alt mr-2"></i>Logs
-                </a>
+                
+                <!-- Billing Section -->
+                <div class="border-t border-gray-200 pt-2 mt-2">
+                    <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Billing</div>
+                    <a href="{{ route('developer.subscriptions.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.subscriptions.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                        <i class="fas fa-credit-card mr-2"></i>Suscripciones
+                    </a>
+                    <a href="{{ route('developer.paypal.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.paypal.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                        <i class="fab fa-paypal mr-2"></i>PayPal Config
+                    </a>
+                    <a href="{{ route('developer.billing.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.billing.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                        <i class="fas fa-chart-line mr-2"></i>Métricas
+                    </a>
+                </div>
+                
+                <!-- System Section -->
+                <div class="border-t border-gray-200 pt-2 mt-2">
+                    <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
+                    <a href="{{ route('developer.config.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.config.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                        <i class="fas fa-cog mr-2"></i>Config
+                    </a>
+                    <a href="{{ route('developer.backups.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.backups.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                        <i class="fas fa-database mr-2"></i>Backups
+                    </a>
+                    <a href="{{ route('developer.logs') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.logs') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                        <i class="fas fa-file-alt mr-2"></i>Logs
+                    </a>
+                </div>
                 <div class="border-t border-gray-200 pt-3">
                     <!-- System Status (Mobile) -->
                     <div class="flex items-center justify-center py-2 mb-2">
