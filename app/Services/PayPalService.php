@@ -24,6 +24,17 @@ class PayPalService
 
     public function __construct()
     {
+        $this->refreshConfiguration();
+    }
+
+    /**
+     * Refresh PayPal configuration from current environment
+     */
+    private function refreshConfiguration(): void
+    {
+        // Force refresh config cache to get latest values
+        config()->offsetUnset('paypal');
+        
         $this->mode = config('paypal.mode', 'sandbox');
         $this->baseUrl = $this->mode === 'sandbox' 
             ? 'https://api-m.sandbox.paypal.com'
@@ -38,6 +49,11 @@ class PayPalService
                 : config('paypal.live.client_secret'),
         ];
 
+        // Validate credentials are present
+        if (empty($this->config['client_id']) || empty($this->config['client_secret'])) {
+            throw new \Exception("PayPal credentials not configured for {$this->mode} environment");
+        }
+
         $this->client = new Client([
             'base_uri' => $this->baseUrl,
             'timeout' => 30,
@@ -46,6 +62,10 @@ class PayPalService
                 'Accept' => 'application/json',
             ]
         ]);
+
+        // Clear cached token when configuration changes
+        $this->accessToken = null;
+        $this->tokenExpiry = null;
     }
 
     /**
@@ -545,6 +565,14 @@ class PayPalService
             }
         }
         return null;
+    }
+
+    /**
+     * Refresh configuration (useful after updating credentials)
+     */
+    public function refreshConfig(): void
+    {
+        $this->refreshConfiguration();
     }
 
     /**

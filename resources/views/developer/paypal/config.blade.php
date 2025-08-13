@@ -215,23 +215,31 @@
 <script>
 function testCurrentConfig() {
     const formData = new FormData(document.querySelector('form'));
+    const environment = formData.get('environment');
     
-    // Show loading
-    DevAlert.loading('Probando configuración...', 'Verificando credenciales PayPal');
+    // Show loading with environment info
+    DevAlert.loading('Probando configuración...', `Verificando credenciales PayPal (${environment.toUpperCase()})`);
     
-    fetch('{{ route('developer.paypal.test-connection') }}', {
+    // First save the current configuration, then test
+    fetch('{{ route('developer.paypal.config.update') }}', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            environment: formData.get('environment'),
-            sandbox_client_id: formData.get('sandbox_client_id'),
-            sandbox_client_secret: formData.get('sandbox_client_secret'),
-            live_client_id: formData.get('live_client_id'),
-            live_client_secret: formData.get('live_client_secret'),
-        })
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to save configuration');
+        }
+        // Now test the connection with updated config
+        return fetch('{{ route('developer.paypal.test-connection') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+            }
+        });
     })
     .then(response => response.json())
     .then(data => {

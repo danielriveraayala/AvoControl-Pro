@@ -102,6 +102,15 @@ class PayPalController extends Controller
             // Clear config cache
             Artisan::call('config:clear');
 
+            // Refresh PayPal service configuration
+            try {
+                $this->paypalService->refreshConfig();
+            } catch (\Exception $e) {
+                Log::warning('PayPal service refresh failed after config update', [
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             return redirect()->route('developer.paypal.config')
                 ->with('success', 'Configuración de PayPal actualizada exitosamente.');
 
@@ -152,6 +161,9 @@ class PayPalController extends Controller
     public function testConnection(Request $request)
     {
         try {
+            // Refresh configuration first in case environment was changed
+            $this->paypalService->refreshConfig();
+            
             $result = $this->paypalService->testConnection();
 
             if ($result['success']) {
