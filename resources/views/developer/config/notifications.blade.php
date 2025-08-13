@@ -193,17 +193,19 @@
                 </div>
 
                 <!-- Form Actions -->
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
-                    <a href="{{ route('developer.config.vapid') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md text-sm font-medium">
-                        Gestionar Llaves VAPID
-                    </a>
-                    <div class="space-x-3">
-                        <a href="{{ route('developer.config.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-md text-sm font-medium">
-                            Cancelar
+                <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:justify-between space-y-3 sm:space-y-0">
+                        <a href="{{ route('developer.config.vapid') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs sm:text-sm font-medium">
+                            Gestionar Llaves VAPID
                         </a>
-                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm font-medium">
-                            Guardar Configuración
-                        </button>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                            <a href="{{ route('developer.config.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md text-xs sm:text-sm font-medium">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-xs sm:text-sm font-medium">
+                                Guardar Configuración
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>
