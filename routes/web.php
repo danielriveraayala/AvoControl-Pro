@@ -36,6 +36,23 @@ Route::get('/ping', function () {
 // Public push notification endpoint (needed before auth)
 Route::get('/push/vapid-key', [App\Http\Controllers\PushNotificationController::class, 'getVapidKey']);
 
+// Tenant routes (available for authenticated users)
+Route::middleware(['auth'])->prefix('tenant')->name('tenant.')->group(function () {
+    Route::get('/select', [App\Http\Controllers\TenantController::class, 'select'])->name('select');
+    Route::get('/switch/{tenant:slug}', [App\Http\Controllers\TenantController::class, 'switch'])->name('switch');
+    
+    // API endpoints
+    Route::get('/current', [App\Http\Controllers\TenantController::class, 'current'])->name('current');
+    Route::get('/available', [App\Http\Controllers\TenantController::class, 'available'])->name('available');
+    Route::get('/stats/{tenant?}', [App\Http\Controllers\TenantController::class, 'stats'])->name('stats');
+    
+    // Management endpoints (Super Admin only)
+    Route::middleware(['role:super_admin'])->group(function () {
+        Route::post('/', [App\Http\Controllers\TenantController::class, 'store'])->name('store');
+        Route::put('/{tenant}', [App\Http\Controllers\TenantController::class, 'update'])->name('update');
+    });
+});
+
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

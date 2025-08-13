@@ -37,6 +37,8 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\TenantResolver::class,
+            \App\Http\Middleware\TenantContext::class,
             \App\Http\Middleware\MaintenanceMode::class,
         ],
 
@@ -44,6 +46,7 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\TenantResolver::class,
         ],
     ];
 
@@ -68,5 +71,7 @@ class Kernel extends HttpKernel
         'role' => \App\Http\Middleware\CheckRole::class,
         'permission' => \App\Http\Middleware\CheckPermission::class,
         'rbac' => \App\Http\Middleware\RolePermissionMiddleware::class,
+        'tenant.resolve' => \App\Http\Middleware\TenantResolver::class,
+        'tenant.context' => \App\Http\Middleware\TenantContext::class,
     ];
 }

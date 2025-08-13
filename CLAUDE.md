@@ -382,7 +382,7 @@ El sistema implementa **3 canales simultáneos** para máxima cobertura:
 
 **Deployment Completo**: Sistema 100% operativo en VPS 69.62.65.243 con todas las migraciones ejecutadas, assets compilados, caché optimizado, y comandos de prueba funcionando correctamente. Compatible con PHP 7.4+ mediante ajustes de sintaxis y Day.js completamente integrado reemplazando moment.js.
 
-### Sistema Multi-Tenant (4/10 Phases Complete - 40% 🔄)
+### Sistema Multi-Tenant (7/10 Phases Complete - 70% ✅)
 
 - ✅ **Phase 1: Planning & Architecture (100%)**
   - Complete multi-tenant architecture documentation
@@ -425,13 +425,114 @@ El sistema implementa **3 canales simultáneos** para máxima cobertura:
     - Tenant-aware relationships maintain data isolation
     - Multi-tenant user management with role inheritance
 
+- ✅ **Phase 5: Tenant Identification & Middleware System (100%)**
+  - **Complete middleware architecture for tenant resolution:**
+    - `TenantResolver` middleware with multi-strategy identification:
+      - Domain-based identification (custom domains)
+      - Subdomain extraction and validation
+      - Session-based tenant selection
+      - User-based tenant switching
+      - URL parameter fallback
+    - `TenantContext` middleware for tenant-specific configuration:
+      - Dynamic config application per tenant
+      - Database connection context switching
+      - Tenant-aware app settings
+      - Cache namespace isolation
+  - **Comprehensive middleware integration:**
+    - HTTP Kernel integration with proper middleware ordering
+    - Tenant context available throughout request lifecycle
+    - Error handling for tenant-not-found scenarios
+    - Logging and debugging capabilities
+
+- ✅ **Phase 6: User Interface for Tenant Management (100%)**
+  - **Complete tenant selection and management UI:**
+    - Tenant selection page (`/tenant/select`) with responsive design
+    - Tenant switching functionality with security validation
+    - Error pages for tenant-not-found scenarios
+    - Mobile-friendly tenant cards with plan information
+    - Trial period and expiration status indicators
+  - **Controller and routes implementation:**
+    - `TenantController` with 7 endpoints for tenant operations
+    - API endpoints for current tenant info and available tenants
+    - Tenant statistics and usage reporting
+    - Super admin tenant creation and management
+    - Secure tenant switching with role validation
+
+- ✅ **Phase 7: Tenant Service Provider & Blade Integration (100%)**
+  - **Complete service provider with 15+ features:**
+    - `TenantServiceProvider` with comprehensive Blade directives
+    - Tenant-aware view composers and macros
+    - Helper methods for tenant resolution
+    - Blade directives: `@tenant`, `@currentTenant`, `@userCanAccessTenant`, etc.
+    - View composers for tenant information injection
+    - Request macros for tenant context access
+  - **Testing and seeding system:**
+    - `TenantSeeder` with 3 test tenants (default, premium, trial)
+    - Complete tenant settings configuration
+    - User assignment to tenants with role-based permissions
+    - 15 different tenant settings categories
+    - Integration with existing user roles and permissions
+
 **🔄 Currently In Progress:**
-- Phase 5: Tenant Identification & Middleware System (0% - Ready to start)
-- Phase 6: User Interface for Tenant Management (0%)
-- Phase 7: Tenant Switching & Session Management (0%)
-- Phase 8: Multi-Tenant Authentication & Authorization (0%)
+- Phase 8: PayPal Subscription Integration (0% - Ready to start)
 - Phase 9: Testing & Validation (0%)
 - Phase 10: Production Deployment (0%)
+
+### Sistema de Planes de Suscripción PayPal (0/8 Phases Complete - 0% 🔄)
+
+**Estructura de Planes Definida:**
+
+#### 🆓 **TRIAL** - 7 días gratis
+- 1 usuario, 50 lotes máximo
+- Reportes básicos, 500MB almacenamiento
+- Sin soporte técnico
+- **Flujo**: Registro → Trial automático → PayPal después de 7 días
+
+#### 🥉 **BASIC** - $29 USD/mes
+- 5 usuarios, 500 lotes/mes
+- Todos los reportes, 2GB almacenamiento
+- Notificaciones email, soporte por email
+- **Target**: Centros de acopio pequeños
+
+#### 🥈 **PREMIUM** - $79 USD/mes  
+- 25 usuarios, 2,000 lotes/mes
+- Reportes avanzados + exportación, 10GB almacenamiento
+- Notificaciones push + SMS, API access, backup automático
+- **Target**: Empresas medianas con múltiples usuarios
+
+#### 🥇 **ENTERPRISE** - $199 USD/mes
+- 100 usuarios, lotes ilimitados
+- Reportes personalizados, 50GB almacenamiento
+- Multi-ubicación, API completo, marca personalizada
+- **Target**: Empresas grandes con operaciones complejas
+
+#### 🏢 **CORPORATE** - Precio personalizado
+- Usuarios ilimitados, multi-tenant ilimitado
+- Servidor dedicado, SLA garantizado
+- **Target**: Grupos empresariales y corporativos
+
+**🔄 Fases Pendientes de PayPal Integration:**
+- Phase 1: PayPal API Configuration & Environment Setup (0%)
+- Phase 2: Subscription Plans Creation in PayPal (0%)
+- Phase 3: Tenant Registration with Trial Period (0%)
+- Phase 4: PayPal Webhook Integration (0%)
+- Phase 5: Automatic Subscription Monitoring (0%)
+- Phase 6: Account Suspension System (0%)
+- Phase 7: Subscription Management Panel (0%)
+- Phase 8: Testing & Production Deployment (0%)
+
+**Flujo de Registro Propuesto:**
+1. **Registro Usuario + Tenant** → Un solo formulario unificado
+2. **Selección de Plan** → Basic/Premium/Enterprise (Trial automático 7 días)  
+3. **Configuración Tenant** → Nombre empresa, dominio personalizado
+4. **Proceso PayPal** → Suscripción o trial según selección
+5. **Acceso Inmediato** → Usuario entra al sistema configurado
+
+**Multi-Tenant por Usuario:** ✅ Soportado
+- Un usuario puede administrar múltiples tenants
+- Casos: Consultores, empresarios, desarrolladores
+- Switching entre tenants desde navbar
+- Roles diferentes por tenant
 
 ## Architecture Overview
 
