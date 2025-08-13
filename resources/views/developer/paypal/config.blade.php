@@ -249,16 +249,45 @@ function testCurrentConfig() {
     });
 }
 
-// Auto-save on environment change
+// Environment change handling with visual feedback
 document.querySelectorAll('input[name="environment"]').forEach(radio => {
     radio.addEventListener('change', function() {
-        // Visual feedback for environment change
+        // Update visual feedback for both radio buttons and their containers
+        updateEnvironmentVisuals(this.value);
+        
+        // Show notification based on selection
         if (this.value === 'live') {
             DevAlert.warning('Modo Producción', 'Has seleccionado el entorno de producción. Las transacciones serán reales.');
         } else {
             DevAlert.info('Modo Sandbox', 'Has seleccionado el entorno de pruebas. Las transacciones son simuladas.');
         }
     });
+});
+
+// Function to update environment visual feedback
+function updateEnvironmentVisuals(selectedEnvironment) {
+    const sandboxContainer = document.querySelector('input[value="sandbox"]').closest('label');
+    const liveContainer = document.querySelector('input[value="live"]').closest('label');
+    
+    // Reset both containers
+    sandboxContainer.className = sandboxContainer.className.replace(/border-indigo-500|bg-indigo-50/g, '').replace(/border-gray-200/g, '');
+    liveContainer.className = liveContainer.className.replace(/border-indigo-500|bg-indigo-50/g, '').replace(/border-gray-200/g, '');
+    
+    if (selectedEnvironment === 'sandbox') {
+        sandboxContainer.className += ' border-indigo-500 bg-indigo-50';
+        liveContainer.className += ' border-gray-200';
+    } else {
+        liveContainer.className += ' border-indigo-500 bg-indigo-50';
+        sandboxContainer.className += ' border-gray-200';
+    }
+}
+
+// Initialize visual state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const checkedRadio = document.querySelector('input[name="environment"]:checked');
+    if (checkedRadio) {
+        updateEnvironmentVisuals(checkedRadio.value);
+    }
 });
 
 // Toggle password visibility

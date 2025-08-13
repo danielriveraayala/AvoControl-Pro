@@ -25,7 +25,7 @@ class PayPalController extends Controller
     {
         // Get current configuration
         $config = [
-            'environment' => config('paypal.environment', 'sandbox'),
+            'environment' => config('paypal.mode', 'sandbox'),
             'client_id' => config('paypal.client_id') ? substr(config('paypal.client_id'), 0, 20) . '...' : 'Not configured',
             'client_secret' => config('paypal.client_secret') ? '••••••••••••••••' : 'Not configured',
             'webhook_id' => config('paypal.webhook_id', 'Not configured'),
@@ -56,7 +56,7 @@ class PayPalController extends Controller
     public function config()
     {
         $config = [
-            'environment' => config('paypal.environment', 'sandbox'),
+            'environment' => config('paypal.mode', 'sandbox'),
             'sandbox' => [
                 'client_id' => config('paypal.sandbox.client_id', ''),
                 'client_secret' => config('paypal.sandbox.client_secret', ''),

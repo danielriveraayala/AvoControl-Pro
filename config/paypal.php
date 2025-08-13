@@ -10,18 +10,20 @@ return [
     |
     */
 
-    'mode' => env('PAYPAL_MODE', 'sandbox'), // 'sandbox' or 'live'
+    'mode' => env('PAYPAL_ENVIRONMENT', 'sandbox'), // 'sandbox' or 'live'
 
     'sandbox' => [
         'client_id' => env('PAYPAL_SANDBOX_CLIENT_ID'),
         'client_secret' => env('PAYPAL_SANDBOX_CLIENT_SECRET'),
         'app_id' => env('PAYPAL_SANDBOX_APP_ID'),
+        'webhook_id' => env('PAYPAL_SANDBOX_WEBHOOK_ID'),
     ],
 
     'live' => [
         'client_id' => env('PAYPAL_LIVE_CLIENT_ID'),
         'client_secret' => env('PAYPAL_LIVE_CLIENT_SECRET'),
         'app_id' => env('PAYPAL_LIVE_APP_ID'),
+        'webhook_id' => env('PAYPAL_LIVE_WEBHOOK_ID'),
     ],
 
     'payment_action' => 'Sale', // Can only be 'Sale', 'Authorization' or 'Order'

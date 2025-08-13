@@ -106,7 +106,7 @@ class PayPalService
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Authorization' => "Bearer {$token}",
-                    'PayPal-Request-Id' => Str::uuid(), // Idempotency
+                    'PayPal-Request-Id' => (string) Str::uuid(), // Idempotency
                 ]
             ];
 
