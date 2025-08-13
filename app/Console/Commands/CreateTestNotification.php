@@ -57,7 +57,7 @@ class CreateTestNotification extends Command
                 'action_text' => 'Ir al Dashboard'
             ],
             'priority' => 'normal',
-            'channel' => 'all',
+            'channels' => ['email', 'push', 'database'],
             'category' => 'system',
             'metadata' => [
                 'test_notification' => true,

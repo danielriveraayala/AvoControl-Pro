@@ -3,18 +3,18 @@
 @section('title', 'Configuración de Notificaciones Push')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Configuración de Notificaciones Push</h1>
-                        <p class="text-sm text-gray-600">Configura las notificaciones push del navegador</p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Configuración de Notificaciones Push</h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Configura las notificaciones push del navegador</p>
                     </div>
-                    <a href="{{ route('developer.config.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                        ← Volver
+                    <a href="{{ route('developer.config.index') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
+                        ← <span class="ml-1">Volver</span>
                     </a>
                 </div>
             </div>
@@ -35,49 +35,49 @@
 
         <!-- Push Notifications Status & Control -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Estado de Notificaciones Push</h3>
-                <p class="text-sm text-gray-600 mt-1">Controla las notificaciones push en tu navegador</p>
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Estado de Notificaciones Push</h3>
+                <p class="text-xs sm:text-sm text-gray-600 mt-1">Controla las notificaciones push en tu navegador</p>
             </div>
             
-            <div class="px-6 py-6">
-                <div class="flex items-center justify-between">
+            <div class="px-4 sm:px-6 py-4 sm:py-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                     <div class="flex items-center space-x-3">
                         <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <div class="w-6 sm:w-8 h-6 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center text-sm sm:text-base">
                                 🔔
                             </div>
                         </div>
                         <div>
                             <h4 class="text-sm font-medium text-gray-900">Notificaciones del Navegador</h4>
-                            <p class="text-sm text-gray-500">Estado: <span id="push-notification-status">
+                            <p class="text-xs sm:text-sm text-gray-500">Estado: <span id="push-notification-status">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">⏳ Verificando...</span>
                             </span></p>
                         </div>
                     </div>
                     
-                    <div class="flex space-x-2">
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                         <button id="toggle-push-notifications" onclick="togglePushNotifications()" 
-                                class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm font-medium">
+                                class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium">
                             Configurando...
                         </button>
                         <button onclick="sendTestPushNotification()" 
-                                class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium">
-                            📤 Enviar Prueba
+                                class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium">
+                            📤 <span class="hidden sm:inline">Enviar Prueba</span><span class="sm:hidden">Prueba</span>
                         </button>
                     </div>
                 </div>
                 
-                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                <div class="mt-4 p-3 sm:p-4 bg-blue-50 rounded-lg">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                             </svg>
                         </div>
-                        <div class="ml-3">
-                            <h5 class="text-sm font-medium text-blue-800">Información Importante</h5>
-                            <p class="mt-1 text-sm text-blue-700">
+                        <div class="ml-2 sm:ml-3">
+                            <h5 class="text-xs sm:text-sm font-medium text-blue-800">Información Importante</h5>
+                            <p class="mt-1 text-xs sm:text-sm text-blue-700">
                                 • Las notificaciones push requieren HTTPS para funcionar<br>
                                 • Debes permitir notificaciones en tu navegador cuando se solicite<br>
                                 • Las notificaciones funcionan incluso cuando el sitio está cerrado

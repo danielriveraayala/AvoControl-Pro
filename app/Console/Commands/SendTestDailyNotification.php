@@ -56,7 +56,7 @@ class SendTestDailyNotification extends Command
                         'action_text' => 'Ver Dashboard'
                     ],
                     'priority' => 'normal',
-                    'channel' => $type,
+                    'channels' => $type === 'all' ? ['email', 'push', 'database'] : [$type],
                     'category' => 'system',
                     'metadata' => [
                         'test_notification' => true,
