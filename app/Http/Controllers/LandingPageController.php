@@ -27,6 +27,14 @@ class LandingPageController extends Controller
             ->ordered()
             ->get();
 
+        // DEBUG: Log plans for debugging
+        \Log::info('Landing Page Plans Debug', [
+            'total_plans' => $allPlans->count(),
+            'plan_keys' => $allPlans->pluck('key')->toArray(),
+            'plan_active_status' => $allPlans->pluck('is_active', 'key')->toArray(),
+            'plan_show_on_landing' => $allPlans->pluck('show_on_landing', 'key')->toArray()
+        ]);
+
         // Check if any plan has annual pricing to show the switch
         $hasAnnualPlans = $allPlans->some(function ($plan) {
             return $plan->hasAnnualPricing();
@@ -40,8 +48,15 @@ class LandingPageController extends Controller
             ];
         });
 
+        // DEBUG: Log formatted plans
+        \Log::info('Formatted Plans Debug', [
+            'formatted_count' => $formattedPlans->count(),
+            'has_annual_plans' => $hasAnnualPlans
+        ]);
+
         // Fallback to default plans if database is empty
         if ($allPlans->isEmpty()) {
+            \Log::warning('No plans found in database, using defaults');
             $plans = $this->getDefaultPlans();
             $hasAnnualPlans = false;
         } else {

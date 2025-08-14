@@ -993,6 +993,20 @@
             
             <!-- Dynamic Plans -->
             <div class="pricing-plans">
+                {{-- DEBUG: Show what data we have --}}
+                @if(config('app.debug'))
+                    <div class="alert alert-info">
+                        <strong>DEBUG INFO:</strong><br>
+                        Plans isset: {{ isset($plans['plans']) ? 'YES' : 'NO' }}<br>
+                        @if(isset($plans['plans']))
+                            Plans count: {{ count($plans['plans']) }}<br>
+                        @endif
+                        Has monthly plans: {{ isset($plans['monthly']) ? 'YES (' . count($plans['monthly']) . ')' : 'NO' }}<br>
+                        Has annual flag: {{ isset($plans['hasAnnualPlans']) ? ($plans['hasAnnualPlans'] ? 'TRUE' : 'FALSE') : 'NOT SET' }}<br>
+                        Raw plans keys: {{ json_encode(array_keys($plans)) }}
+                    </div>
+                @endif
+                
                 <div class="row g-4 align-items-stretch justify-content-center">
                     @if(isset($plans['plans']) && count($plans['plans']) > 0)
                         @foreach($plans['plans'] as $planData)
