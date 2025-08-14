@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Tenant;
+use App\Models\SubscriptionPlan;
 
 class LandingPageController extends Controller
 {
@@ -21,72 +22,32 @@ class LandingPageController extends Controller
             'twitter_image' => 'https://picsum.photos/1200/600'
         ];
 
-        // Pricing plans
-        $plans = [
-            'trial' => [
-                'name' => 'Trial',
-                'price' => '0',
-                'duration' => '7 días',
-                'features' => [
-                    '1 usuario',
-                    '50 lotes máximo',
-                    '500MB almacenamiento',
-                    'Reportes básicos',
-                    'Soporte por email'
-                ],
-                'highlighted' => false,
-                'cta' => 'Prueba Gratis'
-            ],
-            'basic' => [
-                'name' => 'Basic',
-                'price' => '29',
-                'duration' => 'mes',
-                'features' => [
-                    '5 usuarios',
-                    '500 lotes/mes',
-                    '2GB almacenamiento',
-                    'Todos los reportes',
-                    'Notificaciones email',
-                    'Soporte por email'
-                ],
-                'highlighted' => false,
-                'cta' => 'Comenzar'
-            ],
-            'premium' => [
-                'name' => 'Premium',
-                'price' => '79',
-                'duration' => 'mes',
-                'features' => [
-                    '25 usuarios',
-                    '2,000 lotes/mes',
-                    '10GB almacenamiento',
-                    'Reportes avanzados',
-                    'Notificaciones push + SMS',
-                    'API access',
-                    'Backup automático',
-                    'Soporte prioritario'
-                ],
-                'highlighted' => true,
-                'cta' => 'Más Popular'
-            ],
-            'enterprise' => [
-                'name' => 'Enterprise',
-                'price' => '199',
-                'duration' => 'mes',
-                'features' => [
-                    '100 usuarios',
-                    'Lotes ilimitados',
-                    '50GB almacenamiento',
-                    'Reportes personalizados',
-                    'Multi-ubicación',
-                    'API completo',
-                    'Marca personalizada',
-                    'Soporte 24/7'
-                ],
-                'highlighted' => false,
-                'cta' => 'Contactar'
-            ]
-        ];
+        // Get dynamic pricing plans from database
+        $monthlyPlans = SubscriptionPlan::visibleOnLanding()
+            ->monthly()
+            ->ordered()
+            ->get()
+            ->map(function ($plan) {
+                return $this->formatPlanForLanding($plan);
+            });
+
+        $yearlyPlans = SubscriptionPlan::visibleOnLanding()
+            ->yearly()
+            ->ordered()
+            ->get()
+            ->map(function ($plan) {
+                return $this->formatPlanForLanding($plan);
+            });
+
+        // Fallback to default plans if database is empty
+        if ($monthlyPlans->isEmpty()) {
+            $plans = $this->getDefaultPlans();
+        } else {
+            $plans = [
+                'monthly' => $monthlyPlans,
+                'yearly' => $yearlyPlans
+            ];
+        }
 
         // Features sections
         $features = [
@@ -223,5 +184,168 @@ class LandingPageController extends Controller
         // TODO: Store contact in database
 
         return redirect()->back()->with('success', 'Gracias por contactarnos. Te responderemos en menos de 24 horas.');
+    }
+
+    /**
+     * Display a specific plan page for sharing
+     */
+    public function showPlan($key)
+    {
+        $plan = SubscriptionPlan::where('key', $key)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $formattedPlan = $this->formatPlanForLanding($plan);
+
+        // SEO for specific plan
+        $seo = [
+            'title' => "Plan {$plan->name} - AvoControl Pro",
+            'description' => $plan->description,
+            'keywords' => 'software aguacate, plan ' . strtolower($plan->name) . ', centro acopio',
+            'og_image' => 'https://picsum.photos/1200/630',
+            'twitter_image' => 'https://picsum.photos/1200/600'
+        ];
+
+        return view('landing.plan', compact('plan', 'formattedPlan', 'seo'));
+    }
+
+    /**
+     * Format plan data for landing page display
+     */
+    private function formatPlanForLanding($plan)
+    {
+        $availableFeatures = SubscriptionPlan::getAvailableFeatures();
+        $planFeatures = [];
+
+        // Convert feature keys to readable format
+        foreach ($plan->features ?? [] as $featureKey) {
+            foreach ($availableFeatures as $category => $categoryFeatures) {
+                if (isset($categoryFeatures[$featureKey])) {
+                    $planFeatures[] = $categoryFeatures[$featureKey];
+                }
+            }
+        }
+
+        // Add limit-based features
+        if ($plan->max_users > 0) {
+            $planFeatures[] = ($plan->max_users == -1 ? 'Usuarios ilimitados' : "{$plan->max_users} usuarios");
+        }
+        if ($plan->max_lots_per_month > 0) {
+            $planFeatures[] = ($plan->max_lots_per_month == -1 ? 'Lotes ilimitados' : "{$plan->max_lots_per_month} lotes/mes");
+        }
+        if ($plan->max_storage_gb > 0) {
+            $planFeatures[] = ($plan->max_storage_gb == -1 ? 'Almacenamiento ilimitado' : "{$plan->max_storage_gb}GB almacenamiento");
+        }
+        if ($plan->max_locations > 0) {
+            $planFeatures[] = ($plan->max_locations == -1 ? 'Ubicaciones ilimitadas' : "{$plan->max_locations} ubicaciones");
+        }
+
+        return [
+            'id' => $plan->id,
+            'key' => $plan->key,
+            'name' => $plan->name,
+            'price' => $plan->price,
+            'currency' => $plan->currency,
+            'billing_cycle' => $plan->billing_cycle,
+            'duration' => $plan->billing_cycle === 'yearly' ? 'año' : 'mes',
+            'features' => array_slice($planFeatures, 0, 8), // Limit to 8 features for display
+            'all_features' => $planFeatures,
+            'highlighted' => $plan->is_featured,
+            'cta' => $plan->button_text ?? 'Comenzar',
+            'badge' => $plan->popular_badge,
+            'color' => $plan->color ?? '#3B82F6',
+            'icon' => $plan->icon ?? 'fas fa-star',
+            'trial_days' => $plan->trial_days,
+            'description' => $plan->description,
+            'paypal_plan_id' => $plan->paypal_plan_id,
+            'metadata' => $plan->metadata
+        ];
+    }
+
+    /**
+     * Get default plans if database is empty
+     */
+    private function getDefaultPlans()
+    {
+        return [
+            'monthly' => collect([
+                [
+                    'key' => 'trial',
+                    'name' => 'Trial',
+                    'price' => 0,
+                    'duration' => '7 días',
+                    'features' => [
+                        '1 usuario',
+                        '50 lotes máximo',
+                        '500MB almacenamiento',
+                        'Reportes básicos',
+                        'Soporte por email'
+                    ],
+                    'highlighted' => false,
+                    'cta' => 'Prueba Gratis',
+                    'badge' => null,
+                    'color' => '#10B981'
+                ],
+                [
+                    'key' => 'basic',
+                    'name' => 'Basic',
+                    'price' => 29,
+                    'duration' => 'mes',
+                    'features' => [
+                        '5 usuarios',
+                        '500 lotes/mes',
+                        '2GB almacenamiento',
+                        'Todos los reportes',
+                        'Notificaciones email',
+                        'Soporte por email'
+                    ],
+                    'highlighted' => false,
+                    'cta' => 'Comenzar',
+                    'badge' => null,
+                    'color' => '#3B82F6'
+                ],
+                [
+                    'key' => 'premium',
+                    'name' => 'Premium',
+                    'price' => 79,
+                    'duration' => 'mes',
+                    'features' => [
+                        '25 usuarios',
+                        '2,000 lotes/mes',
+                        '10GB almacenamiento',
+                        'Reportes avanzados',
+                        'Notificaciones push + SMS',
+                        'API access',
+                        'Backup automático',
+                        'Soporte prioritario'
+                    ],
+                    'highlighted' => true,
+                    'cta' => 'Más Popular',
+                    'badge' => 'MÁS POPULAR',
+                    'color' => '#8B5CF6'
+                ],
+                [
+                    'key' => 'enterprise',
+                    'name' => 'Enterprise',
+                    'price' => 199,
+                    'duration' => 'mes',
+                    'features' => [
+                        '100 usuarios',
+                        'Lotes ilimitados',
+                        '50GB almacenamiento',
+                        'Reportes personalizados',
+                        'Multi-ubicación',
+                        'API completo',
+                        'Marca personalizada',
+                        'Soporte 24/7'
+                    ],
+                    'highlighted' => false,
+                    'cta' => 'Contactar',
+                    'badge' => null,
+                    'color' => '#F59E0B'
+                ]
+            ]),
+            'yearly' => collect([])
+        ];
     }
 }

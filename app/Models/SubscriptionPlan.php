@@ -18,6 +18,9 @@ class SubscriptionPlan extends Model
         'is_active',
         'is_featured',
         'is_custom',
+        'show_on_landing',
+        'button_text',
+        'popular_badge',
         'paypal_plan_id',
         'stripe_plan_id',
         'sort_order',
@@ -36,6 +39,7 @@ class SubscriptionPlan extends Model
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'is_custom' => 'boolean',
+        'show_on_landing' => 'boolean',
         'trial_days' => 'integer',
         'sort_order' => 'integer',
         'max_users' => 'integer',
@@ -84,6 +88,30 @@ class SubscriptionPlan extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order')->orderBy('price');
+    }
+
+    /**
+     * Scope for plans visible on landing page
+     */
+    public function scopeVisibleOnLanding($query)
+    {
+        return $query->where('show_on_landing', true)->where('is_active', true);
+    }
+
+    /**
+     * Scope for monthly plans
+     */
+    public function scopeMonthly($query)
+    {
+        return $query->where('billing_cycle', 'monthly');
+    }
+
+    /**
+     * Scope for annual plans
+     */
+    public function scopeYearly($query)
+    {
+        return $query->where('billing_cycle', 'yearly');
     }
 
     /**

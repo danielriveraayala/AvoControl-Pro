@@ -249,6 +249,100 @@
             font-size: 0.8rem;
             font-weight: 700;
         }
+
+        .plan-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            z-index: 10;
+        }
+
+        /* Pricing Toggle Switch Styles */
+        .pricing-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .toggle-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-label.active {
+            color: var(--dark-color);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .pricing-plans {
+            display: none;
+        }
+
+        .pricing-plans.active {
+            display: block;
+        }
+
+        .pricing-footer {
+            margin-top: auto;
+        }
+
+        .paypal-button-container {
+            min-height: 45px;
+            margin-bottom: 0.5rem;
+        }
         
         .pricing-header {
             padding-bottom: 1.5rem;
@@ -882,39 +976,130 @@
             <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
                 Elige el plan que mejor se adapte a las necesidades de tu negocio
             </p>
+
+            <!-- Pricing Toggle Switch -->
+            <div class="pricing-toggle text-center mb-5" data-aos="fade-up" data-aos-delay="150">
+                <span class="toggle-label {{ isset($plans['monthly']) && $plans['monthly']->isNotEmpty() ? 'active' : '' }}">Mensual</span>
+                <label class="switch mx-3">
+                    <input type="checkbox" id="pricingToggle" {{ isset($plans['yearly']) && $plans['yearly']->isNotEmpty() ? 'checked' : '' }}>
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label {{ isset($plans['yearly']) && $plans['yearly']->isNotEmpty() ? 'active' : '' }}">
+                    Anual <small class="badge bg-success ms-2">Ahorra 15%</small>
+                </span>
+            </div>
             
-            <div class="row g-4 align-items-center">
-                @foreach($plans as $plan)
-                <div class="col-lg-3" data-aos="zoom-in" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
-                    <div class="pricing-card {{ $plan['highlighted'] ? 'highlighted' : '' }}">
-                        <div class="pricing-header">
-                            <div class="plan-name">{{ $plan['name'] }}</div>
-                            <div class="plan-price">
-                                @if($plan['price'] == '0')
-                                    Gratis
-                                @else
-                                    <sup>$</sup>{{ $plan['price'] }}
+            <!-- Monthly Plans -->
+            <div class="pricing-plans monthly-plans {{ isset($plans['monthly']) && $plans['monthly']->isNotEmpty() ? 'active' : '' }}">
+                <div class="row g-4 align-items-stretch justify-content-center">
+                    @if(isset($plans['monthly']))
+                        @foreach($plans['monthly'] as $plan)
+                        <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
+                            <div class="pricing-card {{ $plan['highlighted'] ?? false ? 'highlighted' : '' }}" style="border-top: 4px solid {{ $plan['color'] ?? '#3B82F6' }};">
+                                @if(!empty($plan['badge']))
+                                    <div class="plan-badge" style="background: {{ $plan['color'] ?? '#3B82F6' }};">{{ $plan['badge'] }}</div>
                                 @endif
-                                <span>/{{ $plan['duration'] }}</span>
+                                <div class="pricing-header">
+                                    @if(!empty($plan['icon']))
+                                        <i class="{{ $plan['icon'] }} mb-3" style="font-size: 2.5rem; color: {{ $plan['color'] ?? '#3B82F6' }};"></i>
+                                    @endif
+                                    <div class="plan-name">{{ $plan['name'] }}</div>
+                                    <div class="plan-price">
+                                        @if($plan['price'] == 0)
+                                            Gratis
+                                        @else
+                                            <sup>$</sup>{{ number_format($plan['price'], 0) }}
+                                        @endif
+                                        <span>/{{ $plan['duration'] ?? 'mes' }}</span>
+                                    </div>
+                                    @if(!empty($plan['trial_days']) && $plan['trial_days'] > 0)
+                                        <small class="text-muted">{{ $plan['trial_days'] }} días de prueba gratis</small>
+                                    @endif
+                                </div>
+                                <ul class="pricing-features">
+                                    @foreach($plan['features'] as $feature)
+                                    <li>{{ $feature }}</li>
+                                    @endforeach
+                                </ul>
+                                <div class="pricing-footer">
+                                    @if(!empty($plan['paypal_plan_id']))
+                                        <!-- PayPal Button -->
+                                        <div id="paypal-button-{{ $plan['key'] }}" class="paypal-button-container"></div>
+                                    @else
+                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
+                                            {{ $plan['cta'] ?? 'Comenzar' }}
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
+                                        <small>Ver más detalles →</small>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                        <ul class="pricing-features">
-                            @foreach($plan['features'] as $feature)
-                            <li>{{ $feature }}</li>
-                            @endforeach
-                        </ul>
-                        <a href="#" class="btn btn-primary-custom w-100">
-                            {{ $plan['cta'] }}
-                        </a>
-                    </div>
+                        @endforeach
+                    @endif
                 </div>
-                @endforeach
+            </div>
+
+            <!-- Yearly Plans -->
+            <div class="pricing-plans yearly-plans {{ isset($plans['yearly']) && $plans['yearly']->isNotEmpty() ? 'active' : 'd-none' }}">
+                <div class="row g-4 align-items-stretch justify-content-center">
+                    @if(isset($plans['yearly']))
+                        @foreach($plans['yearly'] as $plan)
+                        <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
+                            <div class="pricing-card {{ $plan['highlighted'] ?? false ? 'highlighted' : '' }}" style="border-top: 4px solid {{ $plan['color'] ?? '#3B82F6' }};">
+                                @if(!empty($plan['badge']))
+                                    <div class="plan-badge" style="background: {{ $plan['color'] ?? '#3B82F6' }};">{{ $plan['badge'] }}</div>
+                                @endif
+                                <div class="pricing-header">
+                                    @if(!empty($plan['icon']))
+                                        <i class="{{ $plan['icon'] }} mb-3" style="font-size: 2.5rem; color: {{ $plan['color'] ?? '#3B82F6' }};"></i>
+                                    @endif
+                                    <div class="plan-name">{{ $plan['name'] }}</div>
+                                    <div class="plan-price">
+                                        @if($plan['price'] == 0)
+                                            Gratis
+                                        @else
+                                            <sup>$</sup>{{ number_format($plan['price'], 0) }}
+                                        @endif
+                                        <span>/{{ $plan['duration'] ?? 'año' }}</span>
+                                    </div>
+                                    @if(!empty($plan['metadata']['monthly_equivalent']))
+                                        <small class="text-success">≈ ${{ number_format($plan['metadata']['monthly_equivalent'], 0) }}/mes</small>
+                                    @endif
+                                    @if(!empty($plan['metadata']['total_savings']))
+                                        <small class="d-block text-primary">Ahorras ${{ number_format($plan['metadata']['total_savings'], 0) }}</small>
+                                    @endif
+                                </div>
+                                <ul class="pricing-features">
+                                    @foreach($plan['features'] as $feature)
+                                    <li>{{ $feature }}</li>
+                                    @endforeach
+                                </ul>
+                                <div class="pricing-footer">
+                                    @if(!empty($plan['paypal_plan_id']))
+                                        <!-- PayPal Button -->
+                                        <div id="paypal-button-{{ $plan['key'] }}" class="paypal-button-container"></div>
+                                    @else
+                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
+                                            {{ $plan['cta'] ?? 'Comenzar' }}
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
+                                        <small>Ver más detalles →</small>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    @endif
+                </div>
             </div>
             
             <div class="text-center mt-5">
                 <p class="text-muted">
                     ¿Necesitas algo más personalizado? 
-                    <a href="#contact" class="text-primary fw-bold">Contáctanos para plan corporativo</a>
+                    <a href="#contact" class="text-primary fw-bold">Contáctanos para soluciones empresariales</a>
                 </p>
             </div>
         </div>
@@ -1078,6 +1263,36 @@
             once: true,
             offset: 100
         });
+
+        // Pricing Toggle Switch Functionality
+        const pricingToggle = document.getElementById('pricingToggle');
+        const monthlyPlans = document.querySelector('.monthly-plans');
+        const yearlyPlans = document.querySelector('.yearly-plans');
+        const toggleLabels = document.querySelectorAll('.toggle-label');
+
+        if (pricingToggle) {
+            pricingToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    // Show yearly plans
+                    monthlyPlans?.classList.remove('active');
+                    monthlyPlans?.classList.add('d-none');
+                    yearlyPlans?.classList.remove('d-none');
+                    yearlyPlans?.classList.add('active');
+                    
+                    toggleLabels[0]?.classList.remove('active');
+                    toggleLabels[1]?.classList.add('active');
+                } else {
+                    // Show monthly plans
+                    yearlyPlans?.classList.remove('active');
+                    yearlyPlans?.classList.add('d-none');
+                    monthlyPlans?.classList.remove('d-none');
+                    monthlyPlans?.classList.add('active');
+                    
+                    toggleLabels[0]?.classList.add('active');
+                    toggleLabels[1]?.classList.remove('active');
+                }
+            });
+        }
         
         // Navbar scroll effect
         window.addEventListener('scroll', function() {

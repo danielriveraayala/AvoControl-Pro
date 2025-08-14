@@ -45,6 +45,7 @@
       "Bash(telnet:*)",
       "WebFetch(domain:momentjs.com)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

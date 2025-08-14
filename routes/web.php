@@ -30,6 +30,7 @@ Route::middleware([\App\Http\Middleware\RedirectAuthenticatedFromLanding::class]
     Route::get('/features', [App\Http\Controllers\LandingPageController::class, 'features'])->name('features');
     Route::get('/contact', [App\Http\Controllers\LandingPageController::class, 'contact'])->name('contact');
     Route::post('/contact', [App\Http\Controllers\LandingPageController::class, 'contactSubmit'])->name('contact.submit');
+    Route::get('/plan/{key}', [App\Http\Controllers\LandingPageController::class, 'showPlan'])->name('plan.show');
 });
 
 // Ping route for connectivity checks
