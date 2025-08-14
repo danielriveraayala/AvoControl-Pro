@@ -950,4 +950,193 @@ class PayPalService
             'cancel_url' => route('subscription.cancelled')
         ];
     }
+
+    /**
+     * Create subscription plan in PayPal
+     */
+    public function createSubscriptionPlan($plan): array
+    {
+        try {
+            $productId = $this->createProduct($plan);
+            if (!$productId['success']) {
+                return $productId;
+            }
+
+            $planData = [
+                'product_id' => $productId['product_id'],
+                'name' => $plan->name,
+                'description' => $plan->description ?: "Plan {$plan->name} para AvoControl Pro",
+                'status' => 'ACTIVE',
+                'billing_cycles' => [
+                    [
+                        'frequency' => [
+                            'interval_unit' => $plan->billing_cycle === 'yearly' ? 'YEAR' : 'MONTH',
+                            'interval_count' => 1
+                        ],
+                        'tenure_type' => 'REGULAR',
+                        'sequence' => 1,
+                        'total_cycles' => 0, // Infinite
+                        'pricing_scheme' => [
+                            'fixed_price' => [
+                                'value' => number_format($plan->price, 2, '.', ''),
+                                'currency_code' => $plan->currency
+                            ]
+                        ]
+                    ]
+                ],
+                'payment_preferences' => [
+                    'auto_bill_outstanding' => true,
+                    'setup_fee' => [
+                        'value' => '0',
+                        'currency_code' => $plan->currency
+                    ],
+                    'setup_fee_failure_action' => 'CONTINUE',
+                    'payment_failure_threshold' => 3
+                ],
+                'taxes' => [
+                    'percentage' => '0',
+                    'inclusive' => false
+                ]
+            ];
+
+            // Add trial period if applicable
+            if ($plan->trial_days > 0) {
+                array_unshift($planData['billing_cycles'], [
+                    'frequency' => [
+                        'interval_unit' => 'DAY',
+                        'interval_count' => $plan->trial_days
+                    ],
+                    'tenure_type' => 'TRIAL',
+                    'sequence' => 1,
+                    'total_cycles' => 1,
+                    'pricing_scheme' => [
+                        'fixed_price' => [
+                            'value' => '0',
+                            'currency_code' => $plan->currency
+                        ]
+                    ]
+                ]);
+
+                // Update regular cycle sequence
+                $planData['billing_cycles'][1]['sequence'] = 2;
+            }
+
+            $result = $this->makeRequest('POST', '/v1/billing/plans', $planData);
+
+            if ($result['success']) {
+                $this->logPayPalAction('plan_created', 'info', 'PayPal subscription plan created', [
+                    'plan_id' => $result['data']['id'],
+                    'local_plan_id' => $plan->id,
+                    'plan_name' => $plan->name
+                ], $planData, $result['data']);
+
+                return [
+                    'success' => true,
+                    'plan_id' => $result['data']['id'],
+                    'data' => $result['data']
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'error' => $result['error'],
+                    'error_data' => $result['error_data'] ?? null
+                ];
+            }
+
+        } catch (Exception $e) {
+            $this->logPayPalAction('plan_creation_failed', 'error', 'Failed to create PayPal subscription plan', [
+                'local_plan_id' => $plan->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Create product in PayPal (required for subscription plans)
+     */
+    private function createProduct($plan): array
+    {
+        try {
+            $productData = [
+                'name' => "AvoControl Pro - {$plan->name}",
+                'description' => $plan->description ?: "Plan {$plan->name} para gestión de centros de acopio",
+                'type' => 'SERVICE',
+                'category' => 'SOFTWARE',
+                'image_url' => url('/images/logo.png'),
+                'home_url' => url('/')
+            ];
+
+            $result = $this->makeRequest('POST', '/v1/catalogs/products', $productData);
+
+            if ($result['success']) {
+                return [
+                    'success' => true,
+                    'product_id' => $result['data']['id']
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'error' => $result['error'],
+                    'error_data' => $result['error_data'] ?? null
+                ];
+            }
+
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Deactivate subscription plan in PayPal
+     */
+    public function deactivateSubscriptionPlan(string $planId): array
+    {
+        try {
+            $patchData = [
+                [
+                    'op' => 'replace',
+                    'path' => '/status',
+                    'value' => 'INACTIVE'
+                ]
+            ];
+
+            $result = $this->makeRequest('PATCH', "/v1/billing/plans/{$planId}", $patchData);
+
+            if ($result['success']) {
+                $this->logPayPalAction('plan_deactivated', 'info', 'PayPal subscription plan deactivated', [
+                    'paypal_plan_id' => $planId
+                ], $patchData, $result['data'] ?? []);
+
+                return [
+                    'success' => true,
+                    'data' => $result['data'] ?? []
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'error' => $result['error'],
+                    'error_data' => $result['error_data'] ?? null
+                ];
+            }
+
+        } catch (Exception $e) {
+            $this->logPayPalAction('plan_deactivation_failed', 'error', 'Failed to deactivate PayPal subscription plan', [
+                'paypal_plan_id' => $planId,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
 }
