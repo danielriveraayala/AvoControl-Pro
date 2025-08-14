@@ -957,7 +957,7 @@ class PayPalService
     public function createSubscriptionPlan($plan): array
     {
         try {
-            $productId = $this->createProduct($plan);
+            $productId = $this->createProductForPlan($plan);
             if (!$productId['success']) {
                 return $productId;
             }
@@ -1059,7 +1059,7 @@ class PayPalService
     /**
      * Create product in PayPal (required for subscription plans)
      */
-    private function createProduct($plan): array
+    private function createProductForPlan($plan): array
     {
         try {
             $productData = [
