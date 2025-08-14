@@ -1327,12 +1327,12 @@
                 }
                 
                 // Update PayPal button ID if needed
-                if (config('app.debug')) {
-                    const debugInfo = card.querySelector('[data-debug-info]');
-                    if (debugInfo) {
-                        debugInfo.textContent = `Debug: PayPal ID = ${currentData.paypal_plan_id || 'NULL'}`;
-                    }
+                @if(config('app.debug'))
+                const debugInfo = card.querySelector('[data-debug-info]');
+                if (debugInfo) {
+                    debugInfo.textContent = `Debug: PayPal ID = ${currentData.paypal_plan_id || 'NULL'}`;
                 }
+                @endif
             });
         }
         
