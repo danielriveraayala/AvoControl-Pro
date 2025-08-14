@@ -258,7 +258,8 @@ class LandingPageController extends Controller
             'trial_days' => $plan->trial_days,
             'description' => $plan->description,
             'paypal_plan_id' => $plan->paypal_plan_id,
-            'metadata' => $plan->metadata
+            'metadata' => $plan->metadata,
+            'show_on_landing' => $plan->show_on_landing ?? true
         ];
     }
 
@@ -284,7 +285,8 @@ class LandingPageController extends Controller
                     'highlighted' => false,
                     'cta' => 'Prueba Gratis',
                     'badge' => null,
-                    'color' => '#10B981'
+                    'color' => '#10B981',
+                    'show_on_landing' => true
                 ],
                 [
                     'key' => 'basic',
@@ -302,7 +304,8 @@ class LandingPageController extends Controller
                     'highlighted' => false,
                     'cta' => 'Comenzar',
                     'badge' => null,
-                    'color' => '#3B82F6'
+                    'color' => '#3B82F6',
+                    'show_on_landing' => true
                 ],
                 [
                     'key' => 'premium',
@@ -322,7 +325,8 @@ class LandingPageController extends Controller
                     'highlighted' => true,
                     'cta' => 'Más Popular',
                     'badge' => 'MÁS POPULAR',
-                    'color' => '#8B5CF6'
+                    'color' => '#8B5CF6',
+                    'show_on_landing' => true
                 ],
                 [
                     'key' => 'enterprise',
@@ -342,7 +346,8 @@ class LandingPageController extends Controller
                     'highlighted' => false,
                     'cta' => 'Contactar',
                     'badge' => null,
-                    'color' => '#F59E0B'
+                    'color' => '#F59E0B',
+                    'show_on_landing' => true
                 ]
             ]),
             'yearly' => collect([])

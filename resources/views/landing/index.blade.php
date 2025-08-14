@@ -1032,7 +1032,7 @@
                                         <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
                                             {{ $plan['cta'] ?? 'Comenzar' }}
                                         </a>
-                                        @if(!$plan['show_on_landing'] ?? false)
+                                        @if(!($plan['show_on_landing'] ?? true))
                                             <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
                                                 <small>Ver más detalles →</small>
                                             </a>
@@ -1092,7 +1092,7 @@
                                         <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
                                             {{ $plan['cta'] ?? 'Comenzar' }}
                                         </a>
-                                        @if(!$plan['show_on_landing'] ?? false)
+                                        @if(!($plan['show_on_landing'] ?? true))
                                             <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
                                                 <small>Ver más detalles →</small>
                                             </a>
