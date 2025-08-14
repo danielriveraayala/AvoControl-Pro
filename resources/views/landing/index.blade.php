@@ -979,18 +979,18 @@
 
             <!-- Pricing Toggle Switch -->
             <div class="pricing-toggle text-center mb-5" data-aos="fade-up" data-aos-delay="150">
-                <span class="toggle-label {{ isset($plans['monthly']) && $plans['monthly']->isNotEmpty() ? 'active' : '' }}">Mensual</span>
+                <span class="toggle-label active" id="monthlyLabel">Mensual</span>
                 <label class="switch mx-3">
-                    <input type="checkbox" id="pricingToggle" {{ isset($plans['yearly']) && $plans['yearly']->isNotEmpty() ? 'checked' : '' }}>
+                    <input type="checkbox" id="pricingToggle">
                     <span class="slider"></span>
                 </label>
-                <span class="toggle-label {{ isset($plans['yearly']) && $plans['yearly']->isNotEmpty() ? 'active' : '' }}">
+                <span class="toggle-label" id="yearlyLabel">
                     Anual <small class="badge bg-success ms-2">Ahorra 15%</small>
                 </span>
             </div>
             
             <!-- Monthly Plans -->
-            <div class="pricing-plans monthly-plans {{ isset($plans['monthly']) && $plans['monthly']->isNotEmpty() ? 'active' : '' }}">
+            <div class="pricing-plans monthly-plans active">
                 <div class="row g-4 align-items-stretch justify-content-center">
                     @if(isset($plans['monthly']))
                         @foreach($plans['monthly'] as $plan)
@@ -1024,15 +1024,20 @@
                                 <div class="pricing-footer">
                                     @if(!empty($plan['paypal_plan_id']))
                                         <!-- PayPal Button -->
-                                        <div id="paypal-button-{{ $plan['key'] }}" class="paypal-button-container"></div>
+                                        <div id="paypal-button-monthly-{{ $plan['key'] }}" class="paypal-button-container"></div>
+                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
+                                            <small>Ver más detalles →</small>
+                                        </a>
                                     @else
                                         <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
                                             {{ $plan['cta'] ?? 'Comenzar' }}
                                         </a>
+                                        @if(!$plan['show_on_landing'] ?? false)
+                                            <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
+                                                <small>Ver más detalles →</small>
+                                            </a>
+                                        @endif
                                     @endif
-                                    <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
-                                        <small>Ver más detalles →</small>
-                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -1042,7 +1047,7 @@
             </div>
 
             <!-- Yearly Plans -->
-            <div class="pricing-plans yearly-plans {{ isset($plans['yearly']) && $plans['yearly']->isNotEmpty() ? 'active' : 'd-none' }}">
+            <div class="pricing-plans yearly-plans d-none">
                 <div class="row g-4 align-items-stretch justify-content-center">
                     @if(isset($plans['yearly']))
                         @foreach($plans['yearly'] as $plan)
@@ -1079,15 +1084,20 @@
                                 <div class="pricing-footer">
                                     @if(!empty($plan['paypal_plan_id']))
                                         <!-- PayPal Button -->
-                                        <div id="paypal-button-{{ $plan['key'] }}" class="paypal-button-container"></div>
+                                        <div id="paypal-button-yearly-{{ $plan['key'] }}" class="paypal-button-container"></div>
+                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
+                                            <small>Ver más detalles →</small>
+                                        </a>
                                     @else
                                         <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
                                             {{ $plan['cta'] ?? 'Comenzar' }}
                                         </a>
+                                        @if(!$plan['show_on_landing'] ?? false)
+                                            <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
+                                                <small>Ver más detalles →</small>
+                                            </a>
+                                        @endif
                                     @endif
-                                    <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
-                                        <small>Ver más detalles →</small>
-                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -1268,7 +1278,8 @@
         const pricingToggle = document.getElementById('pricingToggle');
         const monthlyPlans = document.querySelector('.monthly-plans');
         const yearlyPlans = document.querySelector('.yearly-plans');
-        const toggleLabels = document.querySelectorAll('.toggle-label');
+        const monthlyLabel = document.getElementById('monthlyLabel');
+        const yearlyLabel = document.getElementById('yearlyLabel');
 
         if (pricingToggle) {
             pricingToggle.addEventListener('change', function() {
@@ -1279,8 +1290,13 @@
                     yearlyPlans?.classList.remove('d-none');
                     yearlyPlans?.classList.add('active');
                     
-                    toggleLabels[0]?.classList.remove('active');
-                    toggleLabels[1]?.classList.add('active');
+                    monthlyLabel?.classList.remove('active');
+                    yearlyLabel?.classList.add('active');
+                    
+                    // Re-initialize AOS for newly visible elements
+                    setTimeout(() => {
+                        AOS.refresh();
+                    }, 100);
                 } else {
                     // Show monthly plans
                     yearlyPlans?.classList.remove('active');
@@ -1288,8 +1304,13 @@
                     monthlyPlans?.classList.remove('d-none');
                     monthlyPlans?.classList.add('active');
                     
-                    toggleLabels[0]?.classList.add('active');
-                    toggleLabels[1]?.classList.remove('active');
+                    monthlyLabel?.classList.add('active');
+                    yearlyLabel?.classList.remove('active');
+                    
+                    // Re-initialize AOS for newly visible elements
+                    setTimeout(() => {
+                        AOS.refresh();
+                    }, 100);
                 }
             });
         }
@@ -1662,9 +1683,9 @@
         "offers": {
             "@type": "AggregateOffer",
             "lowPrice": "0",
-            "highPrice": "199",
+            "highPrice": "499",
             "priceCurrency": "USD",
-            "offerCount": "4"
+            "offerCount": "9"
         },
         "aggregateRating": {
             "@type": "AggregateRating",
@@ -1673,5 +1694,73 @@
         }
     }
     </script>
+
+    <!-- PayPal SDK and Buttons -->
+    @if(config('services.paypal.client_id'))
+    <script src="https://www.paypal.com/sdk/js?client-id={{ config('services.paypal.client_id') }}&vault=true&intent=subscription"></script>
+    <script>
+        // Render PayPal buttons for monthly plans
+        @if(isset($plans['monthly']))
+            @foreach($plans['monthly'] as $plan)
+                @if(!empty($plan['paypal_plan_id']))
+                    if (document.getElementById('paypal-button-monthly-{{ $plan['key'] }}')) {
+                        paypal.Buttons({
+                            style: {
+                                shape: 'rect',
+                                color: 'gold',
+                                layout: 'vertical',
+                                label: 'subscribe'
+                            },
+                            createSubscription: function(data, actions) {
+                                return actions.subscription.create({
+                                    'plan_id': '{{ $plan['paypal_plan_id'] }}'
+                                });
+                            },
+                            onApprove: function(data, actions) {
+                                // Redirect to registration with subscription ID
+                                window.location.href = '/register?subscription=' + data.subscriptionID + '&plan={{ $plan['key'] }}';
+                            },
+                            onError: function(err) {
+                                console.error('PayPal Error:', err);
+                                alert('Ocurrió un error al procesar el pago. Por favor intenta nuevamente.');
+                            }
+                        }).render('#paypal-button-monthly-{{ $plan['key'] }}');
+                    }
+                @endif
+            @endforeach
+        @endif
+
+        // Render PayPal buttons for yearly plans
+        @if(isset($plans['yearly']))
+            @foreach($plans['yearly'] as $plan)
+                @if(!empty($plan['paypal_plan_id']))
+                    if (document.getElementById('paypal-button-yearly-{{ $plan['key'] }}')) {
+                        paypal.Buttons({
+                            style: {
+                                shape: 'rect',
+                                color: 'gold',
+                                layout: 'vertical',
+                                label: 'subscribe'
+                            },
+                            createSubscription: function(data, actions) {
+                                return actions.subscription.create({
+                                    'plan_id': '{{ $plan['paypal_plan_id'] }}'
+                                });
+                            },
+                            onApprove: function(data, actions) {
+                                // Redirect to registration with subscription ID
+                                window.location.href = '/register?subscription=' + data.subscriptionID + '&plan={{ $plan['key'] }}';
+                            },
+                            onError: function(err) {
+                                console.error('PayPal Error:', err);
+                                alert('Ocurrió un error al procesar el pago. Por favor intenta nuevamente.');
+                            }
+                        }).render('#paypal-button-yearly-{{ $plan['key'] }}');
+                    }
+                @endif
+            @endforeach
+        @endif
+    </script>
+    @endif
 </body>
 </html>
