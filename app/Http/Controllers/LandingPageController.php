@@ -32,15 +32,12 @@ class LandingPageController extends Controller
             return $plan->hasAnnualPricing();
         });
 
-        // Format plans for both monthly and annual display
-        $monthlyPlans = $allPlans->map(function ($plan) {
-            return $this->formatPlanForLanding($plan, 'monthly');
-        });
-
-        $yearlyPlans = $allPlans->filter(function ($plan) {
-            return $plan->hasAnnualPricing();
-        })->map(function ($plan) {
-            return $this->formatPlanForLanding($plan, 'annual');
+        // Format plans with both monthly and annual data
+        $formattedPlans = $allPlans->map(function ($plan) {
+            return [
+                'monthly' => $this->formatPlanForLanding($plan, 'monthly'),
+                'annual' => $plan->hasAnnualPricing() ? $this->formatPlanForLanding($plan, 'annual') : null
+            ];
         });
 
         // Fallback to default plans if database is empty
@@ -49,8 +46,7 @@ class LandingPageController extends Controller
             $hasAnnualPlans = false;
         } else {
             $plans = [
-                'monthly' => $monthlyPlans,
-                'yearly' => $yearlyPlans,
+                'plans' => $formattedPlans,
                 'hasAnnualPlans' => $hasAnnualPlans
             ];
         }
