@@ -977,7 +977,8 @@
                 Elige el plan que mejor se adapte a las necesidades de tu negocio
             </p>
 
-            <!-- Pricing Toggle Switch -->
+            <!-- Pricing Toggle Switch (only show if plans have annual pricing) -->
+            @if($plans['hasAnnualPlans'] ?? false)
             <div class="pricing-toggle text-center mb-5" data-aos="fade-up" data-aos-delay="150">
                 <span class="toggle-label active" id="monthlyLabel">Mensual</span>
                 <label class="switch mx-3">
@@ -988,6 +989,7 @@
                     Anual <small class="badge bg-success ms-2">Ahorra 15%</small>
                 </span>
             </div>
+            @endif
             
             <!-- Monthly Plans -->
             <div class="pricing-plans monthly-plans active">

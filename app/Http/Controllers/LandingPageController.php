@@ -23,34 +23,36 @@ class LandingPageController extends Controller
         ];
 
         // Get dynamic pricing plans from database
-        $monthlyPlans = SubscriptionPlan::visibleOnLanding()
-            ->monthly()
+        $allPlans = SubscriptionPlan::visibleOnLanding()
             ->ordered()
-            ->get()
-            ->map(function ($plan) {
-                return $this->formatPlanForLanding($plan);
-            });
+            ->get();
 
-        $yearlyPlans = SubscriptionPlan::visibleOnLanding()
-            ->yearly()
-            ->ordered()
-            ->get()
-            ->map(function ($plan) {
-                return $this->formatPlanForLanding($plan);
-            });
+        // Check if any plan has annual pricing to show the switch
+        $hasAnnualPlans = $allPlans->some(function ($plan) {
+            return $plan->hasAnnualPricing();
+        });
+
+        // Format plans for both monthly and annual display
+        $monthlyPlans = $allPlans->map(function ($plan) {
+            return $this->formatPlanForLanding($plan, 'monthly');
+        });
+
+        $yearlyPlans = $allPlans->filter(function ($plan) {
+            return $plan->hasAnnualPricing();
+        })->map(function ($plan) {
+            return $this->formatPlanForLanding($plan, 'annual');
+        });
 
         // Fallback to default plans if database is empty
-        if ($monthlyPlans->isEmpty()) {
+        if ($allPlans->isEmpty()) {
             $plans = $this->getDefaultPlans();
+            $hasAnnualPlans = false;
         } else {
             $plans = [
                 'monthly' => $monthlyPlans,
-                'yearly' => $yearlyPlans
+                'yearly' => $yearlyPlans,
+                'hasAnnualPlans' => $hasAnnualPlans
             ];
-            
-            // Debug: Let's see what PayPal IDs we have
-            \Log::info('Monthly Plans PayPal IDs:', $monthlyPlans->pluck('paypal_plan_id', 'key')->toArray());
-            \Log::info('Yearly Plans PayPal IDs:', $yearlyPlans->pluck('paypal_plan_id', 'key')->toArray());
         }
 
         // Features sections
@@ -199,7 +201,7 @@ class LandingPageController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        $formattedPlan = $this->formatPlanForLanding($plan);
+        $formattedPlan = $this->formatPlanForLanding($plan, 'monthly');
 
         // SEO for specific plan
         $seo = [
@@ -216,7 +218,7 @@ class LandingPageController extends Controller
     /**
      * Format plan data for landing page display
      */
-    private function formatPlanForLanding($plan)
+    private function formatPlanForLanding($plan, $cycle = 'monthly')
     {
         $availableFeatures = SubscriptionPlan::getAvailableFeatures();
         $planFeatures = [];
@@ -244,26 +246,42 @@ class LandingPageController extends Controller
             $planFeatures[] = ($plan->max_locations == -1 ? 'Ubicaciones ilimitadas' : "{$plan->max_locations} ubicaciones");
         }
 
+        // Get price and PayPal ID based on cycle
+        $price = $plan->getPriceForCycle($cycle);
+        $paypalPlanId = $plan->getPayPalPlanId($cycle);
+        $duration = $cycle === 'annual' ? 'año' : 'mes';
+
+        // Calculate savings for annual plans
+        $savings = null;
+        $monthlyEquivalent = null;
+        if ($cycle === 'annual' && $plan->hasAnnualPricing()) {
+            $savings = $plan->getAnnualSavings();
+            $monthlyEquivalent = $plan->getMonthlyEquivalent();
+        }
+
         return [
             'id' => $plan->id,
             'key' => $plan->key,
             'name' => $plan->name,
-            'price' => $plan->price,
+            'price' => $price,
             'currency' => $plan->currency,
-            'billing_cycle' => $plan->billing_cycle,
-            'duration' => $plan->billing_cycle === 'yearly' ? 'año' : 'mes',
+            'billing_cycle' => $cycle,
+            'duration' => $duration,
             'features' => array_slice($planFeatures, 0, 8), // Limit to 8 features for display
             'all_features' => $planFeatures,
             'highlighted' => $plan->is_featured,
             'cta' => $plan->button_text ?? 'Comenzar',
-            'badge' => $plan->popular_badge,
+            'badge' => $cycle === 'annual' && $savings ? "AHORRA $" . number_format($savings, 0) : $plan->popular_badge,
             'color' => $plan->color ?? '#3B82F6',
             'icon' => $plan->icon ?? 'fas fa-star',
             'trial_days' => $plan->trial_days,
             'description' => $plan->description,
-            'paypal_plan_id' => $plan->paypal_plan_id,
+            'paypal_plan_id' => $paypalPlanId,
             'metadata' => $plan->metadata,
-            'show_on_landing' => $plan->show_on_landing ?? true
+            'show_on_landing' => $plan->show_on_landing ?? true,
+            'annual_savings' => $savings,
+            'monthly_equivalent' => $monthlyEquivalent,
+            'discount_percentage' => $plan->annual_discount_percentage
         ];
     }
 
@@ -354,7 +372,8 @@ class LandingPageController extends Controller
                     'show_on_landing' => true
                 ]
             ]),
-            'yearly' => collect([])
+            'yearly' => collect([]),
+            'hasAnnualPlans' => false
         ];
     }
 }

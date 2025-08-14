@@ -12,6 +12,8 @@ class SubscriptionPlan extends Model
         'name',
         'description',
         'price',
+        'annual_price',
+        'annual_discount_percentage',
         'currency',
         'billing_cycle',
         'trial_days',
@@ -22,7 +24,9 @@ class SubscriptionPlan extends Model
         'button_text',
         'popular_badge',
         'paypal_plan_id',
+        'paypal_annual_plan_id',
         'stripe_plan_id',
+        'stripe_annual_plan_id',
         'sort_order',
         'max_users',
         'max_lots_per_month',
@@ -36,6 +40,8 @@ class SubscriptionPlan extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'annual_price' => 'decimal:2',
+        'annual_discount_percentage' => 'integer',
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'is_custom' => 'boolean',
@@ -98,21 +104,6 @@ class SubscriptionPlan extends Model
         return $query->where('show_on_landing', true)->where('is_active', true);
     }
 
-    /**
-     * Scope for monthly plans
-     */
-    public function scopeMonthly($query)
-    {
-        return $query->where('billing_cycle', 'monthly');
-    }
-
-    /**
-     * Scope for annual plans
-     */
-    public function scopeYearly($query)
-    {
-        return $query->where('billing_cycle', 'yearly');
-    }
 
     /**
      * Subscriptions relationship
@@ -195,6 +186,91 @@ class SubscriptionPlan extends Model
         }
         
         return true;
+    }
+
+    /**
+     * Check if plan has annual pricing
+     */
+    public function hasAnnualPricing(): bool
+    {
+        return !is_null($this->annual_price) && $this->annual_price > 0;
+    }
+
+    /**
+     * Get price for specific billing cycle
+     */
+    public function getPriceForCycle(string $cycle): ?float
+    {
+        return $cycle === 'annual' ? $this->annual_price : $this->price;
+    }
+
+    /**
+     * Get PayPal plan ID for specific billing cycle
+     */
+    public function getPayPalPlanId(string $cycle): ?string
+    {
+        return $cycle === 'annual' ? $this->paypal_annual_plan_id : $this->paypal_plan_id;
+    }
+
+    /**
+     * Get formatted price for specific cycle
+     */
+    public function getFormattedPrice(string $cycle = 'monthly'): string
+    {
+        $price = $this->getPriceForCycle($cycle);
+        
+        if ($price == 0) {
+            return 'Gratis';
+        }
+        
+        $period = $cycle === 'annual' ? 'año' : 'mes';
+        return '$' . number_format($price, 0) . '/' . $period;
+    }
+
+    /**
+     * Calculate annual price automatically with discount
+     */
+    public function calculateAnnualPrice(int $discountPercentage = 15): float
+    {
+        if ($this->price <= 0) {
+            return 0;
+        }
+        
+        $monthlyTotal = $this->price * 12;
+        return $monthlyTotal * (1 - ($discountPercentage / 100));
+    }
+
+    /**
+     * Get annual savings amount
+     */
+    public function getAnnualSavings(): float
+    {
+        if (!$this->hasAnnualPricing()) {
+            return 0;
+        }
+        
+        $monthlyTotal = $this->price * 12;
+        return $monthlyTotal - $this->annual_price;
+    }
+
+    /**
+     * Get monthly equivalent for annual pricing
+     */
+    public function getMonthlyEquivalent(): float
+    {
+        if (!$this->hasAnnualPricing()) {
+            return $this->price;
+        }
+        
+        return $this->annual_price / 12;
+    }
+
+    /**
+     * Scope for plans with annual pricing
+     */
+    public function scopeWithAnnualPricing($query)
+    {
+        return $query->whereNotNull('annual_price')->where('annual_price', '>', 0);
     }
 
     /**
