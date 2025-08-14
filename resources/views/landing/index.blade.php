@@ -994,7 +994,7 @@
             <!-- Dynamic Plans -->
             <div class="pricing-plans">
                 <div class="row g-4 align-items-stretch justify-content-center">
-                    @if(isset($plans['plans']))
+                    @if(isset($plans['plans']) && count($plans['plans']) > 0)
                         @foreach($plans['plans'] as $planData)
                         @php 
                             $plan = $planData['monthly']; // Default to monthly data
@@ -1063,6 +1063,65 @@
                             </div>
                         </div>
                         @endforeach
+                    @elseif(isset($plans['monthly']) && count($plans['monthly']) > 0)
+                        {{-- Fallback to old structure --}}
+                        @foreach($plans['monthly'] as $plan)
+                        <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
+                            <div class="pricing-card {{ $plan['highlighted'] ?? false ? 'highlighted' : '' }}" style="border-top: 4px solid {{ $plan['color'] ?? '#3B82F6' }};">
+                                @if(!empty($plan['badge']))
+                                    <div class="plan-badge" style="background: {{ $plan['color'] ?? '#3B82F6' }};">{{ $plan['badge'] }}</div>
+                                @endif
+                                <div class="pricing-header">
+                                    @if(!empty($plan['icon']))
+                                        <i class="{{ $plan['icon'] }} mb-3" style="font-size: 2.5rem; color: {{ $plan['color'] ?? '#3B82F6' }};"></i>
+                                    @endif
+                                    <div class="plan-name">{{ $plan['name'] }}</div>
+                                    <div class="plan-price">
+                                        @if($plan['price'] == 0)
+                                            Gratis
+                                        @else
+                                            <sup>$</sup>{{ number_format($plan['price'], 0) }}
+                                        @endif
+                                        <span>/{{ $plan['duration'] ?? 'mes' }}</span>
+                                    </div>
+                                    @if(!empty($plan['trial_days']) && $plan['trial_days'] > 0)
+                                        <small class="text-muted">{{ $plan['trial_days'] }} días de prueba gratis</small>
+                                    @endif
+                                </div>
+                                <ul class="pricing-features">
+                                    @foreach($plan['features'] as $feature)
+                                    <li>{{ $feature }}</li>
+                                    @endforeach
+                                </ul>
+                                <div class="pricing-footer">
+                                    @if(!empty($plan['paypal_plan_id']))
+                                        <div id="paypal-button-{{ $plan['key'] }}" class="paypal-button-container"></div>
+                                        <small class="text-muted d-block mt-2">Pago seguro con PayPal</small>
+                                    @else
+                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
+                                            {{ $plan['cta'] ?? 'Comenzar' }}
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    @else
+                        {{-- Debug: No plans found --}}
+                        <div class="col-12 text-center">
+                            <div class="alert alert-warning">
+                                <h4>⚠️ No hay planes disponibles</h4>
+                                <p>Los planes no se están mostrando. Posibles causas:</p>
+                                <ul class="text-left d-inline-block">
+                                    <li>Los planes tienen <code>show_on_landing = false</code></li>
+                                    <li>Los planes tienen <code>is_active = false</code></li>
+                                    <li>No hay planes creados en la base de datos</li>
+                                </ul>
+                                <p class="mt-3">
+                                    <a href="/developer/plans" class="btn btn-primary">Ir a Gestión de Planes</a>
+                                </p>
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
