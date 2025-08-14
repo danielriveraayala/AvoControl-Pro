@@ -88,10 +88,11 @@ class SubscriptionPlan extends Model
 
     /**
      * Subscriptions relationship
+     * Using 'plan' field instead of 'plan_id' since existing table uses plan string
      */
     public function subscriptions(): HasMany
     {
-        return $this->hasMany(Subscription::class, 'plan_id');
+        return $this->hasMany(Subscription::class, 'plan', 'key');
     }
 
     /**
@@ -159,7 +160,7 @@ class SubscriptionPlan extends Model
             return false;
         }
         
-        // Can't delete if it's a system plan (trial, basic, premium, enterprise)
+        // Can't delete if it's a system plan (trial, basic, premium, enterprise) and not custom
         $systemPlans = ['trial', 'basic', 'premium', 'enterprise'];
         if (in_array($this->key, $systemPlans) && !$this->is_custom) {
             return false;

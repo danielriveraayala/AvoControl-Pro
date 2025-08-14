@@ -113,6 +113,14 @@ class Subscription extends Model
     }
 
     /**
+     * Get the subscription plan
+     */
+    public function subscriptionPlan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'plan', 'key');
+    }
+
+    /**
      * Check if subscription is active
      */
     public function isActive(): bool

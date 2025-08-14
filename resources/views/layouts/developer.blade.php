@@ -113,7 +113,7 @@
                         
                         <!-- Billing Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                            <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.subscriptions.*') || request()->routeIs('developer.paypal.*') || request()->routeIs('developer.billing.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
+                            <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.subscriptions.*') || request()->routeIs('developer.paypal.*') || request()->routeIs('developer.billing.*') || request()->routeIs('developer.plans.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
                                 Billing
                                 <svg class="ml-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -129,6 +129,9 @@
                                  x-transition:leave-end="transform opacity-0 scale-95"
                                  class="absolute z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                                 <div class="py-1">
+                                    <a href="{{ route('developer.plans.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.plans.*') ? 'bg-gray-100 text-gray-900' : '' }}">
+                                        <i class="fas fa-layer-group mr-2"></i>Gestión de Planes
+                                    </a>
                                     <a href="{{ route('developer.subscriptions.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 {{ request()->routeIs('developer.subscriptions.*') ? 'bg-gray-100 text-gray-900' : '' }}">
                                         <i class="fas fa-credit-card mr-2"></i>Suscripciones
                                     </a>
@@ -244,6 +247,9 @@
                 <!-- Billing Section -->
                 <div class="border-t border-gray-200 pt-2 mt-2">
                     <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Billing</div>
+                    <a href="{{ route('developer.plans.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.plans.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
+                        <i class="fas fa-layer-group mr-2"></i>Gestión de Planes
+                    </a>
                     <a href="{{ route('developer.subscriptions.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.subscriptions.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
                         <i class="fas fa-credit-card mr-2"></i>Suscripciones
                     </a>
