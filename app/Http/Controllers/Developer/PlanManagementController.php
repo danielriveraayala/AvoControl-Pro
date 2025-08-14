@@ -48,6 +48,8 @@ class PlanManagementController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'annual_price' => 'nullable|numeric|min:0',
+            'annual_discount_percentage' => 'nullable|integer|min:0|max:100',
             'currency' => 'required|string|size:3',
             'billing_cycle' => 'required|in:monthly,yearly',
             'trial_days' => 'required|integer|min:0',
@@ -60,9 +62,12 @@ class PlanManagementController extends Controller
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'is_custom' => 'boolean',
+            'show_on_landing' => 'boolean',
             'color' => 'required|string|max:7',
             'icon' => 'required|string|max:50',
             'sort_order' => 'required|integer|min:0',
+            'button_text' => 'nullable|string|max:100',
+            'popular_badge' => 'nullable|string|max:50',
         ]);
 
         try {
@@ -73,6 +78,12 @@ class PlanManagementController extends Controller
             if (empty($validated['max_users'])) $validated['max_users'] = null;
             if (empty($validated['max_lots_per_month'])) $validated['max_lots_per_month'] = null;
             if (empty($validated['max_storage_gb'])) $validated['max_storage_gb'] = null;
+            
+            // Handle annual pricing fields
+            if (empty($validated['annual_price'])) $validated['annual_price'] = null;
+            if (empty($validated['annual_discount_percentage'])) $validated['annual_discount_percentage'] = null;
+            if (empty($validated['button_text'])) $validated['button_text'] = null;
+            if (empty($validated['popular_badge'])) $validated['popular_badge'] = null;
             
             // Create the plan
             $plan = SubscriptionPlan::create($validated);
@@ -129,6 +140,8 @@ class PlanManagementController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'annual_price' => 'nullable|numeric|min:0',
+            'annual_discount_percentage' => 'nullable|integer|min:0|max:100',
             'currency' => 'required|string|size:3',
             'billing_cycle' => 'required|in:monthly,yearly',
             'trial_days' => 'required|integer|min:0',
@@ -141,9 +154,12 @@ class PlanManagementController extends Controller
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'is_custom' => 'boolean',
+            'show_on_landing' => 'boolean',
             'color' => 'required|string|max:7',
             'icon' => 'required|string|max:50',
             'sort_order' => 'required|integer|min:0',
+            'button_text' => 'nullable|string|max:100',
+            'popular_badge' => 'nullable|string|max:50',
         ]);
 
         try {
@@ -154,6 +170,12 @@ class PlanManagementController extends Controller
             if (empty($validated['max_users'])) $validated['max_users'] = null;
             if (empty($validated['max_lots_per_month'])) $validated['max_lots_per_month'] = null;
             if (empty($validated['max_storage_gb'])) $validated['max_storage_gb'] = null;
+            
+            // Handle annual pricing fields
+            if (empty($validated['annual_price'])) $validated['annual_price'] = null;
+            if (empty($validated['annual_discount_percentage'])) $validated['annual_discount_percentage'] = null;
+            if (empty($validated['button_text'])) $validated['button_text'] = null;
+            if (empty($validated['popular_badge'])) $validated['popular_badge'] = null;
             
             // Update the plan
             $plan->update($validated);

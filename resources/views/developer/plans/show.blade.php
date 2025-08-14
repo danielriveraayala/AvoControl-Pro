@@ -56,6 +56,21 @@
                         <p class="text-gray-600">
                             por {{ $plan->billing_cycle === 'yearly' ? 'año' : 'mes' }}
                         </p>
+                        
+                        <!-- Annual Pricing Info -->
+                        @if($plan->hasAnnualPricing())
+                            <div class="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                <div class="text-sm text-orange-800">
+                                    <div class="font-semibold mb-1">💰 Precio Anual Disponible</div>
+                                    <div class="space-y-1">
+                                        <div><strong>Anual:</strong> ${{ number_format($plan->annual_price, 2) }}</div>
+                                        <div><strong>Ahorro:</strong> ${{ number_format($plan->getAnnualSavings(), 2) }} ({{ $plan->annual_discount_percentage }}%)</div>
+                                        <div><strong>Equivalente mensual:</strong> ${{ number_format($plan->getMonthlyEquivalent(), 2) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                        
                         @if($plan->trial_days > 0)
                             <div class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                 {{ $plan->trial_days }} días gratis
@@ -133,10 +148,38 @@
                             <dt class="text-sm font-medium text-gray-500">Orden de Aparición</dt>
                             <dd class="mt-1 text-sm text-gray-900">{{ $plan->sort_order ?? 'No definido' }}</dd>
                         </div>
+                        @if($plan->hasAnnualPricing())
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Precio Anual</dt>
+                                <dd class="mt-1 text-sm text-gray-900">${{ number_format($plan->annual_price, 2) }} {{ $plan->currency }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Descuento Anual</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $plan->annual_discount_percentage }}%</dd>
+                            </div>
+                        @endif
+                        @if($plan->button_text)
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Texto del Botón</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $plan->button_text }}</dd>
+                            </div>
+                        @endif
+                        @if($plan->popular_badge)
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Badge Especial</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $plan->popular_badge }}</dd>
+                            </div>
+                        @endif
                         @if($plan->paypal_plan_id)
                             <div>
                                 <dt class="text-sm font-medium text-gray-500">ID PayPal</dt>
                                 <dd class="mt-1 text-sm text-gray-900 font-mono bg-blue-50 px-2 py-1 rounded">{{ $plan->paypal_plan_id }}</dd>
+                            </div>
+                        @endif
+                        @if($plan->paypal_annual_plan_id)
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">ID PayPal Anual</dt>
+                                <dd class="mt-1 text-sm text-gray-900 font-mono bg-blue-50 px-2 py-1 rounded">{{ $plan->paypal_annual_plan_id }}</dd>
                             </div>
                         @endif
                         <div>

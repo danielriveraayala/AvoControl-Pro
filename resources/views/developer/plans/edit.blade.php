@@ -134,6 +134,91 @@
                 </div>
             </div>
 
+            <!-- Annual Pricing (Optional) -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-calendar-alt text-orange-600 mr-2"></i>Precios Anuales (Opcional)
+                    </h3>
+                    <p class="text-sm text-gray-600 mt-1">Configura precios anuales para ofrecer descuentos por pago adelantado</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Annual Price -->
+                        <div>
+                            <label for="annual_price" class="block text-sm font-medium text-gray-700">Precio Anual</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                <input type="number" name="annual_price" id="annual_price" value="{{ old('annual_price', $plan->annual_price) }}" min="0" step="0.01"
+                                       class="pl-7 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       placeholder="0.00">
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">Dejar vacío si no se ofrece precio anual</p>
+                            @error('annual_price')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Annual Discount Percentage -->
+                        <div>
+                            <label for="annual_discount_percentage" class="block text-sm font-medium text-gray-700">Descuento Anual (%)</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <input type="number" name="annual_discount_percentage" id="annual_discount_percentage" value="{{ old('annual_discount_percentage', $plan->annual_discount_percentage ?? 15) }}" min="0" max="100"
+                                       class="block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       placeholder="15">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">%</span>
+                                </div>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">Porcentaje de descuento aplicado al precio anual</p>
+                            @error('annual_discount_percentage')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Current annual pricing info -->
+                    @if($plan->hasAnnualPricing())
+                        <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle text-green-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium text-green-900">Precios Anuales Configurados</h4>
+                                    <div class="mt-2 text-sm text-green-700">
+                                        <p><strong>Precio mensual:</strong> ${{ number_format($plan->price, 2) }}</p>
+                                        <p><strong>Precio anual:</strong> ${{ number_format($plan->annual_price, 2) }}</p>
+                                        <p><strong>Ahorro anual:</strong> ${{ number_format($plan->getAnnualSavings(), 2) }}</p>
+                                        <p><strong>Equivalente mensual:</strong> ${{ number_format($plan->getMonthlyEquivalent(), 2) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Auto-calculation helper -->
+                    <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-calculator text-blue-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-sm font-medium text-blue-900">Cálculo Automático</h4>
+                                <div class="mt-2 text-sm text-blue-700">
+                                    <p id="annual-calculation" class="mb-1">Modifica el precio mensual para ver el cálculo automático</p>
+                                    <button type="button" id="auto-calculate" class="text-blue-600 hover:text-blue-800 underline">
+                                        Calcular precio anual automáticamente
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- PayPal Integration Status -->
             @if($plan->paypal_plan_id)
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -291,6 +376,12 @@
                                        {{ old('is_custom', $plan->is_custom) ? 'checked' : '' }}>
                                 <label for="is_custom" class="ml-2 text-sm font-medium text-gray-700">Plan Personalizado</label>
                             </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" name="show_on_landing" id="show_on_landing" value="1"
+                                       class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                       {{ old('show_on_landing', $plan->show_on_landing) ? 'checked' : '' }}>
+                                <label for="show_on_landing" class="ml-2 text-sm font-medium text-gray-700">Mostrar en Landing Page</label>
+                            </div>
                         </div>
 
                         <!-- Appearance -->
@@ -359,5 +450,50 @@ document.getElementById('key').addEventListener('input', function(e) {
         .replace(/_+/g, '_')
         .replace(/^_|_$/g, '');
 });
+
+// Annual pricing calculation
+function updateAnnualCalculation() {
+    const monthlyPrice = parseFloat(document.getElementById('price').value) || 0;
+    const discountPercentage = parseInt(document.getElementById('annual_discount_percentage').value) || 15;
+    
+    if (monthlyPrice > 0) {
+        const yearlyTotal = monthlyPrice * 12;
+        const discountAmount = yearlyTotal * (discountPercentage / 100);
+        const annualPrice = yearlyTotal - discountAmount;
+        const monthlyEquivalent = annualPrice / 12;
+        
+        document.getElementById('annual-calculation').innerHTML = `
+            <strong>Precio mensual:</strong> $${monthlyPrice.toFixed(2)}<br>
+            <strong>Total anual sin descuento:</strong> $${yearlyTotal.toFixed(2)}<br>
+            <strong>Descuento ${discountPercentage}%:</strong> -$${discountAmount.toFixed(2)}<br>
+            <strong>Precio anual sugerido:</strong> $${annualPrice.toFixed(2)}<br>
+            <strong>Equivalente mensual:</strong> $${monthlyEquivalent.toFixed(2)}
+        `;
+    } else {
+        document.getElementById('annual-calculation').textContent = 'Modifica el precio mensual para ver el cálculo automático';
+    }
+}
+
+// Auto-calculate button
+document.getElementById('auto-calculate').addEventListener('click', function() {
+    const monthlyPrice = parseFloat(document.getElementById('price').value) || 0;
+    const discountPercentage = parseInt(document.getElementById('annual_discount_percentage').value) || 15;
+    
+    if (monthlyPrice > 0) {
+        const yearlyTotal = monthlyPrice * 12;
+        const annualPrice = yearlyTotal * (1 - (discountPercentage / 100));
+        document.getElementById('annual_price').value = annualPrice.toFixed(2);
+        updateAnnualCalculation();
+    } else {
+        alert('Por favor ingresa primero el precio mensual');
+    }
+});
+
+// Update calculation when prices change
+document.getElementById('price').addEventListener('input', updateAnnualCalculation);
+document.getElementById('annual_discount_percentage').addEventListener('input', updateAnnualCalculation);
+
+// Initial calculation
+updateAnnualCalculation();
 </script>
 @endpush
