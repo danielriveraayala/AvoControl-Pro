@@ -285,6 +285,21 @@ Route::prefix('developer')
             Route::get('/webhooks/{webhookLog}/details', [App\Http\Controllers\Developer\PayPalController::class, 'webhookDetails'])->name('webhooks.details');
         });
         
+        // Plans Management
+        Route::prefix('plans')->name('plans.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Developer\PlanManagementController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Developer\PlanManagementController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Developer\PlanManagementController::class, 'store'])->name('store');
+            Route::get('/{plan}', [App\Http\Controllers\Developer\PlanManagementController::class, 'show'])->name('show');
+            Route::get('/{plan}/edit', [App\Http\Controllers\Developer\PlanManagementController::class, 'edit'])->name('edit');
+            Route::put('/{plan}', [App\Http\Controllers\Developer\PlanManagementController::class, 'update'])->name('update');
+            Route::delete('/{plan}', [App\Http\Controllers\Developer\PlanManagementController::class, 'destroy'])->name('destroy');
+            Route::post('/{plan}/sync-paypal', [App\Http\Controllers\Developer\PlanManagementController::class, 'syncWithPayPal'])->name('sync-paypal');
+            Route::post('/{plan}/unsync-paypal', [App\Http\Controllers\Developer\PlanManagementController::class, 'unsyncFromPayPal'])->name('unsync-paypal');
+            Route::post('/{plan}/toggle-status', [App\Http\Controllers\Developer\PlanManagementController::class, 'toggleStatus'])->name('toggle-status');
+            Route::post('/{plan}/duplicate', [App\Http\Controllers\Developer\PlanManagementController::class, 'duplicate'])->name('duplicate');
+        });
+        
         // Billing & Analytics
         Route::prefix('billing')->name('billing.')->group(function () {
             Route::get('/', [App\Http\Controllers\Developer\BillingController::class, 'index'])->name('index');
