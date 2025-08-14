@@ -47,6 +47,10 @@ class LandingPageController extends Controller
                 'monthly' => $monthlyPlans,
                 'yearly' => $yearlyPlans
             ];
+            
+            // Debug: Let's see what PayPal IDs we have
+            \Log::info('Monthly Plans PayPal IDs:', $monthlyPlans->pluck('paypal_plan_id', 'key')->toArray());
+            \Log::info('Yearly Plans PayPal IDs:', $yearlyPlans->pluck('paypal_plan_id', 'key')->toArray());
         }
 
         // Features sections

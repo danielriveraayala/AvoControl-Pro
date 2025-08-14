@@ -1022,21 +1022,22 @@
                                     @endforeach
                                 </ul>
                                 <div class="pricing-footer">
+                                    {{-- Debug: Show PayPal ID status --}}
+                                    @if(config('app.debug'))
+                                        <small class="text-muted d-block mb-2">Debug: PayPal ID = {{ $plan['paypal_plan_id'] ?? 'NULL' }}</small>
+                                    @endif
+                                    
                                     @if(!empty($plan['paypal_plan_id']))
                                         <!-- PayPal Button -->
                                         <div id="paypal-button-monthly-{{ $plan['key'] }}" class="paypal-button-container"></div>
-                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
-                                            <small>Ver más detalles →</small>
-                                        </a>
+                                        <small class="text-muted d-block mt-2">Pago seguro con PayPal</small>
                                     @else
                                         <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
                                             {{ $plan['cta'] ?? 'Comenzar' }}
                                         </a>
-                                        @if(!($plan['show_on_landing'] ?? true))
-                                            <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
-                                                <small>Ver más detalles →</small>
-                                            </a>
-                                        @endif
+                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
+                                            <small>Ver más detalles →</small>
+                                        </a>
                                     @endif
                                 </div>
                             </div>
@@ -1082,21 +1083,22 @@
                                     @endforeach
                                 </ul>
                                 <div class="pricing-footer">
+                                    {{-- Debug: Show PayPal ID status --}}
+                                    @if(config('app.debug'))
+                                        <small class="text-muted d-block mb-2">Debug: PayPal ID = {{ $plan['paypal_plan_id'] ?? 'NULL' }}</small>
+                                    @endif
+                                    
                                     @if(!empty($plan['paypal_plan_id']))
                                         <!-- PayPal Button -->
                                         <div id="paypal-button-yearly-{{ $plan['key'] }}" class="paypal-button-container"></div>
-                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
-                                            <small>Ver más detalles →</small>
-                                        </a>
+                                        <small class="text-muted d-block mt-2">Pago seguro con PayPal</small>
                                     @else
                                         <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
                                             {{ $plan['cta'] ?? 'Comenzar' }}
                                         </a>
-                                        @if(!($plan['show_on_landing'] ?? true))
-                                            <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
-                                                <small>Ver más detalles →</small>
-                                            </a>
-                                        @endif
+                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
+                                            <small>Ver más detalles →</small>
+                                        </a>
                                     @endif
                                 </div>
                             </div>
