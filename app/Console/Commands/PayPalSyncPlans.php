@@ -61,6 +61,24 @@ class PayPalSyncPlans extends Command
 
         // Step 2: Process plans
         $plans = config('paypal.plans');
+        
+        // Fallback: try to load directly from config file if config() returns null
+        if (empty($plans)) {
+            try {
+                $paypalConfig = include(config_path('paypal.php'));
+                $plans = $paypalConfig['plans'] ?? [];
+            } catch (\Exception $e) {
+                $this->error('❌ Could not load PayPal plans configuration.');
+                $this->line("Error: {$e->getMessage()}");
+                return 1;
+            }
+        }
+        
+        if (empty($plans)) {
+            $this->error('❌ No PayPal plans found in configuration.');
+            return 1;
+        }
+        
         $specificPlan = $this->option('plan');
         
         if ($specificPlan) {
