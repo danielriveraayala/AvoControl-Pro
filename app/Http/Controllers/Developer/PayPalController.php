@@ -322,7 +322,20 @@ class PayPalController extends Controller
      */
     private function getPlansStatus(): array
     {
+        // Try to get plans from config, with fallback to direct file inclusion
         $plans = config('paypal.plans', []);
+        
+        // If config returns empty, try loading directly from file
+        if (empty($plans)) {
+            try {
+                $paypalConfig = include(config_path('paypal.php'));
+                $plans = $paypalConfig['plans'] ?? [];
+            } catch (\Exception $e) {
+                // If file loading fails, return empty array
+                $plans = [];
+            }
+        }
+        
         $status = [];
 
         foreach ($plans as $planKey => $planConfig) {

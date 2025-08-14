@@ -72,23 +72,33 @@
                     <div>
                         <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Estadísticas</h4>
                         @php
-                            $stats = \App\Models\PayPalWebhookLog::getStats();
+                            try {
+                                $stats = \App\Models\PayPalWebhookLog::getStats();
+                            } catch (\Exception $e) {
+                                // Fallback if table doesn't exist
+                                $stats = [
+                                    'total' => 0,
+                                    'processed' => 0,
+                                    'failed' => 0,
+                                    'today' => 0
+                                ];
+                            }
                         @endphp
                         <div class="grid grid-cols-2 gap-3">
                             <div class="bg-gray-50 p-3 rounded-lg text-center">
-                                <div class="text-lg font-bold text-blue-600">{{ number_format($stats['total']) }}</div>
+                                <div class="text-lg font-bold text-blue-600">{{ number_format($stats['total'] ?? 0) }}</div>
                                 <div class="text-xs text-gray-600">Total</div>
                             </div>
                             <div class="bg-gray-50 p-3 rounded-lg text-center">
-                                <div class="text-lg font-bold text-green-600">{{ number_format($stats['processed']) }}</div>
+                                <div class="text-lg font-bold text-green-600">{{ number_format($stats['processed'] ?? 0) }}</div>
                                 <div class="text-xs text-gray-600">Procesados</div>
                             </div>
                             <div class="bg-gray-50 p-3 rounded-lg text-center">
-                                <div class="text-lg font-bold text-red-600">{{ number_format($stats['failed']) }}</div>
+                                <div class="text-lg font-bold text-red-600">{{ number_format($stats['failed'] ?? 0) }}</div>
                                 <div class="text-xs text-gray-600">Fallidos</div>
                             </div>
                             <div class="bg-gray-50 p-3 rounded-lg text-center">
-                                <div class="text-lg font-bold text-yellow-600">{{ number_format($stats['today']) }}</div>
+                                <div class="text-lg font-bold text-yellow-600">{{ number_format($stats['today'] ?? 0) }}</div>
                                 <div class="text-xs text-gray-600">Hoy</div>
                             </div>
                         </div>
@@ -121,7 +131,12 @@
             </div>
             <div class="px-4 sm:px-6 py-4">
                 @php
-                    $recentWebhooks = \App\Models\PayPalWebhookLog::getRecent(20);
+                    try {
+                        $recentWebhooks = \App\Models\PayPalWebhookLog::getRecent(20);
+                    } catch (\Exception $e) {
+                        // Fallback if table doesn't exist
+                        $recentWebhooks = collect([]);
+                    }
                 @endphp
                 @if(count($recentWebhooks) > 0)
                     <div class="overflow-x-auto">
@@ -206,18 +221,23 @@
 @push('scripts')
 <script>
 function testWebhook() {
-    DevAlert.input(
-        'Test Webhook',
-        'Selecciona el tipo de evento a simular:',
-        'select',
-        {
+    // Use SweetAlert for select input since DevAlert.input doesn't exist
+    Swal.fire({
+        title: 'Test Webhook',
+        text: 'Selecciona el tipo de evento a simular:',
+        input: 'select',
+        inputOptions: {
             'BILLING.SUBSCRIPTION.ACTIVATED': 'BILLING.SUBSCRIPTION.ACTIVATED',
             'BILLING.SUBSCRIPTION.CANCELLED': 'BILLING.SUBSCRIPTION.CANCELLED',
             'BILLING.SUBSCRIPTION.SUSPENDED': 'BILLING.SUBSCRIPTION.SUSPENDED',
             'PAYMENT.SALE.COMPLETED': 'PAYMENT.SALE.COMPLETED'
         },
-        'BILLING.SUBSCRIPTION.ACTIVATED'
-    ).then((result) => {
+        inputValue: 'BILLING.SUBSCRIPTION.ACTIVATED',
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Test',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#3b82f6',
+    }).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Enviando webhook...', 'Procesando webhook de prueba');
             
