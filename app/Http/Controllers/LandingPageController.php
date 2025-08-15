@@ -22,49 +22,21 @@ class LandingPageController extends Controller
             'twitter_image' => 'https://picsum.photos/1200/600'
         ];
 
-        // Get dynamic pricing plans from database
-        $allPlans = SubscriptionPlan::visibleOnLanding()
+        // Get active plans from database
+        $dbPlans = SubscriptionPlan::visibleOnLanding()
             ->ordered()
             ->get();
 
-        // DEBUG: Log plans for debugging
-        \Log::info('Landing Page Plans Debug', [
-            'total_plans' => $allPlans->count(),
-            'plan_keys' => $allPlans->pluck('key')->toArray(),
-            'plan_active_status' => $allPlans->pluck('is_active', 'key')->toArray(),
-            'plan_show_on_landing' => $allPlans->pluck('show_on_landing', 'key')->toArray()
-        ]);
-
-        // Check if any plan has annual pricing to show the switch
-        $hasAnnualPlans = $allPlans->some(function ($plan) {
+        // Check if any plan has annual pricing for the switch
+        $hasAnnualPlans = $dbPlans->some(function ($plan) {
             return $plan->hasAnnualPricing();
         });
 
-        // Format plans with both monthly and annual data
-        $formattedPlans = $allPlans->map(function ($plan) {
-            return [
-                'monthly' => $this->formatPlanForLanding($plan, 'monthly'),
-                'annual' => $plan->hasAnnualPricing() ? $this->formatPlanForLanding($plan, 'annual') : null
-            ];
-        });
-
-        // DEBUG: Log formatted plans
-        \Log::info('Formatted Plans Debug', [
-            'formatted_count' => $formattedPlans->count(),
-            'has_annual_plans' => $hasAnnualPlans
-        ]);
-
-        // Fallback to default plans if database is empty
-        if ($allPlans->isEmpty()) {
-            \Log::warning('No plans found in database, using defaults');
-            $plans = $this->getDefaultPlans();
-            $hasAnnualPlans = false;
-        } else {
-            $plans = [
-                'plans' => $formattedPlans,
-                'hasAnnualPlans' => $hasAnnualPlans
-            ];
-        }
+        // Prepare plans data for the view
+        $plans = [
+            'list' => $dbPlans,
+            'hasAnnualPlans' => $hasAnnualPlans
+        ];
 
         // Features sections
         $features = [

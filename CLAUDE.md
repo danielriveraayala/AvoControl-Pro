@@ -896,7 +896,7 @@ El sistema implementa **3 canales simultáneos** para máxima cobertura:
 - ✅ **SEO Optimizado**: Meta tags completos, Open Graph, Twitter Cards, Schema.org
 - ✅ **Responsive Design**: Mobile-first con Bootstrap 5, optimizado tablets y móviles
 - ✅ **6 Secciones**: Hero, Features, Pricing, Testimonials, FAQ, CTA
-- ✅ **4 Planes de Precios**: Trial (gratis 7 días), Basic ($29), Premium ($79), Enterprise ($199)
+- ✅ **Sistema de Precios Dinámico**: Switch mensual/anual con actualización en tiempo real
 - ✅ **Animaciones**: AOS (Animate On Scroll) para efectos visuales profesionales
 - ✅ **Imágenes**: Picsum.photos para placeholders de alta calidad
 
@@ -911,6 +911,21 @@ El sistema implementa **3 canales simultáneos** para máxima cobertura:
 - ✅ **Layout Responsive**: "Sin tarjeta" en 3 filas verticales (móvil-friendly)
 - ✅ **Smooth Scroll**: Navegación fluida entre secciones
 - ✅ **Touch-Friendly**: Sin hover effects problemáticos en dispositivos táctiles
+
+#### **Sistema de Precios Dinámico (NEW - 15 Ago 2025):**
+- ✅ **Precios Unificados**: Un solo plan puede tener precio mensual Y anual opcional
+- ✅ **Switch Condicional**: Solo aparece si al menos un plan tiene precio anual configurado
+- ✅ **Actualización en Tiempo Real**: JavaScript cambia precios, duración y botones sin recargar
+- ✅ **Botones Inteligentes**: 
+  - PayPal para planes sincronizados (paypal_plan_id y paypal_annual_plan_id)
+  - "Contactar" para planes personalizados sin sincronización
+- ✅ **Información Contextual**:
+  - Modo mensual: Muestra días de trial gratis
+  - Modo anual: Muestra ahorro en $ y % de descuento
+- ✅ **Gestión desde Developer Panel**:
+  - Campos de precio anual en formularios create/edit
+  - Cálculo automático del descuento porcentual
+  - Preview del precio mensual equivalente
 
 #### **Modal de Información Legal:**
 - ✅ **4 Secciones Legales Profesionales**:

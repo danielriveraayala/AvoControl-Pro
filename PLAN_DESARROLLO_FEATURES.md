@@ -334,6 +334,18 @@
 - [x] Documentación de casos de prueba en comandos integrados
 - [x] Vista de suscripciones rediseñada para panel de desarrollador
 
+#### Sprint 6.9: Sistema de Precios Dinámico Landing Page ✅ **COMPLETADO (15 Ago 2025)**
+- [x] Unificación de planes: un solo plan con precios mensual y anual opcionales
+- [x] Formularios de gestión en Developer Panel con campos de precio anual
+- [x] JavaScript para cálculo automático de descuento en formularios
+- [x] Landing page con switch dinámico mensual/anual sin recarga
+- [x] Switch condicional: solo aparece si hay planes con precio anual
+- [x] Botones inteligentes: PayPal para sincronizados, Contactar para personalizados
+- [x] Actualización en tiempo real de precios, duración y botones PayPal
+- [x] Información contextual: trial días (mensual) vs ahorros (anual)
+- [x] JavaScript completo con funciones updatePricing(), updatePayPalButton()
+- [x] Eliminación de enlace secreto /developer/plans del landing
+
 **🎯 Fase 4 PayPal Integration: 100% COMPLETADA**
 
 **Estado Sprint 6.8**: ✅ **Sistema completamente testado y funcional** 

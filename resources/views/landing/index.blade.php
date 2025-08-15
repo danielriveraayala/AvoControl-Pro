@@ -977,7 +977,7 @@
                 Elige el plan que mejor se adapte a las necesidades de tu negocio
             </p>
 
-            <!-- Pricing Toggle Switch (only show if plans have annual pricing) -->
+            {{-- Switch de precios: solo mostrar si hay planes con precio anual --}}
             @if($plans['hasAnnualPlans'] ?? false)
             <div class="pricing-toggle text-center mb-5" data-aos="fade-up" data-aos-delay="150">
                 <span class="toggle-label active" id="monthlyLabel">Mensual</span>
@@ -986,153 +986,163 @@
                     <span class="slider"></span>
                 </label>
                 <span class="toggle-label" id="yearlyLabel">
-                    Anual <small class="badge bg-success ms-2">Ahorra 15%</small>
+                    Anual <small class="badge bg-success ms-2">Ahorra hasta 15%</small>
                 </span>
             </div>
             @endif
             
-            <!-- Dynamic Plans -->
+            {{-- Sección de Planes --}}
             <div class="pricing-plans">
-                {{-- DEBUG: Show what data we have --}}
-                @if(config('app.debug'))
-                    <div class="alert alert-info">
-                        <strong>DEBUG INFO:</strong><br>
-                        Plans isset: {{ isset($plans['plans']) ? 'YES' : 'NO' }}<br>
-                        @if(isset($plans['plans']))
-                            Plans count: {{ count($plans['plans']) }}<br>
-                        @endif
-                        Has monthly plans: {{ isset($plans['monthly']) ? 'YES (' . count($plans['monthly']) . ')' : 'NO' }}<br>
-                        Has annual flag: {{ isset($plans['hasAnnualPlans']) ? ($plans['hasAnnualPlans'] ? 'TRUE' : 'FALSE') : 'NOT SET' }}<br>
-                        Raw plans keys: {{ json_encode(array_keys($plans)) }}
-                    </div>
-                @endif
                 
                 <div class="row g-4 align-items-stretch justify-content-center">
-                    @if(isset($plans['plans']) && count($plans['plans']) > 0)
-                        @foreach($plans['plans'] as $planData)
-                        @php 
-                            $plan = $planData['monthly']; // Default to monthly data
-                        @endphp
+                    @if(isset($plans['list']) && $plans['list']->count() > 0)
+                        @foreach($plans['list'] as $plan)
                         <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
-                            <div class="pricing-card {{ $plan['highlighted'] ?? false ? 'highlighted' : '' }}" 
-                                 style="border-top: 4px solid {{ $plan['color'] ?? '#3B82F6' }};"
-                                 data-monthly="{{ json_encode($planData['monthly']) }}"
-                                 @if($planData['annual'])
-                                 data-annual="{{ json_encode($planData['annual']) }}"
-                                 @endif>
+                            <div class="pricing-card {{ $plan->is_featured ? 'highlighted' : '' }}" 
+                                 style="border-top: 4px solid {{ $plan->color ?? '#3B82F6' }};"
+                                 data-plan-key="{{ $plan->key }}"
+                                 data-has-annual="{{ $plan->hasAnnualPricing() ? 'true' : 'false' }}">
                                 
+                                {{-- Badge --}}
                                 <div class="plan-badge-container">
-                                    @if(!empty($plan['badge']))
-                                        <div class="plan-badge" style="background: {{ $plan['color'] ?? '#3B82F6' }};">{{ $plan['badge'] }}</div>
+                                    @if($plan->popular_badge)
+                                        <div class="plan-badge" style="background: {{ $plan->color ?? '#3B82F6' }};">
+                                            {{ $plan->popular_badge }}
+                                        </div>
                                     @endif
                                 </div>
                                 
+                                {{-- Header con icono, nombre y precio --}}
                                 <div class="pricing-header">
-                                    @if(!empty($plan['icon']))
-                                        <i class="{{ $plan['icon'] }} mb-3" style="font-size: 2.5rem; color: {{ $plan['color'] ?? '#3B82F6' }};"></i>
-                                    @endif
-                                    <div class="plan-name">{{ $plan['name'] }}</div>
-                                    <div class="plan-price" data-price-container>
-                                        @if($plan['price'] == 0)
-                                            <span data-price-value>Gratis</span>
-                                        @else
-                                            <sup>$</sup><span data-price-value>{{ number_format($plan['price'], 0) }}</span>
-                                        @endif
-                                        <span data-price-duration>/{{ $plan['duration'] ?? 'mes' }}</span>
-                                    </div>
-                                    <div class="plan-trial" data-trial-info>
-                                        @if(!empty($plan['trial_days']) && $plan['trial_days'] > 0)
-                                            <small class="text-muted">{{ $plan['trial_days'] }} días de prueba gratis</small>
-                                        @endif
-                                    </div>
-                                    <div class="plan-savings d-none" data-savings-info>
-                                        <!-- Savings info will be shown dynamically -->
-                                    </div>
-                                </div>
-                                <ul class="pricing-features" data-features-list>
-                                    @foreach($plan['features'] as $feature)
-                                    <li>{{ $feature }}</li>
-                                    @endforeach
-                                </ul>
-                                <div class="pricing-footer">
-                                    @if(config('app.debug'))
-                                        <small class="text-muted d-block mb-2" data-debug-info>Debug: PayPal ID = {{ $plan['paypal_plan_id'] ?? 'NULL' }}</small>
+                                    @if($plan->icon)
+                                        <i class="{{ $plan->icon }} mb-3" style="font-size: 2.5rem; color: {{ $plan->color ?? '#3B82F6' }};"></i>
                                     @endif
                                     
-                                    <div data-paypal-container>
-                                        @if(!empty($plan['paypal_plan_id']))
-                                            <!-- PayPal Button -->
-                                            <div id="paypal-button-{{ $plan['key'] }}" class="paypal-button-container" data-paypal-button></div>
+                                    <div class="plan-name">{{ $plan->name }}</div>
+                                    
+                                    {{-- Precio dinámico --}}
+                                    <div class="plan-price" data-price-container>
+                                        @if($plan->price == 0)
+                                            <span data-price-value>Gratis</span>
+                                        @else
+                                            <sup>$</sup><span data-price-value>{{ number_format($plan->price, 0) }}</span>
+                                        @endif
+                                        <span data-price-duration>/mes</span>
+                                    </div>
+                                    
+                                    {{-- Info adicional (trial o ahorros) --}}
+                                    <div class="plan-additional-info">
+                                        {{-- Trial info (por defecto visible) --}}
+                                        @if($plan->trial_days > 0)
+                                            <div class="trial-info" data-trial-info>
+                                                <small class="text-muted">{{ $plan->trial_days }} días de prueba gratis</small>
+                                            </div>
+                                        @endif
+                                        
+                                        {{-- Savings info (oculto por defecto, se muestra en modo anual) --}}
+                                        @if($plan->hasAnnualPricing())
+                                            <div class="savings-info d-none" data-savings-info>
+                                                <small class="text-success">
+                                                    Ahorras ${{ number_format($plan->getAnnualSavings(), 0) }} 
+                                                    ({{ $plan->annual_discount_percentage }}%)
+                                                </small>
+                                                <small class="d-block text-muted">
+                                                    ≈ ${{ number_format($plan->getMonthlyEquivalent(), 0) }}/mes
+                                                </small>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                
+                                {{-- Lista de características --}}
+                                <ul class="pricing-features">
+                                    {{-- Features del plan --}}
+                                    @if($plan->features && is_array($plan->features))
+                                        @foreach($plan->features as $feature)
+                                            @php
+                                                $availableFeatures = \App\Models\SubscriptionPlan::getAvailableFeatures();
+                                                $featureLabel = null;
+                                                foreach($availableFeatures as $categoryFeatures) {
+                                                    if(isset($categoryFeatures[$feature])) {
+                                                        $featureLabel = $categoryFeatures[$feature];
+                                                        break;
+                                                    }
+                                                }
+                                            @endphp
+                                            @if($featureLabel)
+                                                <li>{{ $featureLabel }}</li>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                    
+                                    {{-- Límites del plan --}}
+                                    @if($plan->max_users > 0)
+                                        <li>{{ $plan->max_users == -1 ? 'Usuarios ilimitados' : $plan->max_users . ' usuarios' }}</li>
+                                    @endif
+                                    @if($plan->max_lots_per_month > 0)
+                                        <li>{{ $plan->max_lots_per_month == -1 ? 'Lotes ilimitados' : number_format($plan->max_lots_per_month) . ' lotes/mes' }}</li>
+                                    @endif
+                                    @if($plan->max_storage_gb > 0)
+                                        <li>{{ $plan->max_storage_gb == -1 ? 'Almacenamiento ilimitado' : $plan->max_storage_gb . 'GB almacenamiento' }}</li>
+                                    @endif
+                                    @if($plan->max_locations > 0)
+                                        <li>{{ $plan->max_locations == -1 ? 'Ubicaciones ilimitadas' : $plan->max_locations . ' ubicaciones' }}</li>
+                                    @endif
+                                </ul>
+                                
+                                {{-- Footer con botones --}}
+                                <div class="pricing-footer">
+                                    <div class="button-container" data-button-container>
+                                        {{-- Botón PayPal (si está sincronizado) --}}
+                                        @if($plan->paypal_plan_id)
+                                            <div id="paypal-button-{{ $plan->key }}" class="paypal-button-container" data-paypal-button></div>
                                             <small class="text-muted d-block mt-2">Pago seguro con PayPal</small>
                                         @else
-                                            <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};" data-cta-button>
-                                                <span data-cta-text>{{ $plan['cta'] ?? 'Comenzar' }}</span>
+                                            {{-- Botón de contactar (si no está sincronizado) --}}
+                                            <a href="#contact" class="btn btn-primary-custom w-100" 
+                                               style="background: {{ $plan->color ?? '#3B82F6' }}; border-color: {{ $plan->color ?? '#3B82F6' }};"
+                                               data-cta-button>
+                                                <span data-cta-text>{{ $plan->button_text ?? 'Contactar' }}</span>
                                             </a>
-                                            <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-link mt-2 text-muted">
-                                                <small>Ver más detalles →</small>
-                                            </a>
+                                            <small class="text-muted d-block mt-2">Te contactaremos para configurar tu plan</small>
                                         @endif
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    @elseif(isset($plans['monthly']) && count($plans['monthly']) > 0)
-                        {{-- Fallback to old structure --}}
-                        @foreach($plans['monthly'] as $plan)
-                        <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
-                            <div class="pricing-card {{ $plan['highlighted'] ?? false ? 'highlighted' : '' }}" style="border-top: 4px solid {{ $plan['color'] ?? '#3B82F6' }};">
-                                @if(!empty($plan['badge']))
-                                    <div class="plan-badge" style="background: {{ $plan['color'] ?? '#3B82F6' }};">{{ $plan['badge'] }}</div>
-                                @endif
-                                <div class="pricing-header">
-                                    @if(!empty($plan['icon']))
-                                        <i class="{{ $plan['icon'] }} mb-3" style="font-size: 2.5rem; color: {{ $plan['color'] ?? '#3B82F6' }};"></i>
+                                
+                                {{-- Data attributes para JavaScript --}}
+                                <script type="application/json" data-plan-data>
+                                {
+                                    "key": "{{ $plan->key }}",
+                                    "name": "{{ $plan->name }}",
+                                    "monthly": {
+                                        "price": {{ $plan->price }},
+                                        "duration": "mes",
+                                        "paypal_plan_id": {{ $plan->paypal_plan_id ? '"' . $plan->paypal_plan_id . '"' : 'null' }}
+                                    }
+                                    @if($plan->hasAnnualPricing())
+                                    ,
+                                    "annual": {
+                                        "price": {{ $plan->annual_price }},
+                                        "duration": "año",
+                                        "savings": {{ $plan->getAnnualSavings() }},
+                                        "monthly_equivalent": {{ $plan->getMonthlyEquivalent() }},
+                                        "discount_percentage": {{ $plan->annual_discount_percentage }},
+                                        "paypal_plan_id": {{ $plan->paypal_annual_plan_id ? '"' . $plan->paypal_annual_plan_id . '"' : 'null' }}
+                                    }
                                     @endif
-                                    <div class="plan-name">{{ $plan['name'] }}</div>
-                                    <div class="plan-price">
-                                        @if($plan['price'] == 0)
-                                            Gratis
-                                        @else
-                                            <sup>$</sup>{{ number_format($plan['price'], 0) }}
-                                        @endif
-                                        <span>/{{ $plan['duration'] ?? 'mes' }}</span>
-                                    </div>
-                                    @if(!empty($plan['trial_days']) && $plan['trial_days'] > 0)
-                                        <small class="text-muted">{{ $plan['trial_days'] }} días de prueba gratis</small>
-                                    @endif
-                                </div>
-                                <ul class="pricing-features">
-                                    @foreach($plan['features'] as $feature)
-                                    <li>{{ $feature }}</li>
-                                    @endforeach
-                                </ul>
-                                <div class="pricing-footer">
-                                    @if(!empty($plan['paypal_plan_id']))
-                                        <div id="paypal-button-{{ $plan['key'] }}" class="paypal-button-container"></div>
-                                        <small class="text-muted d-block mt-2">Pago seguro con PayPal</small>
-                                    @else
-                                        <a href="{{ route('plan.show', $plan['key']) }}" class="btn btn-primary-custom w-100" style="background: {{ $plan['color'] ?? '#3B82F6' }}; border-color: {{ $plan['color'] ?? '#3B82F6' }};">
-                                            {{ $plan['cta'] ?? 'Comenzar' }}
-                                        </a>
-                                    @endif
-                                </div>
+                                }
+                                </script>
                             </div>
                         </div>
                         @endforeach
                     @else
-                        {{-- Debug: No plans found --}}
+                        {{-- No hay planes disponibles --}}
                         <div class="col-12 text-center">
                             <div class="alert alert-warning">
                                 <h4>⚠️ No hay planes disponibles</h4>
-                                <p>Los planes no se están mostrando. Posibles causas:</p>
-                                <ul class="text-left d-inline-block">
-                                    <li>Los planes tienen <code>show_on_landing = false</code></li>
-                                    <li>Los planes tienen <code>is_active = false</code></li>
-                                    <li>No hay planes creados en la base de datos</li>
-                                </ul>
+                                <p>No se encontraron planes activos para mostrar.</p>
                                 <p class="mt-3">
-                                    <a href="/developer/plans" class="btn btn-primary">Ir a Gestión de Planes</a>
+                                    <a href="#contact" class="btn btn-primary">Contáctanos</a>
                                 </p>
                             </div>
                         </div>
@@ -1488,6 +1498,148 @@
                 }
             });
         });
+
+        // Dynamic Pricing Toggle Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const pricingToggle = document.getElementById('pricingToggle');
+            const monthlyLabel = document.getElementById('monthlyLabel');
+            const yearlyLabel = document.getElementById('yearlyLabel');
+            
+            if (pricingToggle) {
+                pricingToggle.addEventListener('change', function() {
+                    const isAnnual = this.checked;
+                    updatePricing(isAnnual);
+                    updateToggleLabels(isAnnual);
+                });
+            }
+            
+            // Initialize PayPal buttons for monthly plans
+            initializePayPalButtons(false);
+        });
+
+        function updatePricing(isAnnual) {
+            const planCards = document.querySelectorAll('[data-plan-key]');
+            
+            planCards.forEach(card => {
+                const planDataScript = card.querySelector('script[data-plan-data]');
+                if (!planDataScript) return;
+                
+                try {
+                    const planData = JSON.parse(planDataScript.textContent);
+                    const cycleData = isAnnual && planData.annual ? planData.annual : planData.monthly;
+                    
+                    // Update price
+                    const priceValue = card.querySelector('[data-price-value]');
+                    const priceDuration = card.querySelector('[data-price-duration]');
+                    
+                    if (priceValue && priceDuration) {
+                        if (cycleData.price === 0) {
+                            priceValue.textContent = 'Gratis';
+                            priceDuration.textContent = '';
+                        } else {
+                            priceValue.textContent = new Intl.NumberFormat('es-MX').format(cycleData.price);
+                            priceDuration.textContent = '/' + cycleData.duration;
+                        }
+                    }
+                    
+                    // Toggle trial info vs savings info
+                    const trialInfo = card.querySelector('[data-trial-info]');
+                    const savingsInfo = card.querySelector('[data-savings-info]');
+                    
+                    if (isAnnual && planData.annual) {
+                        if (trialInfo) trialInfo.classList.add('d-none');
+                        if (savingsInfo) savingsInfo.classList.remove('d-none');
+                    } else {
+                        if (trialInfo) trialInfo.classList.remove('d-none');
+                        if (savingsInfo) savingsInfo.classList.add('d-none');
+                    }
+                    
+                    // Update PayPal buttons
+                    updatePayPalButton(card, cycleData);
+                    
+                } catch (error) {
+                    console.error('Error parsing plan data:', error);
+                }
+            });
+        }
+
+        function updateToggleLabels(isAnnual) {
+            const monthlyLabel = document.getElementById('monthlyLabel');
+            const yearlyLabel = document.getElementById('yearlyLabel');
+            
+            if (monthlyLabel && yearlyLabel) {
+                if (isAnnual) {
+                    monthlyLabel.classList.remove('active');
+                    yearlyLabel.classList.add('active');
+                } else {
+                    monthlyLabel.classList.add('active');
+                    yearlyLabel.classList.remove('active');
+                }
+            }
+        }
+
+        function updatePayPalButton(card, cycleData) {
+            const paypalContainer = card.querySelector('[data-paypal-button]');
+            const ctaButton = card.querySelector('[data-cta-button]');
+            
+            if (!paypalContainer) return;
+            
+            // Clear existing PayPal button
+            paypalContainer.innerHTML = '';
+            
+            if (cycleData.paypal_plan_id) {
+                // Hide CTA button and show PayPal
+                if (ctaButton) ctaButton.style.display = 'none';
+                paypalContainer.style.display = 'block';
+                
+                // Initialize PayPal button
+                if (window.paypal) {
+                    window.paypal.Buttons({
+                        style: {
+                            shape: 'rect',
+                            color: 'blue',
+                            layout: 'vertical',
+                            label: 'subscribe'
+                        },
+                        createSubscription: function(data, actions) {
+                            return actions.subscription.create({
+                                'plan_id': cycleData.paypal_plan_id
+                            });
+                        },
+                        onApprove: function(data, actions) {
+                            // Redirect to success page or handle subscription activation
+                            window.location.href = '/subscription/success?subscription_id=' + data.subscriptionID;
+                        },
+                        onError: function(err) {
+                            console.error('PayPal error:', err);
+                            alert('Error al procesar el pago. Por favor, inténtalo de nuevo.');
+                        }
+                    }).render(paypalContainer);
+                }
+            } else {
+                // Show CTA button and hide PayPal
+                if (ctaButton) ctaButton.style.display = 'block';
+                paypalContainer.style.display = 'none';
+            }
+        }
+
+        function initializePayPalButtons(isAnnual = false) {
+            const planCards = document.querySelectorAll('[data-plan-key]');
+            
+            planCards.forEach(card => {
+                const planDataScript = card.querySelector('script[data-plan-data]');
+                if (!planDataScript) return;
+                
+                try {
+                    const planData = JSON.parse(planDataScript.textContent);
+                    const cycleData = isAnnual && planData.annual ? planData.annual : planData.monthly;
+                    
+                    updatePayPalButton(card, cycleData);
+                } catch (error) {
+                    console.error('Error initializing PayPal button:', error);
+                }
+            });
+        }
     </script>
     
     <!-- Legal Information Modal -->
