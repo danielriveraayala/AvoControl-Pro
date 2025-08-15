@@ -39,6 +39,7 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\TenantResolver::class,
             \App\Http\Middleware\TenantContext::class,
+            \App\Http\Middleware\CheckActiveSubscription::class,
             \App\Http\Middleware\MaintenanceMode::class,
         ],
 
@@ -73,5 +74,6 @@ class Kernel extends HttpKernel
         'rbac' => \App\Http\Middleware\RolePermissionMiddleware::class,
         'tenant.resolve' => \App\Http\Middleware\TenantResolver::class,
         'tenant.context' => \App\Http\Middleware\TenantContext::class,
+        'subscription.active' => \App\Http\Middleware\CheckActiveSubscription::class,
     ];
 }

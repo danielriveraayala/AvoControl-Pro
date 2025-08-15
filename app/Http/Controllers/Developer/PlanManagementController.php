@@ -387,30 +387,60 @@ class PlanManagementController extends Controller
     public function unsyncFromPayPal(SubscriptionPlan $plan)
     {
         try {
-            if (!$plan->paypal_plan_id) {
+            if (!$plan->paypal_plan_id && !$plan->paypal_annual_plan_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Este plan no está sincronizado con PayPal.'
                 ]);
             }
 
-            // Optional: Try to deactivate the plan in PayPal
-            try {
-                $this->paypalService->deactivateSubscriptionPlan($plan->paypal_plan_id);
-            } catch (\Exception $e) {
-                Log::warning('Could not deactivate PayPal plan during unsync', [
-                    'plan_id' => $plan->id,
-                    'paypal_plan_id' => $plan->paypal_plan_id,
-                    'error' => $e->getMessage()
-                ]);
+            $messages = [];
+            
+            // Try to deactivate monthly plan in PayPal
+            if ($plan->paypal_plan_id) {
+                try {
+                    $this->paypalService->deactivateSubscriptionPlan($plan->paypal_plan_id);
+                    $messages[] = 'Plan mensual desactivado en PayPal.';
+                } catch (\Exception $e) {
+                    Log::warning('Could not deactivate monthly PayPal plan during unsync', [
+                        'plan_id' => $plan->id,
+                        'paypal_plan_id' => $plan->paypal_plan_id,
+                        'error' => $e->getMessage()
+                    ]);
+                    $messages[] = 'No se pudo desactivar plan mensual en PayPal (se eliminará localmente).';
+                }
+            }
+            
+            // Try to deactivate annual plan in PayPal
+            if ($plan->paypal_annual_plan_id) {
+                try {
+                    $this->paypalService->deactivateSubscriptionPlan($plan->paypal_annual_plan_id);
+                    $messages[] = 'Plan anual desactivado en PayPal.';
+                } catch (\Exception $e) {
+                    Log::warning('Could not deactivate annual PayPal plan during unsync', [
+                        'plan_id' => $plan->id,
+                        'paypal_annual_plan_id' => $plan->paypal_annual_plan_id,
+                        'error' => $e->getMessage()
+                    ]);
+                    $messages[] = 'No se pudo desactivar plan anual en PayPal (se eliminará localmente).';
+                }
             }
 
-            // Remove PayPal ID from our database
-            $plan->update(['paypal_plan_id' => null]);
+            // Remove both PayPal IDs from our database
+            $plan->update([
+                'paypal_plan_id' => null,
+                'paypal_annual_plan_id' => null
+            ]);
+            
+            Log::info('Plan unsynced from PayPal', [
+                'plan_id' => $plan->id,
+                'plan_key' => $plan->key,
+                'messages' => $messages
+            ]);
             
             return response()->json([
                 'success' => true,
-                'message' => 'Plan desincronizado de PayPal exitosamente.'
+                'message' => 'Planes desincronizados de PayPal exitosamente. ' . implode(' ', $messages)
             ]);
 
         } catch (\Exception $e) {

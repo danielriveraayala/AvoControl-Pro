@@ -471,23 +471,112 @@ function exportData() {
 }
 
 function viewSubscription(id) {
-    // Show subscription details modal
-    console.log('Viewing subscription:', id);
+    window.open(`{{ route('developer.subscriptions.index') }}/${id}`, '_blank');
 }
 
 function editSubscription(id) {
-    // Show edit subscription modal
-    console.log('Editing subscription:', id);
+    Swal.fire({
+        title: 'Cambiar Plan de Suscripción',
+        html: `
+            <div class="text-left">
+                <div class="form-group">
+                    <label for="newPlan">Nuevo Plan:</label>
+                    <select id="newPlan" class="form-control">
+                        <option value="basic">Plan Básico - $29/mes</option>
+                        <option value="premium">Plan Premium - $79/mes</option>
+                        <option value="enterprise">Plan Enterprise - $199/mes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="changeReason">Motivo del cambio:</label>
+                    <textarea id="changeReason" class="form-control" rows="3" placeholder="Describe el motivo del cambio..."></textarea>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Cambiar Plan',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#28a745',
+        preConfirm: () => {
+            const newPlan = document.getElementById('newPlan').value;
+            const reason = document.getElementById('changeReason').value;
+            
+            if (!reason.trim()) {
+                Swal.showValidationMessage('El motivo del cambio es requerido');
+                return false;
+            }
+            
+            return { newPlan, reason };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            changePlan(id, result.value.newPlan, result.value.reason);
+        }
+    });
 }
 
 function suspendSubscription(id) {
-    // Suspend subscription
-    console.log('Suspending subscription:', id);
+    Swal.fire({
+        title: '¿Suspender Suscripción?',
+        html: `
+            <div class="text-left">
+                <p class="mb-3">Esta acción suspenderá la suscripción y bloqueará el acceso del usuario.</p>
+                <div class="form-group">
+                    <label for="suspendReason">Motivo de suspensión:</label>
+                    <textarea id="suspendReason" class="form-control" rows="3" placeholder="Describe el motivo de la suspensión..." required></textarea>
+                </div>
+            </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, Suspender',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc3545',
+        preConfirm: () => {
+            const reason = document.getElementById('suspendReason').value;
+            if (!reason.trim()) {
+                Swal.showValidationMessage('El motivo de suspensión es requerido');
+                return false;
+            }
+            return reason;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            performSuspension(id, result.value);
+        }
+    });
 }
 
 function reactivateSubscription(id) {
-    // Reactivate subscription
-    console.log('Reactivating subscription:', id);
+    Swal.fire({
+        title: '¿Reactivar Suscripción?',
+        html: `
+            <div class="text-left">
+                <p class="mb-3">Esta acción reactivará la suscripción y restaurará el acceso del usuario.</p>
+                <div class="form-group">
+                    <label for="reactivateReason">Motivo de reactivación:</label>
+                    <textarea id="reactivateReason" class="form-control" rows="3" placeholder="Describe el motivo de la reactivación..." required></textarea>
+                </div>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, Reactivar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#28a745',
+        preConfirm: () => {
+            const reason = document.getElementById('reactivateReason').value;
+            if (!reason.trim()) {
+                Swal.showValidationMessage('El motivo de reactivación es requerido');
+                return false;
+            }
+            return reason;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            performReactivation(id, result.value);
+        }
+    });
 }
 
 function syncPayPal() {
@@ -504,6 +593,122 @@ function checkFailedPayments() {
 
 function closeModal(modalId) {
     document.getElementById(modalId).classList.add('hidden');
+}
+
+// AJAX Helper Functions
+function changePlan(subscriptionId, newPlan, reason) {
+    fetch(`{{ route('developer.subscriptions.index') }}/${subscriptionId}/change-plan`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            new_plan: newPlan,
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('¡Éxito!', data.message, 'success');
+            loadSubscriptions(); // Reload the table
+        } else {
+            Swal.fire('Error', data.message || 'Error al cambiar el plan', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error de conexión al cambiar el plan', 'error');
+    });
+}
+
+function performSuspension(subscriptionId, reason) {
+    fetch(`{{ route('developer.subscriptions.index') }}/${subscriptionId}/suspend`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('¡Suspendida!', data.message, 'success');
+            loadSubscriptions(); // Reload the table
+        } else {
+            Swal.fire('Error', data.message || 'Error al suspender la suscripción', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error de conexión al suspender la suscripción', 'error');
+    });
+}
+
+function performReactivation(subscriptionId, reason) {
+    fetch(`{{ route('developer.subscriptions.index') }}/${subscriptionId}/reactivate`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('¡Reactivada!', data.message, 'success');
+            loadSubscriptions(); // Reload the table
+        } else {
+            Swal.fire('Error', data.message || 'Error al reactivar la suscripción', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error de conexión al reactivar la suscripción', 'error');
+    });
+}
+
+function syncWithPayPal(subscriptionId) {
+    Swal.fire({
+        title: 'Sincronizando...',
+        text: 'Obteniendo datos de PayPal',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch(`{{ route('developer.subscriptions.index') }}/${subscriptionId}/sync-paypal`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('¡Sincronizado!', data.message, 'success');
+            loadSubscriptions(); // Reload the table
+        } else {
+            Swal.fire('Error', data.message || 'Error al sincronizar con PayPal', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error de conexión al sincronizar con PayPal', 'error');
+    });
 }
 </script>
 @endpush

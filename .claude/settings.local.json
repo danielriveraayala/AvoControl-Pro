@@ -43,7 +43,11 @@
       "Bash(ssh:*)",
       "WebFetch(domain:dev.avocontrol.pro)",
       "Bash(telnet:*)",
-      "WebFetch(domain:momentjs.com)"
+      "WebFetch(domain:momentjs.com)",
+      "Bash(sed:*)",
+      "Bash(chown:*)",
+      "Bash(cp:*)",
+      "Bash(sudo systemctl restart:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

@@ -677,6 +677,15 @@ class PayPalService
                 case 'BILLING.SUBSCRIPTION.PAYMENT.FAILED':
                     return $this->handlePaymentFailed($resource, $webhookLog);
                     
+                case 'PAYMENT.CAPTURE.REFUNDED':
+                    return $this->handlePaymentRefunded($resource, $webhookLog);
+                    
+                case 'PAYMENT.CAPTURE.REVERSED':
+                    return $this->handlePaymentReversed($resource, $webhookLog);
+                    
+                case 'BILLING.SUBSCRIPTION.RE-ACTIVATED':
+                    return $this->handleSubscriptionReactivated($resource, $webhookLog);
+                    
                 default:
                     $this->logPayPalAction('webhook_unhandled', 'warning', "Unhandled webhook event type: {$eventType}", [
                         'event_type' => $eventType
@@ -932,7 +941,14 @@ class PayPalService
      */
     public function getSubscriptionPlans(): array
     {
-        return config('paypal.plans');
+        $plans = config('paypal.plans');
+        
+        // Return empty array if config is null or not an array
+        if (!is_array($plans)) {
+            return [];
+        }
+        
+        return $plans;
     }
 
     /**
@@ -1144,5 +1160,202 @@ class PayPalService
                 'error' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Get plan details from PayPal
+     */
+    public function getPlanDetails(string $planId): array
+    {
+        try {
+            $result = $this->makeRequest('GET', "/v1/billing/plans/{$planId}");
+
+            if ($result['success']) {
+                return [
+                    'success' => true,
+                    'data' => $result['data']
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'error' => $result['error'],
+                    'error_data' => $result['error_data'] ?? null
+                ];
+            }
+
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Handle payment refunded webhook
+     */
+    private function handlePaymentRefunded(array $resource, $webhookLog = null): array
+    {
+        $captureId = $resource['id'] ?? null;
+        $refundAmount = $resource['amount']['value'] ?? 0;
+        $currency = $resource['amount']['currency_code'] ?? 'USD';
+        $reason = $resource['note_to_payer'] ?? 'Refund issued';
+        
+        // Try to find the subscription from the captured payment
+        $subscriptionPayment = SubscriptionPayment::where('paypal_payment_id', $captureId)->first();
+        
+        if ($subscriptionPayment) {
+            $subscription = $subscriptionPayment->subscription;
+            
+            // Create refund record
+            SubscriptionPayment::create([
+                'uuid' => Str::uuid(),
+                'subscription_id' => $subscription->id,
+                'tenant_id' => $subscription->tenant_id,
+                'paypal_payment_id' => 'REFUND-' . Str::random(10) . '-' . $resource['id'],
+                'amount' => -abs($refundAmount), // Negative amount for refund
+                'currency' => $currency,
+                'type' => 'refund',
+                'status' => 'refunded',
+                'payment_date' => Carbon::parse($resource['create_time'] ?? now()),
+                'completed_at' => Carbon::parse($resource['update_time'] ?? now()),
+                'failure_reason' => $reason,
+                'paypal_response' => $resource
+            ]);
+            
+            // Suspend subscription due to refund
+            $subscription->update([
+                'status' => 'suspended',
+                'suspended_at' => Carbon::now(),
+                'suspension_reason' => 'Payment refunded: ' . $reason,
+                'suspended_by' => 'paypal-webhook'
+            ]);
+            
+            // Also suspend the tenant
+            if ($subscription->tenant) {
+                $subscription->tenant->update(['status' => 'suspended']);
+            }
+            
+            $this->logPayPalAction('payment_refunded', 'warning', 'Payment refunded - subscription suspended', [
+                'subscription_id' => $subscription->paypal_subscription_id,
+                'refund_amount' => $refundAmount,
+                'currency' => $currency,
+                'reason' => $reason
+            ], null, $resource, $subscription->id, $subscription->tenant_id);
+            
+            return ['success' => true, 'message' => 'Payment refund processed - subscription suspended'];
+        }
+        
+        $this->logPayPalAction('payment_refunded', 'info', 'Payment refunded but no matching subscription found', [
+            'capture_id' => $captureId,
+            'refund_amount' => $refundAmount,
+            'currency' => $currency
+        ], null, $resource);
+        
+        return ['success' => true, 'message' => 'Payment refund processed - no subscription match'];
+    }
+
+    /**
+     * Handle payment reversed webhook (chargebacks, disputes)
+     */
+    private function handlePaymentReversed(array $resource, $webhookLog = null): array
+    {
+        $captureId = $resource['id'] ?? null;
+        $reverseAmount = $resource['amount']['value'] ?? 0;
+        $currency = $resource['amount']['currency_code'] ?? 'USD';
+        $reason = $resource['reason_code'] ?? 'Payment reversed';
+        
+        // Try to find the subscription from the captured payment
+        $subscriptionPayment = SubscriptionPayment::where('paypal_payment_id', $captureId)->first();
+        
+        if ($subscriptionPayment) {
+            $subscription = $subscriptionPayment->subscription;
+            
+            // Create reversal record
+            SubscriptionPayment::create([
+                'uuid' => Str::uuid(),
+                'subscription_id' => $subscription->id,
+                'tenant_id' => $subscription->tenant_id,
+                'paypal_payment_id' => 'CHARGEBACK-' . Str::random(10) . '-' . $resource['id'],
+                'amount' => -abs($reverseAmount), // Negative amount for reversal
+                'currency' => $currency,
+                'type' => 'chargeback',
+                'status' => 'reversed',
+                'payment_date' => Carbon::parse($resource['create_time'] ?? now()),
+                'failed_at' => Carbon::parse($resource['update_time'] ?? now()),
+                'failure_reason' => $reason,
+                'failure_details' => 'Payment reversed/disputed by payer',
+                'paypal_response' => $resource
+            ]);
+            
+            // Immediately suspend subscription due to chargeback
+            $subscription->update([
+                'status' => 'suspended',
+                'suspended_at' => Carbon::now(),
+                'suspension_reason' => 'Payment reversed/chargeback: ' . $reason,
+                'suspended_by' => 'paypal-webhook'
+            ]);
+            
+            // Also suspend the tenant
+            if ($subscription->tenant) {
+                $subscription->tenant->update(['status' => 'suspended']);
+            }
+            
+            $this->logPayPalAction('payment_reversed', 'error', 'Payment reversed/chargeback - subscription suspended', [
+                'subscription_id' => $subscription->paypal_subscription_id,
+                'reverse_amount' => $reverseAmount,
+                'currency' => $currency,
+                'reason' => $reason
+            ], null, $resource, $subscription->id, $subscription->tenant_id);
+            
+            return ['success' => true, 'message' => 'Payment reversal processed - subscription suspended'];
+        }
+        
+        $this->logPayPalAction('payment_reversed', 'warning', 'Payment reversed but no matching subscription found', [
+            'capture_id' => $captureId,
+            'reverse_amount' => $reverseAmount,
+            'currency' => $currency
+        ], null, $resource);
+        
+        return ['success' => true, 'message' => 'Payment reversal processed - no subscription match'];
+    }
+
+    /**
+     * Handle subscription reactivated webhook
+     */
+    private function handleSubscriptionReactivated(array $resource, $webhookLog = null): array
+    {
+        $subscriptionId = $resource['id'];
+        $subscription = Subscription::where('paypal_subscription_id', $subscriptionId)->first();
+        
+        if ($subscription) {
+            // Reactivate subscription
+            $subscription->update([
+                'status' => 'active',
+                'suspended_at' => null,
+                'suspension_reason' => null,
+                'suspended_by' => null,
+                'reactivated_at' => Carbon::now(),
+                'reactivation_reason' => 'Reactivated via PayPal',
+                'reactivated_by' => 'paypal-webhook',
+                'failed_payment_count' => 0,
+                'grace_period_ends_at' => null,
+                'next_billing_date' => isset($resource['billing_info']['next_billing_time'])
+                    ? Carbon::parse($resource['billing_info']['next_billing_time'])
+                    : now()->addMonth()
+            ]);
+            
+            // Also reactivate the tenant
+            if ($subscription->tenant) {
+                $subscription->tenant->update(['status' => 'active']);
+            }
+            
+            $this->logPayPalAction('subscription_reactivated', 'info', 'Subscription reactivated via webhook', [
+                'subscription_id' => $subscriptionId,
+                'tenant_id' => $subscription->tenant_id
+            ], null, $resource, $subscription->id, $subscription->tenant_id);
+        }
+        
+        return ['success' => true, 'message' => 'Subscription reactivated'];
     }
 }

@@ -134,8 +134,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/preferences', [NotificationController::class, 'updatePreferences'])->name('notifications.updatePreferences');
     });
     
-    // Configuration routes - protected with manage company config permission
-    Route::prefix('configuration')->middleware('permission:manage_company_config')->group(function () {
+    // Configuration routes - protected with configuration view permission
+    Route::prefix('configuration')->middleware('permission:configuration.view')->group(function () {
         Route::get('/', [ConfigurationController::class, 'index'])->name('configuration.index');
         Route::get('/qualities-table', [ConfigurationController::class, 'getQualitiesTable'])->name('configuration.qualities.table');
         Route::post('/quality', [ConfigurationController::class, 'storeQuality'])->name('configuration.quality.store');
@@ -146,6 +146,13 @@ Route::middleware(['auth'])->group(function () {
         // Company configuration routes
         Route::get('/company/get', [ConfigurationController::class, 'getCompanyConfig'])->name('configuration.company.get');
         Route::post('/company/store', [ConfigurationController::class, 'storeCompanyConfig'])->name('configuration.company.store');
+        
+        // Billing/Subscription routes
+        Route::get('/subscription/current', [ConfigurationController::class, 'getCurrentSubscription'])->name('configuration.subscription.current');
+        Route::get('/subscription/invoices', [ConfigurationController::class, 'getSubscriptionInvoices'])->name('configuration.subscription.invoices');
+        Route::get('/subscription/invoices/{id}/download', [ConfigurationController::class, 'downloadInvoice'])->name('configuration.subscription.invoice.download');
+        Route::get('/subscription/available-plans', [ConfigurationController::class, 'getAvailablePlans'])->name('configuration.subscription.plans');
+        Route::post('/subscription/change-plan', [ConfigurationController::class, 'changePlan'])->name('configuration.subscription.change-plan');
     });
     
     
@@ -325,6 +332,9 @@ Route::prefix('subscription')->name('subscription.')->group(function () {
     // Pre-registration for PayPal flow
     Route::get('/register/{plan}', [App\Http\Controllers\SubscriptionController::class, 'showRegister'])->name('register');
     Route::post('/register', [App\Http\Controllers\SubscriptionController::class, 'storeRegister'])->name('register.store');
+    
+    // Email validation for pre-registration
+    Route::post('/check-email', [App\Http\Controllers\SubscriptionController::class, 'checkEmail'])->name('check-email');
     
     // Registration with trial
     Route::post('/register-trial', [App\Http\Controllers\SubscriptionController::class, 'registerWithTrial'])->name('register-trial');

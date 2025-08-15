@@ -84,8 +84,14 @@ class SubscriptionController extends Controller
      */
     public function getData(Request $request): JsonResponse
     {
-        $query = Subscription::with(['tenant', 'user'])
-            ->select('subscriptions.*');
+        try {
+            \Log::info('Developer SubscriptionController getData called', [
+                'user_id' => auth()->id(),
+                'request_params' => $request->all()
+            ]);
+
+            $query = Subscription::with(['tenant', 'user'])
+                ->select('subscriptions.*');
 
         // Apply filters
         if ($request->filled('status')) {
@@ -201,6 +207,17 @@ class SubscriptionController extends Controller
             })
             ->rawColumns(['tenant_info', 'plan_details', 'status_info', 'billing_info', 'revenue_info', 'actions', 'created_formatted'])
             ->make(true);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in Developer SubscriptionController getData', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Error cargando suscripciones: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -566,7 +583,7 @@ class SubscriptionController extends Controller
             'arpu' => round($arpu, 2),
             'churn_rate' => round($churnRate, 2),
             'conversion_rate' => $conversionRate,
-            'ltv' => round($arpu > 0 ? $arpu / ($churnRate/100) : 0, 2),
+            'ltv' => round($arpu > 0 && $churnRate > 0 ? $arpu / ($churnRate/100) : 0, 2),
             'monthly_growth_rate' => round($mrrGrowth, 2)
         ];
     }

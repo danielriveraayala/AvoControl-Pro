@@ -126,26 +126,46 @@
                     <div class="px-4 sm:px-6 py-4 border-t border-gray-200">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div class="min-w-0 flex-1">
-                                <h4 class="text-sm font-medium text-gray-500">PayPal</h4>
-                                <div class="flex flex-wrap items-center gap-2 mt-1">
-                                    @if($plan->paypal_plan_id)
-                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full whitespace-nowrap">
-                                            <i class="fas fa-check mr-1"></i>Sincronizado
-                                        </span>
-                                        <span class="text-xs text-gray-500 truncate max-w-[150px]" title="{{ $plan->paypal_plan_id }}">{{ substr($plan->paypal_plan_id, 0, 15) }}...</span>
-                                    @else
-                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full whitespace-nowrap">
-                                            <i class="fas fa-clock mr-1"></i>No sincronizado
-                                        </span>
+                                <h4 class="text-sm font-medium text-gray-500">Sincronización PayPal</h4>
+                                <div class="flex flex-col gap-1 mt-1">
+                                    <!-- Monthly Plan Status -->
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-gray-600 w-16">Mensual:</span>
+                                        @if($plan->paypal_plan_id)
+                                            <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                                <i class="fas fa-check-circle mr-1"></i>Sincronizado
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs rounded-full">
+                                                <i class="fas fa-exclamation-circle mr-1"></i>No sincronizado
+                                            </span>
+                                        @endif
+                                    </div>
+                                    
+                                    <!-- Annual Plan Status (if applicable) -->
+                                    @if($plan->annual_price && $plan->annual_price > 0)
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-gray-600 w-16">Anual:</span>
+                                        @if($plan->paypal_annual_plan_id)
+                                            <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                                <i class="fas fa-check-circle mr-1"></i>Sincronizado
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs rounded-full">
+                                                <i class="fas fa-exclamation-circle mr-1"></i>No sincronizado
+                                            </span>
+                                        @endif
+                                    </div>
                                     @endif
                                 </div>
                             </div>
                             <div class="flex gap-2 flex-shrink-0">
-                                @if($plan->paypal_plan_id)
+                                @if($plan->paypal_plan_id || $plan->paypal_annual_plan_id)
                                     <button onclick="unsyncFromPayPal({{ $plan->id }})" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded whitespace-nowrap">
                                         <i class="fas fa-unlink mr-1"></i><span class="hidden sm:inline">Desincronizar</span><span class="sm:hidden">Desync</span>
                                     </button>
-                                @elseif($plan->price > 0)
+                                @endif
+                                @if($plan->price > 0 && (!$plan->paypal_plan_id || ($plan->annual_price > 0 && !$plan->paypal_annual_plan_id)))
                                     <button onclick="syncWithPayPal({{ $plan->id }})" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded whitespace-nowrap">
                                         <i class="fas fa-sync mr-1"></i><span class="hidden sm:inline">Sincronizar</span><span class="sm:hidden">Sync</span>
                                     </button>
@@ -362,12 +382,12 @@ function deletePlan(planId, planName) {
 function syncWithPayPal(planId) {
     DevAlert.confirm(
         '¿Sincronizar con PayPal?',
-        'Se creará este plan en PayPal para permitir suscripciones.',
+        'Se crearán los planes en PayPal. Si el plan tiene precio anual configurado, se sincronizarán tanto el plan mensual como el anual.',
         'Sí, sincronizar',
         'Cancelar'
     ).then((result) => {
         if (result.isConfirmed) {
-            DevAlert.loading('Sincronizando...', 'Creando plan en PayPal');
+            DevAlert.loading('Sincronizando...', 'Creando planes en PayPal. Esto puede tomar unos segundos...');
             
             fetch(`{{ url('/developer/plans') }}/${planId}/sync-paypal`, {
                 method: 'POST',
@@ -380,7 +400,11 @@ function syncWithPayPal(planId) {
             .then(data => {
                 DevAlert.close();
                 if (data.success) {
-                    DevAlert.success('¡Sincronizado!', data.message).then(() => {
+                    let message = data.message;
+                    if (data.warnings && data.warnings.length > 0) {
+                        message += '\n\nAdvertencias:\n' + data.warnings.join('\n');
+                    }
+                    DevAlert.success('¡Sincronizado!', message).then(() => {
                         location.reload();
                     });
                 } else {
@@ -389,7 +413,7 @@ function syncWithPayPal(planId) {
             })
             .catch(error => {
                 DevAlert.close();
-                DevAlert.error('Error', 'Error al sincronizar con PayPal');
+                DevAlert.error('Error', 'Error al sincronizar con PayPal. Verifica la configuración de PayPal.');
             });
         }
     });

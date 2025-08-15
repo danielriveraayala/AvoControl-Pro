@@ -189,10 +189,43 @@ class SubscriptionController extends Controller
                 'ip' => $request->ip()
             ]);
             
+            // Check for existing pre-registration (pending cleanup)
+            $existingUser = User::where('email', $request->email)->first();
+            
+            if ($existingUser && !$request->has('subscription_id')) {
+                // If user exists and has pending_cleanup_at, they're in pre-registration
+                if ($existingUser->pending_cleanup_at) {
+                    $hoursRemaining = Carbon::parse($existingUser->pending_cleanup_at)->diffInHours(now());
+                    
+                    if ($hoursRemaining > 0) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Ya existe un pre-registro con este email. Tienes {$hoursRemaining} horas para completar tu pago. Si necesitas ayuda, contacta al soporte.",
+                            'type' => 'pre_registration_exists',
+                            'hours_remaining' => $hoursRemaining
+                        ], 409);
+                    }
+                    
+                    // Pre-registration expired, delete it
+                    $existingUser->tenant?->delete();
+                    $existingUser->delete();
+                    \Log::info('Deleted expired pre-registration', ['email' => $request->email]);
+                } else {
+                    // User exists and is fully registered
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Este email ya está registrado en el sistema.',
+                        'type' => 'email_exists'
+                    ], 409);
+                }
+            }
+            
             // Validate input data
+            $emailRule = $existingUser && $request->has('subscription_id') ? 'required|string|email|max:255' : 'required|string|email|max:255|unique:users';
+            
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
+                'email' => $emailRule,
                 'password' => 'required|string|min:8|confirmed',
                 'company_name' => 'required|string|max:255',
                 'plan_key' => 'required|string|exists:subscription_plans,key',
@@ -287,6 +320,53 @@ class SubscriptionController extends Controller
     }
     
     /**
+     * Check if email has existing pre-registration
+     */
+    public function checkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+        
+        $user = User::where('email', $request->email)->first();
+        
+        if (!$user) {
+            return response()->json([
+                'available' => true,
+                'message' => 'Email disponible'
+            ]);
+        }
+        
+        // Check if user is in pre-registration
+        if ($user->pending_cleanup_at) {
+            $hoursRemaining = Carbon::parse($user->pending_cleanup_at)->diffInHours(now());
+            
+            if ($hoursRemaining > 0) {
+                return response()->json([
+                    'available' => false,
+                    'type' => 'pre_registration',
+                    'message' => "Ya existe un pre-registro con este email. Tienes {$hoursRemaining} horas para completar tu pago.",
+                    'hours_remaining' => $hoursRemaining
+                ]);
+            } else {
+                // Pre-registration expired, can be used
+                return response()->json([
+                    'available' => true,
+                    'message' => 'Pre-registro expirado, email disponible',
+                    'expired_pre_registration' => true
+                ]);
+            }
+        }
+        
+        // User exists and is fully registered
+        return response()->json([
+            'available' => false,
+            'type' => 'registered_user',
+            'message' => 'Este email ya está registrado en el sistema.'
+        ]);
+    }
+    
+    /**
      * Create user with subscription after PayPal approval
      */
     private function createUserWithSubscription(array $validated, string $subscriptionId)
@@ -317,7 +397,7 @@ class SubscriptionController extends Controller
             
             // 3. Associate user with tenant
             $tenant->users()->attach($user->id, [
-                'role' => 'owner',
+                'role_within_tenant' => 'owner',
                 'status' => 'active',
                 'joined_at' => now(),
                 'invited_at' => now()
@@ -326,16 +406,26 @@ class SubscriptionController extends Controller
             // 4. Set as current tenant for user
             $user->update(['current_tenant_id' => $tenant->id]);
             
-            // 5. Get plan details
+            // 5. Assign admin role to the user (RBAC system)
+            $adminRole = \App\Models\Role::where('name', 'admin')->first();
+            if ($adminRole) {
+                $user->roles()->attach($adminRole->id, [
+                    'is_primary' => true
+                ]);
+            }
+            
+            // 6. Get plan details
             $plan = SubscriptionPlan::where('key', $validated['plan_key'])->first();
             $isYearly = $validated['billing_cycle'] === 'yearly';
             
             $planPrice = $isYearly && $plan->annual_price ? $plan->annual_price : $plan->price;
             $billingCycle = $isYearly ? 'yearly' : 'monthly';
             
-            // 6. Create subscription
+            // 7. Create subscription
             $subscription = Subscription::create([
+                'uuid' => \Illuminate\Support\Str::uuid(),
                 'tenant_id' => $tenant->id,
+                'user_id' => $user->id,
                 'plan' => $validated['plan_key'],
                 'status' => 'active', // Will be updated by PayPal webhook
                 'amount' => $planPrice,
@@ -348,7 +438,7 @@ class SubscriptionController extends Controller
                 'trial_days' => $plan->trial_days ?? 0
             ]);
             
-            // 7. Clear pending cleanup since user now has subscription
+            // 8. Clear pending cleanup since user now has subscription
             $user->update(['pending_cleanup_at' => null]);
             
             DB::commit();
@@ -814,7 +904,7 @@ class SubscriptionController extends Controller
                 
                 // Associate user with tenant
                 $tenant->users()->attach($user->id, [
-                    'role' => 'owner',
+                    'role_within_tenant' => 'owner',
                     'status' => 'active',
                     'joined_at' => now()
                 ]);
@@ -920,7 +1010,7 @@ class SubscriptionController extends Controller
             
             // 3. Associate user with tenant
             $tenant->users()->attach($user->id, [
-                'role' => 'owner',
+                'role_within_tenant' => 'owner',
                 'status' => 'active',
                 'joined_at' => now(),
                 'invited_at' => now()

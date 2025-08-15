@@ -9,8 +9,8 @@ AvoControl Pro is a Laravel-based web application for managing avocado purchasin
 **Status**: Full production-ready system with comprehensive features implemented.
 **Production URL**: https://dev.avocontrol.pro
 **Environment**: Production (APP_ENV=production)
-**Última actualización**: 15 Agosto 2025 - PayPal Subscription System Optimization
-**Estado de completación**: 100% - Sistema totalmente operativo
+**Última actualización**: 15 Agosto 2025 - Advanced PayPal Refund Detection & Access Control System
+**Estado de completación**: 100% - Sistema totalmente operativo con control automático de reembolsos y bloqueo de acceso
 
 ## Developer Information
 
@@ -395,7 +395,114 @@ El sistema implementa **3 canales simultáneos** para máxima cobertura:
 **Deployment Completo**: Sistema 100% operativo en VPS 69.62.65.243 con todas las migraciones ejecutadas, assets compilados, caché optimizado, y comandos de prueba funcionando correctamente. Compatible con PHP 7.4+ mediante ajustes de sintaxis y Day.js completamente integrado reemplazando moment.js.
 
 ### Sistema Multi-Tenant + PayPal Subscriptions (10/10 Phases Complete - 100% ✅)
-### PayPal Subscription System Optimization (NEW - 15 Ago 2025 - 100% ✅)
+### PayPal Automatic Refund Detection & Access Control System (NEW - 15 Ago 2025 - 100% ✅)
+
+**Problema Resuelto**: El sistema ahora detecta automáticamente reembolsos de PayPal y suspende las suscripciones correspondientes, bloqueando el acceso a usuarios sin suscripción activa.
+
+#### ✅ **Phase 1: Automatic Refund Detection via Webhooks (100%)**
+- ✅ **PayPal Webhook Processing Enhanced**
+  - `PayPalService::processWebhook()` maneja eventos de reembolso: `PAYMENT.CAPTURE.REFUNDED`, `PAYMENT.CAPTURE.REVERSED`
+  - `PayPalService::handlePaymentRefunded()` suspende automáticamente suscripciones cuando se procesa un reembolso
+  - `PayPalService::handlePaymentReversed()` maneja cancelaciones y contracargos
+  - `PayPalService::handleSubscriptionReactivated()` reactivación automática tras resolución de reembolsos
+
+- ✅ **Automatic Subscription Suspension Logic**
+  ```php
+  $subscription->update([
+      'status' => 'suspended',
+      'suspended_at' => Carbon::now(),
+      'suspension_reason' => 'Payment refunded: ' . $reason,
+      'suspended_by' => 'paypal-webhook'
+  ]);
+  ```
+
+- ✅ **Enhanced Database Schema for Refunds**
+  - Expanded ENUM values in `subscription_payments` table:
+    - Types: 'initial', 'recurring', 'retry', 'refund', 'chargeback'
+    - Status: 'pending', 'completed', 'failed', 'refunded', 'reversed'
+  - Unique constraint handling for PayPal payment IDs
+  - Refund records creation with `REFUND-{random}-{paypal_id}` format
+
+#### ✅ **Phase 2: Subscription Access Control Middleware (100%)**
+- ✅ **CheckActiveSubscription Middleware Implementation**
+  - Middleware `app/Http/Middleware/CheckActiveSubscription.php` creado
+  - Verificación automática de estado de suscripción en cada request
+  - Bypass para super_admin users (acceso total sin restricciones)
+  - Exclusión de rutas públicas: login, register, landing page, webhooks
+
+- ✅ **Access Control Logic**
+  ```php
+  // Subscription states that block access
+  if (in_array($subscription->status, ['suspended', 'cancelled', 'expired'])) {
+      return redirect()->route('subscription.' . $subscription->status)
+          ->with('error', 'Tu suscripción está ' . $subscription->status);
+  }
+  ```
+
+- ✅ **User Experience Pages**
+  - `resources/views/subscription/suspended.blade.php`: Página profesional de suspensión con opciones de reactivación
+  - `resources/views/subscription/cancelled.blade.php`: Página de cancelación con nuevos planes de suscripción
+  - Templates responsive con información de contacto y pasos de solución
+
+#### ✅ **Phase 3: Developer Panel Subscription Management (100%)**
+- ✅ **Functional AJAX-Powered Buttons**
+  - Botones en `/developer/subscriptions` ahora completamente funcionales
+  - Sistema de modales con SweetAlert2 para confirmaciones
+  - Operaciones: suspend, reactivate, change-plan, sync-paypal
+  - Formularios con validación requerida de motivos/razones
+
+- ✅ **Real-time Subscription Management**
+  ```javascript
+  function performSuspension(subscriptionId, reason) {
+      fetch(`/developer/subscriptions/${subscriptionId}/suspend`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': csrfToken,
+              'Accept': 'application/json'
+          },
+          body: JSON.stringify({ reason: reason })
+      })
+  }
+  ```
+
+- ✅ **Enhanced UI/UX for Subscription Management**
+  - Métricas en tiempo real: MRR, ARR, ARPU, Churn Rate
+  - Filtros dinámicos por status y plan
+  - Actividad reciente con timeline visual
+  - Estadísticas de alertas críticas (trials expirando, pagos fallidos)
+
+#### ✅ **Phase 4: Testing & Validation System (100%)**
+- ✅ **Comprehensive Testing Commands**
+  - `php artisan paypal:simulate-refund`: Simula webhooks de reembolso para testing
+  - `php artisan subscription:test-access`: Verifica restricciones de acceso por usuario
+  - `php artisan subscription:reactivate`: Comando manual de reactivación
+  - Todos con dry-run mode y logging detallado
+
+- ✅ **Simulation System for Safe Testing**
+  ```bash
+  # Simular reembolso sin afectar PayPal real
+  php artisan paypal:simulate-refund --subscription-id=SUB123 --amount=29.00 --reason="Customer dispute"
+  
+  # Verificar control de acceso
+  php artisan subscription:test-access --email=user@domain.com
+  
+  # Reactivar suscripción suspendida
+  php artisan subscription:reactivate --email=user@domain.com --reason="Payment resolved"
+  ```
+
+#### ✅ **Phase 5: PDF Invoice System Optimization (100%)**
+- ✅ **Legal Paper Size Configuration**
+  - PDF invoices configurados a tamaño "oficio" (legal): `$pdf->setPaper('legal', 'portrait')`
+  - Removed "LIVE" environment badge from invoice templates
+  - Maintained professional PayPal branding and invoice structure
+
+- ✅ **Invoice Download Integration**
+  - Real PayPal API integration for invoice downloads
+  - Automatic PDF generation from PayPal transaction data
+  - Legal compliance with proper invoice formatting
+
+### PayPal Subscription System Optimization (LEGACY - Pre-Refund System)
 
 - ✅ **Phase 1: Planning & Architecture (100%)**
   - Complete multi-tenant architecture documentation

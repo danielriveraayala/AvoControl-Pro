@@ -51,22 +51,47 @@
                     <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 billing-option">
                         <input type="radio" name="billing_cycle" value="monthly" checked 
                                class="mr-3 text-indigo-600 focus:ring-indigo-500"
-                               onchange="updatePayPalButton()">
+                               onchange="updatePayPalButton()"
+                               @if(!$plan->paypal_plan_id) disabled @endif>
                         <div class="flex-1">
                             <div class="font-medium text-gray-900">Mensual</div>
                             <div class="text-sm text-gray-600">${{ number_format($plan->price, 0) }} USD/mes</div>
+                            @if(!$plan->paypal_plan_id)
+                                <div class="text-xs text-amber-600 mt-1">⚠️ Requiere sincronización con PayPal</div>
+                            @endif
                         </div>
                     </label>
                     <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 billing-option">
                         <input type="radio" name="billing_cycle" value="yearly" 
                                class="mr-3 text-indigo-600 focus:ring-indigo-500"
-                               onchange="updatePayPalButton()">
+                               onchange="updatePayPalButton()"
+                               @if(!$plan->paypal_annual_plan_id) disabled @endif>
                         <div class="flex-1">
                             <div class="font-medium text-gray-900">Anual</div>
                             <div class="text-sm text-gray-600">${{ number_format($plan->annual_price, 0) }} USD/año</div>
                             <div class="text-xs text-green-600 font-medium">{{ $plan->annual_discount_percentage }}% descuento</div>
+                            @if(!$plan->paypal_annual_plan_id)
+                                <div class="text-xs text-amber-600 mt-1">⚠️ Requiere sincronización con PayPal</div>
+                            @endif
                         </div>
                     </label>
+                </div>
+            </div>
+            @else
+            <div class="mb-6">
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-calendar-alt text-gray-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-gray-900">Facturación Mensual</h4>
+                            <p class="text-sm text-gray-500">${{ number_format($plan->price, 0) }} USD/mes</p>
+                            @if(!$plan->paypal_plan_id)
+                                <p class="text-xs text-amber-600 mt-1">⚠️ Este plan requiere sincronización con PayPal</p>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
             @endif
@@ -99,8 +124,9 @@
                                 <input id="email" name="email" type="email" required autocomplete="email"
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                        value="{{ old('email') }}" placeholder="tu@email.com"
-                                       onblur="validateField(this)">
+                                       onblur="validateField(this)" oninput="checkEmailAvailability(this)">
                                 <div class="field-error hidden text-sm text-red-600 mt-1"></div>
+                                <div id="email-status" class="hidden text-sm mt-1"></div>
                             </div>
 
                             <div>
@@ -214,6 +240,8 @@ let currentPlanData = {
 let formValidated = false;
 let paypalButtonInitialized = false;
 let validationTimeout = null;
+let emailCheckTimeout = null;
+let emailAvailable = false;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
@@ -223,16 +251,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Update PayPal button when billing cycle changes
 function updatePayPalButton() {
-    const billingCycle = document.querySelector('input[name="billing_cycle"]:checked')?.value || 'monthly';
+    const billingCycleInput = document.querySelector('input[name="billing_cycle"]:checked');
+    const billingCycle = billingCycleInput ? billingCycleInput.value : 'monthly';
+    
     const selectedBillingCycleField = document.getElementById('selected_billing_cycle');
     if (selectedBillingCycleField) {
         selectedBillingCycleField.value = billingCycle;
     }
     
-    // Update plan data
-    const planId = billingCycle === 'yearly' && currentPlanData.yearly_plan_id 
-        ? currentPlanData.yearly_plan_id 
-        : currentPlanData.monthly_plan_id;
+    // Determine which plan ID to use
+    let planId = null;
+    let errorMsg = null;
+    
+    if (billingCycle === 'yearly') {
+        if (currentPlanData.yearly_plan_id) {
+            planId = currentPlanData.yearly_plan_id;
+        } else {
+            errorMsg = 'El plan anual no está sincronizado con PayPal. Por favor contacta al administrador.';
+        }
+    } else {
+        if (currentPlanData.monthly_plan_id) {
+            planId = currentPlanData.monthly_plan_id;
+        } else {
+            errorMsg = 'El plan mensual no está sincronizado con PayPal. Por favor contacta al administrador.';
+        }
+    }
     
     console.log('updatePayPalButton called:', {
         billingCycle,
@@ -242,16 +285,29 @@ function updatePayPalButton() {
         monthlyPlanId: currentPlanData.monthly_plan_id
     });
     
+    // Show error if no plan ID is available
+    if (!planId && formValidated) {
+        showPayPalError('Plan no configurado', errorMsg);
+        return;
+    }
+    
     // Always try to update PayPal button if form is validated and plan ID exists
     if (planId && formValidated) {
-        // Force re-initialization by clearing the stored plan ID
         const container = document.getElementById('paypal-button-container');
         if (container) {
             const oldPlanId = container.dataset.planId;
-            console.log('Plan change detected:', { oldPlanId, newPlanId: planId });
-            delete container.dataset.planId;
+            
+            // Only initialize if plan actually changed
+            if (oldPlanId !== planId) {
+                console.log('Plan change detected:', { oldPlanId, newPlanId: planId });
+                initializePayPalButton(planId);
+            } else {
+                console.log('Same plan, no update needed:', planId);
+            }
+        } else {
+            // No container yet, initialize
+            initializePayPalButton(planId);
         }
-        initializePayPalButton(planId);
     } else {
         console.log('PayPal button not updated:', { planId: !!planId, formValidated });
     }
@@ -374,6 +430,11 @@ function checkFormValidation() {
         allValid = false;
     }
     
+    // Check email availability
+    if (!emailAvailable) {
+        allValid = false;
+    }
+    
     formValidated = allValid;
     
     // Update PayPal button state
@@ -404,8 +465,23 @@ function checkFormValidation() {
 }
 
 // Initialize PayPal button
+let paypalButtonInstance = null;
+let isRenderingButton = false;
+
 function initializePayPalButton(planId) {
-    console.log('initializePayPalButton called:', { planId, paypalButtonInitialized });
+    console.log('initializePayPalButton called:', { planId, paypalButtonInitialized, isRenderingButton });
+    
+    // Prevent multiple simultaneous renders
+    if (isRenderingButton) {
+        console.log('Already rendering a button, will retry after current render completes');
+        // Retry after a delay to allow current render to complete
+        setTimeout(() => {
+            if (!isRenderingButton) {
+                initializePayPalButton(planId);
+            }
+        }, 500);
+        return;
+    }
     
     if (!planId) {
         console.log('No planId provided, showing error message');
@@ -435,6 +511,9 @@ function initializePayPalButton(planId) {
         return; // Exact same plan, button already initialized
     }
     
+    // Set rendering flag
+    isRenderingButton = true;
+    
     // Show loading immediately
     const loadingDiv = document.getElementById('paypal-loading');
     if (loadingDiv) loadingDiv.style.display = 'block';
@@ -443,95 +522,120 @@ function initializePayPalButton(planId) {
     const errorDiv = document.getElementById('paypal-error');
     if (errorDiv) errorDiv.style.display = 'none';
     
-    // Clear previous button safely if it exists
-    if (paypalButtonInitialized) {
-        console.log('Clearing existing PayPal button');
+    // Clean up existing button if needed
+    if (paypalButtonInstance) {
+        console.log('Closing existing PayPal button instance');
+        try {
+            paypalButtonInstance.close();
+        } catch(e) {
+            console.log('Error closing PayPal button:', e);
+        }
+        paypalButtonInstance = null;
         paypalButtonInitialized = false;
-        // Give PayPal time to cleanup before clearing DOM
-        setTimeout(() => {
-            container.innerHTML = '';
-            renderPayPalButton(planId, container);
-        }, 150);
-    } else {
-        console.log('First time PayPal initialization');
-        // First time initialization
-        container.innerHTML = '';
-        renderPayPalButton(planId, container);
     }
+    
+    // Clear container and render new button
+    setTimeout(() => {
+        // Only proceed if container still exists
+        const containerCheck = document.getElementById('paypal-button-container');
+        if (!containerCheck) {
+            console.log('Container removed, aborting render');
+            isRenderingButton = false;
+            return;
+        }
+        
+        // Clear the container
+        containerCheck.innerHTML = '';
+        
+        // Store the new plan ID before rendering
+        containerCheck.dataset.planId = planId;
+        
+        // Render the new button
+        renderPayPalButton(planId, containerCheck);
+    }, 100);
 }
 
 // Render PayPal button
 function renderPayPalButton(planId, container) {
-    // Store plan ID for comparison
-    container.dataset.planId = planId;
-    
     // Show loading
     const loadingDiv = document.getElementById('paypal-loading');
     if (loadingDiv) loadingDiv.style.display = 'block';
     
-    paypal.Buttons({
-        style: {
-            shape: 'rect',
-            color: 'blue',
-            layout: 'vertical',
-            label: 'subscribe',
-            height: 45
-        },
-        createSubscription: function(data, actions) {
-            return actions.subscription.create({
-                'plan_id': planId
-            });
-        },
-        onApprove: function(data, actions) {
-            // Show success message
-            Swal.fire({
-                title: 'Creando tu cuenta...',
-                text: 'Por favor espera mientras procesamos tu registro.',
-                icon: 'success',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            // Create user with form data
-            createUserAccount(data.subscriptionID);
-        },
-        onCancel: function(data) {
-            Swal.fire({
-                title: 'Pago cancelado',
-                text: 'Puedes intentar nuevamente cuando desees.',
-                icon: 'info',
-                confirmButtonText: 'Entendido'
-            });
-        },
-        onError: function(err) {
-            console.error('PayPal error:', err);
-            Swal.fire({
-                title: 'Error en el pago',
-                text: 'Hubo un problema con el procesamiento del pago. Por favor intenta nuevamente.',
-                icon: 'error',
-                confirmButtonText: 'Reintentar'
-            });
-        }
-    }).render('#paypal-button-container').then(() => {
-        const loadingDiv = document.getElementById('paypal-loading');
-        if (loadingDiv) loadingDiv.style.display = 'none';
-        paypalButtonInitialized = true;
-        console.log('PayPal button rendered successfully for plan:', planId);
-    }).catch((err) => {
-        console.error('PayPal render error:', err);
-        const loadingDiv = document.getElementById('paypal-loading');
-        if (loadingDiv) loadingDiv.style.display = 'none';
-        paypalButtonInitialized = false;
+    try {
+        paypalButtonInstance = paypal.Buttons({
+            style: {
+                shape: 'rect',
+                color: 'blue',
+                layout: 'vertical',
+                label: 'subscribe',
+                height: 45
+            },
+            createSubscription: function(data, actions) {
+                return actions.subscription.create({
+                    'plan_id': planId
+                });
+            },
+            onApprove: function(data, actions) {
+                // Show success message
+                Swal.fire({
+                    title: 'Creando tu cuenta...',
+                    text: 'Por favor espera mientras procesamos tu registro.',
+                    icon: 'success',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Create user with form data
+                createUserAccount(data.subscriptionID);
+            },
+            onCancel: function(data) {
+                Swal.fire({
+                    title: 'Pago cancelado',
+                    text: 'Puedes intentar nuevamente cuando desees.',
+                    icon: 'info',
+                    confirmButtonText: 'Entendido'
+                });
+            },
+            onError: function(err) {
+                console.error('PayPal error:', err);
+                Swal.fire({
+                    title: 'Error en el pago',
+                    text: 'Hubo un problema con el procesamiento del pago. Por favor intenta nuevamente.',
+                    icon: 'error',
+                    confirmButtonText: 'Reintentar'
+                });
+            }
+        });
         
-        // Show user-friendly error
-        if (err.message && err.message.includes('INVALID_PLAN')) {
-            showPayPalError('Plan no válido', 'Este plan necesita ser sincronizado con PayPal. Por favor contacta al soporte.');
-        } else {
-            showPayPalError('Error de conexión', 'No se pudo cargar PayPal. Verifica tu conexión a internet e intenta nuevamente.');
-        }
-    });
+        paypalButtonInstance.render('#paypal-button-container').then(() => {
+            const loadingDiv = document.getElementById('paypal-loading');
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            paypalButtonInitialized = true;
+            isRenderingButton = false;
+            console.log('PayPal button rendered successfully for plan:', planId);
+        }).catch((err) => {
+            console.error('PayPal render error:', err);
+            const loadingDiv = document.getElementById('paypal-loading');
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            paypalButtonInitialized = false;
+            isRenderingButton = false;
+            
+            // Show user-friendly error
+            if (err.message && err.message.includes('INVALID_PLAN')) {
+                showPayPalError('Plan no válido', 'Este plan necesita ser sincronizado con PayPal. Por favor contacta al soporte.');
+            } else if (err.message && err.message.includes('container element removed')) {
+                console.log('Container was removed during render, ignoring error');
+            } else {
+                showPayPalError('Error de conexión', 'No se pudo cargar PayPal. Verifica tu conexión a internet e intenta nuevamente.');
+            }
+        });
+    } catch(err) {
+        console.error('PayPal button creation error:', err);
+        isRenderingButton = false;
+        showPayPalError('Error de inicialización', 'No se pudo inicializar el botón de PayPal. Por favor recarga la página.');
+    }
 }
 
 // Show PayPal error message
@@ -582,11 +686,36 @@ function createUserAccount(subscriptionId) {
                 window.location.href = '/subscription/success?subscription_id=' + subscriptionId;
             });
         } else {
+            // Handle different error types
+            let title = 'Error en el registro';
+            let text = data.message || 'Hubo un problema al crear tu cuenta.';
+            let icon = 'error';
+            let confirmButtonText = 'Reintentar';
+            
+            if (data.type === 'pre_registration_exists') {
+                title = '⏳ Pre-registro existente';
+                icon = 'warning';
+                confirmButtonText = 'Entendido';
+                text += '\n\nPuedes intentar completar tu pago o esperar a que expire el pre-registro.';
+            } else if (data.type === 'email_exists') {
+                title = '📧 Email ya registrado';
+                icon = 'info';
+                confirmButtonText = 'Iniciar Sesión';
+                text += '\n\n¿Quieres iniciar sesión en su lugar?';
+            }
+            
             Swal.fire({
-                title: 'Error en el registro',
-                text: data.message || 'Hubo un problema al crear tu cuenta.',
-                icon: 'error',
-                confirmButtonText: 'Reintentar'
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                showCancelButton: data.type === 'email_exists',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed && data.type === 'email_exists') {
+                    // Redirect to login
+                    window.location.href = '/login';
+                }
             });
         }
     })
@@ -594,11 +723,83 @@ function createUserAccount(subscriptionId) {
         console.error('Registration error:', error);
         Swal.fire({
             title: 'Error de conexión',
-            text: 'No se pudo completar el registro. Por favor intenta nuevamente.',
+            text: 'No se pudo completar el registro. Por favor verifica tu conexión a internet e intenta nuevamente.',
             icon: 'error',
             confirmButtonText: 'Reintentar'
         });
     });
+}
+
+// Check email availability in real-time
+function checkEmailAvailability(emailInput) {
+    // Clear previous timeout
+    if (emailCheckTimeout) {
+        clearTimeout(emailCheckTimeout);
+    }
+    
+    const email = emailInput.value.trim();
+    const statusDiv = document.getElementById('email-status');
+    
+    // Hide status if email is empty or invalid
+    if (!email || !email.includes('@')) {
+        statusDiv.classList.add('hidden');
+        emailAvailable = false;
+        return;
+    }
+    
+    // Debounce the API call
+    emailCheckTimeout = setTimeout(() => {
+        // Show checking status
+        statusDiv.className = 'text-sm mt-1 text-blue-600';
+        statusDiv.textContent = 'Verificando disponibilidad...';
+        statusDiv.classList.remove('hidden');
+        
+        fetch('{{ route("subscription.check-email") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                emailAvailable = true;
+                statusDiv.className = 'text-sm mt-1 text-green-600';
+                statusDiv.textContent = '✓ Email disponible';
+                
+                if (data.expired_pre_registration) {
+                    statusDiv.textContent = '✓ Email disponible (pre-registro anterior expirado)';
+                }
+            } else {
+                emailAvailable = false;
+                statusDiv.className = 'text-sm mt-1 text-orange-600';
+                
+                if (data.type === 'pre_registration') {
+                    statusDiv.innerHTML = `⏳ ${data.message} <br><small>Puedes intentar completar tu pago o esperar a que expire.</small>`;
+                } else if (data.type === 'registered_user') {
+                    statusDiv.innerHTML = `📧 ${data.message} <br><small><a href="/login" class="text-blue-600 hover:underline">¿Quieres iniciar sesión?</a></small>`;
+                } else {
+                    statusDiv.textContent = `⚠️ ${data.message}`;
+                }
+            }
+            
+            statusDiv.classList.remove('hidden');
+            
+            // Trigger form validation update
+            if (validationTimeout) clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(checkFormValidation, 300);
+        })
+        .catch(error => {
+            console.error('Email check error:', error);
+            emailAvailable = false;
+            statusDiv.className = 'text-sm mt-1 text-gray-500';
+            statusDiv.textContent = 'No se pudo verificar el email';
+            statusDiv.classList.remove('hidden');
+        });
+    }, 800);
 }
 </script>
 </body>

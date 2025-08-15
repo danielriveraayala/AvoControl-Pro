@@ -327,8 +327,9 @@
 
 <script>
 $(document).ready(function() {
-    // Initialize DataTable
-    $('#rolesTable').DataTable({
+    // Initialize DataTable only if not already initialized
+    if (!$.fn.DataTable.isDataTable('#rolesTable')) {
+        $('#rolesTable').DataTable({
         "order": [[ 2, "desc" ]],
         "language": {
             "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
@@ -341,6 +342,7 @@ $(document).ready(function() {
         "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
         "dom": '<"flex flex-col md:flex-row md:items-center md:justify-between mb-4"<"mb-4 md:mb-0"l><"mb-4 md:mb-0"f>>rt<"flex flex-col md:flex-row md:items-center md:justify-between mt-4"<"mb-4 md:mb-0"i><"mb-4 md:mb-0"p>>'
     });
+    }
 
     // Edit permissions modal
     let currentRoleId = null;

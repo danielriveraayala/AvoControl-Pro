@@ -19,7 +19,7 @@
                     </h3>
                     <div class="card-tools">
                         <span class="badge badge-light">
-                            {{ ucfirst(auth()->user()->role) }}
+                            {{ auth()->user()->getPrimaryRole()?->name ? ucfirst(auth()->user()->getPrimaryRole()->name) : 'Usuario' }}
                         </span>
                     </div>
                 </div>
