@@ -138,6 +138,26 @@ class Kernel extends ConsoleKernel
                  ->description('Verificación nocturna de cuentas para suspensión');
 
         // ===============================
+        // MONITOREO DE TRANSACCIONES PAYPAL
+        // ===============================
+        
+        // Monitoreo frecuente de transacciones críticas (cada 15 minutos)
+        $schedule->command('paypal:monitor-transactions --hours=1')
+                 ->everyFifteenMinutes()
+                 ->description('Monitorear transacciones PayPal recientes para detectar reembolsos');
+        
+        // Monitoreo completo cada hora durante horario laboral
+        $schedule->command('paypal:monitor-transactions --hours=2 --all')
+                 ->hourly()
+                 ->between('7:00', '22:00')
+                 ->description('Monitoreo completo de todas las suscripciones activas');
+        
+        // Verificación profunda diaria (3:00 AM)
+        $schedule->command('paypal:monitor-transactions --hours=24 --all')
+                 ->dailyAt('03:00')
+                 ->description('Verificación diaria completa de todas las transacciones PayPal');
+
+        // ===============================
         // LIMPIEZA DE USUARIOS FANTASMA
         // ===============================
         

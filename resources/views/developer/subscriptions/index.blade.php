@@ -349,6 +349,22 @@
 let subscriptionsData = [];
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Check for filter in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterParam = urlParams.get('filter');
+    
+    if (filterParam) {
+        // Set the filter based on URL parameter
+        if (filterParam === 'suspended') {
+            document.getElementById('statusFilter').value = 'suspended';
+        } else if (filterParam === 'trial_ending') {
+            document.getElementById('statusFilter').value = 'active';
+            // Could add additional logic for trial ending filter
+        } else if (filterParam === 'failed_payments') {
+            // This would need a custom filter
+        }
+    }
+    
     loadSubscriptions();
     
     // Event listeners for filters
@@ -357,8 +373,27 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function loadSubscriptions() {
-    // Simulate loading data - in real implementation, this would be an AJAX call
-    fetch('{{ route('developer.subscriptions.data') }}')
+    const statusFilter = document.getElementById('statusFilter').value;
+    const planFilter = document.getElementById('planFilter').value;
+    
+    // Build query parameters
+    let params = new URLSearchParams();
+    if (statusFilter) params.append('status', statusFilter);
+    if (planFilter) params.append('plan', planFilter);
+    
+    const url = '{{ route('developer.subscriptions.data') }}' + (params.toString() ? '?' + params.toString() : '');
+    
+    // Show loading state
+    document.getElementById('subscriptions-body').innerHTML = `
+        <tr>
+            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                <i class="fas fa-spinner fa-spin mr-2"></i>
+                Cargando suscripciones...
+            </td>
+        </tr>
+    `;
+    
+    fetch(url)
         .then(response => response.json())
         .then(data => {
             subscriptionsData = data.data || [];
@@ -445,20 +480,8 @@ function getStatusColor(status) {
 }
 
 function applyFilters() {
-    const statusFilter = document.getElementById('statusFilter').value;
-    const planFilter = document.getElementById('planFilter').value;
-    
-    let filteredData = subscriptionsData;
-    
-    if (statusFilter) {
-        filteredData = filteredData.filter(sub => sub.status === statusFilter);
-    }
-    
-    if (planFilter) {
-        filteredData = filteredData.filter(sub => sub.plan === planFilter);
-    }
-    
-    renderSubscriptions(filteredData);
+    // Reload data with filters applied via AJAX
+    loadSubscriptions();
 }
 
 function refreshData() {

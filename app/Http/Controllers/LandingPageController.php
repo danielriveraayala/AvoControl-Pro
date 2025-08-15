@@ -61,32 +61,68 @@ class LandingPageController extends Controller
             [
                 'icon' => 'fas fa-boxes',
                 'title' => 'Control de Inventario',
-                'description' => 'Gestiona lotes de aguacate con trazabilidad completa desde el proveedor hasta el cliente final.'
+                'description' => 'Gestiona lotes de aguacate con trazabilidad completa desde el proveedor hasta el cliente final.',
+                'items' => [
+                    'Trazabilidad completa por lote',
+                    'Registro de calidades y pesos',
+                    'Control de stock en tiempo real',
+                    'Historial de movimientos'
+                ]
             ],
             [
                 'icon' => 'fas fa-chart-line',
                 'title' => 'Reportes en Tiempo Real',
-                'description' => 'Analítica avanzada con dashboards interactivos para tomar decisiones basadas en datos.'
+                'description' => 'Analítica avanzada con dashboards interactivos para tomar decisiones basadas en datos.',
+                'items' => [
+                    'Dashboard ejecutivo interactivo',
+                    'Reportes de rentabilidad',
+                    'Análisis de proveedores y clientes',
+                    'Exportación a PDF y Excel'
+                ]
             ],
             [
                 'icon' => 'fas fa-users',
                 'title' => 'Multi-Usuario',
-                'description' => 'Sistema de roles y permisos para controlar el acceso de tu equipo de trabajo.'
+                'description' => 'Sistema de roles y permisos para controlar el acceso de tu equipo de trabajo.',
+                'items' => [
+                    'Roles y permisos granulares',
+                    'Usuarios ilimitados',
+                    'Auditoría de actividades',
+                    'Acceso por módulos'
+                ]
             ],
             [
                 'icon' => 'fas fa-bell',
                 'title' => 'Notificaciones Automáticas',
-                'description' => 'Alertas por email, push y SMS para eventos importantes del negocio.'
+                'description' => 'Alertas por email, push y SMS para eventos importantes del negocio.',
+                'items' => [
+                    'Notificaciones push en navegador',
+                    'Alertas por email automáticas',
+                    'Recordatorios de pagos',
+                    'Alertas de inventario bajo'
+                ]
             ],
             [
                 'icon' => 'fas fa-cloud',
                 'title' => 'Basado en la Nube',
-                'description' => 'Accede desde cualquier dispositivo con conexión a internet. Sin instalación.'
+                'description' => 'Accede desde cualquier dispositivo con conexión a internet. Sin instalación.',
+                'items' => [
+                    'Acceso desde cualquier dispositivo',
+                    'Sin instalación requerida',
+                    'Actualizaciones automáticas',
+                    'Disponibilidad 99.9%'
+                ]
             ],
             [
                 'icon' => 'fas fa-shield-alt',
                 'title' => 'Seguro y Confiable',
-                'description' => 'Respaldos automáticos diarios y encriptación de datos sensibles.'
+                'description' => 'Respaldos automáticos diarios y encriptación de datos sensibles.',
+                'items' => [
+                    'Respaldos automáticos diarios',
+                    'Encriptación de datos',
+                    'Certificados SSL',
+                    'Cumplimiento de estándares'
+                ]
             ]
         ];
 

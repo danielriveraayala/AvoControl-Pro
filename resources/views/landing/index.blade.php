@@ -177,39 +177,56 @@
         }
         
         .feature-card {
-            text-align: center;
-            padding: 2rem;
-            border-radius: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
             transition: all 0.3s ease;
             height: 100%;
+            background: white;
         }
         
         .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
-        .feature-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 2rem;
-            color: white;
+        .feature-icon-small {
+            font-size: 1.25rem;
+            color: #3b82f6;
         }
         
-        .feature-card h3 {
-            font-size: 1.3rem;
-            color: var(--dark-color);
-            margin-bottom: 1rem;
+        .feature-card h4 {
+            font-size: 1.1rem;
+            color: #111827;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
         }
         
         .feature-card p {
-            color: var(--text-light);
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        
+        .feature-card ul li {
+            display: flex;
+            align-items: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .feature-card ul li i {
+            color: #10b981;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
         }
         
         /* Pricing Section */
@@ -1210,11 +1227,25 @@
                 @foreach($features as $index => $feature)
                 <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
                     <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="{{ $feature['icon'] }}"></i>
+                        <div class="d-flex align-items-center justify-between mb-2">
+                            <h4 class="mb-0">{{ $feature['title'] }}</h4>
+                            <div class="feature-icon-small">
+                                <i class="{{ $feature['icon'] }}"></i>
+                            </div>
                         </div>
-                        <h3>{{ $feature['title'] }}</h3>
-                        <p>{{ $feature['description'] }}</p>
+                        
+                        <p class="mb-3">{{ $feature['description'] }}</p>
+                        
+                        @if(isset($feature['items']) && is_array($feature['items']))
+                        <ul class="list-unstyled mb-0">
+                            @foreach($feature['items'] as $item)
+                                <li class="d-flex align-items-center mb-1">
+                                    <i class="fas fa-check me-2"></i> 
+                                    {{ $item }}
+                                </li>
+                            @endforeach
+                        </ul>
+                        @endif
                     </div>
                 </div>
                 @endforeach

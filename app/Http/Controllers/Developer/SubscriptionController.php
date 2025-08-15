@@ -50,8 +50,10 @@ class SubscriptionController extends Controller
     /**
      * Show specific subscription details
      */
-    public function show(Subscription $subscription)
+    public function show($id)
     {
+        $subscription = Subscription::findOrFail($id);
+
         $subscription->load(['tenant', 'user', 'payments' => function($query) {
             $query->orderBy('payment_date', 'desc');
         }]);
@@ -65,18 +67,85 @@ class SubscriptionController extends Controller
 
         // Get PayPal subscription details if available
         $paypalDetails = null;
-        if ($subscription->paypal_subscription_id) {
-            $paypalResponse = $this->paypalService->getSubscription($subscription->paypal_subscription_id);
-            if ($paypalResponse['success']) {
-                $paypalDetails = $paypalResponse['data'];
+        $paypalError = null;
+        if ($subscription->paypal_subscription_id && !str_starts_with($subscription->paypal_subscription_id, 'TEST-')) {
+            try {
+                $paypalResponse = $this->paypalService->getSubscription($subscription->paypal_subscription_id);
+                if ($paypalResponse['success']) {
+                    $paypalDetails = $paypalResponse['data'];
+                } else {
+                    $paypalError = $paypalResponse['error'] ?? 'Error desconocido de PayPal';
+                    \Log::warning('PayPal subscription not found', [
+                        'subscription_id' => $subscription->id,
+                        'paypal_id' => $subscription->paypal_subscription_id,
+                        'error' => $paypalError
+                    ]);
+                }
+            } catch (\Exception $e) {
+                $paypalError = 'Error conectando con PayPal: ' . $e->getMessage();
+                \Log::error('PayPal API error', [
+                    'subscription_id' => $subscription->id,
+                    'paypal_id' => $subscription->paypal_subscription_id,
+                    'error' => $e->getMessage()
+                ]);
             }
         }
 
         return view('developer.subscriptions.show', compact(
             'subscription', 
             'paymentStats', 
-            'paypalDetails'
+            'paypalDetails',
+            'paypalError'
         ));
+    }
+
+    /**
+     * Mark subscription as orphaned (no longer exists in PayPal)
+     */
+    public function markAsOrphaned(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:500'
+        ]);
+
+        try {
+            $subscription = Subscription::findOrFail($id);
+            
+            // Clear PayPal IDs and mark as orphaned
+            $subscription->update([
+                'paypal_subscription_id' => null,
+                'paypal_plan_id' => null,
+                'paypal_order_id' => null,
+                'status' => 'cancelled',
+                'cancelled_at' => Carbon::now(),
+                'cancellation_reason' => 'Suscripción huérfana: ' . $request->reason,
+                'cancelled_by' => 'admin-orphaned'
+            ]);
+            
+            Log::info('Subscription marked as orphaned', [
+                'subscription_id' => $id,
+                'tenant_id' => $subscription->tenant_id,
+                'reason' => $request->reason,
+                'marked_by' => auth()->id()
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Suscripción marcada como huérfana correctamente'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error marking subscription as orphaned', [
+                'subscription_id' => $id,
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al marcar la suscripción: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -115,6 +184,12 @@ class SubscriptionController extends Controller
         }
 
         return DataTables::eloquent($query)
+            ->addColumn('tenant_name', function ($subscription) {
+                return $subscription->tenant ? $subscription->tenant->name : 'N/A';
+            })
+            ->addColumn('tenant_email', function ($subscription) {
+                return $subscription->tenant ? ($subscription->tenant->email ?? '') : '';
+            })
             ->addColumn('tenant_info', function ($subscription) {
                 $tenant = $subscription->tenant;
                 if (!$tenant) return '<span class="text-muted">N/A</span>';
@@ -802,7 +877,7 @@ class SubscriptionController extends Controller
 
     private function getLastAction($subscription): string
     {
-        if ($subscription->reactivated_at && $subscription->reactivated_at->gt($subscription->suspended_at ?? Carbon::minValue())) {
+        if ($subscription->reactivated_at && $subscription->reactivated_at->gt($subscription->suspended_at ?? Carbon::createFromTimestamp(0))) {
             return 'Reactivada';
         }
         if ($subscription->suspended_at) {

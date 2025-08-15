@@ -96,121 +96,117 @@
             </div>
             @endif
 
-            <!-- Two Column Layout: Form + PayPal -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Registration Form Section - Full Width -->
+            <div class="space-y-6 mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Información de registro</h3>
                 
-                <!-- Registration Form -->
-                <div class="space-y-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Información de registro</h3>
-                    
-                    <form id="registrationForm">
-                        @csrf
-                        <input type="hidden" name="plan_key" value="{{ $plan->key }}">
-                        <input type="hidden" name="billing_cycle" id="selected_billing_cycle" value="monthly">
+                <form id="registrationForm">
+                    @csrf
+                    <input type="hidden" name="plan_key" value="{{ $plan->key }}">
+                    <input type="hidden" name="billing_cycle" id="selected_billing_cycle" value="monthly">
 
-                        <!-- Personal Information -->
-                        <div class="space-y-4">
-                            <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700">Nombre completo *</label>
-                                <input id="name" name="name" type="text" required autocomplete="name"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                       value="{{ old('name') }}" placeholder="Tu nombre completo"
-                                       onblur="validateField(this)">
-                                <div class="field-error hidden text-sm text-red-600 mt-1"></div>
-                            </div>
-
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Correo electrónico *</label>
-                                <input id="email" name="email" type="email" required autocomplete="email"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                       value="{{ old('email') }}" placeholder="tu@email.com"
-                                       onblur="validateField(this)" oninput="checkEmailAvailability(this)">
-                                <div class="field-error hidden text-sm text-red-600 mt-1"></div>
-                                <div id="email-status" class="hidden text-sm mt-1"></div>
-                            </div>
-
-                            <div>
-                                <label for="company_name" class="block text-sm font-medium text-gray-700">Nombre de la empresa *</label>
-                                <input id="company_name" name="company_name" type="text" required autocomplete="organization"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                       value="{{ old('company_name') }}" placeholder="Nombre de tu empresa"
-                                       onblur="validateField(this)">
-                                <div class="field-error hidden text-sm text-red-600 mt-1"></div>
-                            </div>
-
-                            <div>
-                                <label for="password" class="block text-sm font-medium text-gray-700">Contraseña *</label>
-                                <input id="password" name="password" type="password" required autocomplete="new-password"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                       placeholder="Mínimo 8 caracteres"
-                                       onblur="validateField(this)">
-                                <div class="field-error hidden text-sm text-red-600 mt-1"></div>
-                            </div>
-
-                            <div>
-                                <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmar contraseña *</label>
-                                <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                       placeholder="Confirma tu contraseña"
-                                       onblur="validateField(this)">
-                                <div class="field-error hidden text-sm text-red-600 mt-1"></div>
-                            </div>
-
-                            <!-- Terms -->
-                            <div class="pt-2">
-                                <label class="flex items-start">
-                                    <input id="terms" type="checkbox" required 
-                                           class="mt-1 mr-2 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                    <span class="text-sm text-gray-600">
-                                        Acepto los <a href="#" class="text-indigo-600 hover:text-indigo-500">términos y condiciones</a> 
-                                        y la <a href="#" class="text-indigo-600 hover:text-indigo-500">política de privacidad</a>
-                                    </span>
-                                </label>
-                            </div>
+                    <!-- Personal Information - Single Column -->
+                    <div class="space-y-4">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Nombre completo *</label>
+                            <input id="name" name="name" type="text" required autocomplete="name"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                   value="{{ old('name') }}" placeholder="Tu nombre completo"
+                                   onblur="validateField(this)">
+                            <div class="field-error hidden text-sm text-red-600 mt-1"></div>
                         </div>
-                    </form>
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">Correo electrónico *</label>
+                            <input id="email" name="email" type="email" required autocomplete="email"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                   value="{{ old('email') }}" placeholder="tu@email.com"
+                                   onblur="validateField(this)" oninput="checkEmailAvailability(this)">
+                            <div class="field-error hidden text-sm text-red-600 mt-1"></div>
+                            <div id="email-status" class="hidden text-sm mt-1"></div>
+                        </div>
+
+                        <div>
+                            <label for="company_name" class="block text-sm font-medium text-gray-700">Nombre de la empresa *</label>
+                            <input id="company_name" name="company_name" type="text" required autocomplete="organization"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                   value="{{ old('company_name') }}" placeholder="Nombre de tu empresa"
+                                   onblur="validateField(this)">
+                            <div class="field-error hidden text-sm text-red-600 mt-1"></div>
+                        </div>
+
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700">Contraseña *</label>
+                            <input id="password" name="password" type="password" required autocomplete="new-password"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                   placeholder="Mínimo 8 caracteres"
+                                   onblur="validateField(this)">
+                            <div class="field-error hidden text-sm text-red-600 mt-1"></div>
+                        </div>
+
+                        <div>
+                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmar contraseña *</label>
+                            <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                   placeholder="Confirma tu contraseña"
+                                   onblur="validateField(this)">
+                            <div class="field-error hidden text-sm text-red-600 mt-1"></div>
+                        </div>
+
+                        <!-- Terms -->
+                        <div class="pt-2">
+                            <label class="flex items-start">
+                                <input id="terms" type="checkbox" required 
+                                       class="mt-1 mr-2 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <span class="text-sm text-gray-600">
+                                    Acepto los <a href="#" class="text-indigo-600 hover:text-indigo-500">términos y condiciones</a> 
+                                    y la <a href="#" class="text-indigo-600 hover:text-indigo-500">política de privacidad</a>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- PayPal Payment Section - Bottom -->
+            <div class="space-y-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Proceder al pago</h3>
+                
+                <!-- Validation Status -->
+                <div id="validation-status" class="hidden p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                        <span class="text-sm text-yellow-800">Completa todos los campos para continuar</span>
+                    </div>
                 </div>
                 
-                <!-- PayPal Payment Section -->
-                <div class="space-y-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Proceder al pago</h3>
-                    
-                    <!-- Validation Status -->
-                    <div id="validation-status" class="hidden p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                        <div class="flex items-center">
-                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
-                            <span class="text-sm text-yellow-800">Completa todos los campos para continuar</span>
-                        </div>
+                <!-- PayPal Button Container -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center max-w-md mx-auto" id="paypal-container">
+                    <div id="paypal-button-container" class="w-full"></div>
+                    <div id="paypal-loading" class="hidden">
+                        <i class="fas fa-spinner fa-spin text-indigo-600 text-2xl"></i>
+                        <p class="text-sm text-gray-600 mt-2">Cargando opciones de pago...</p>
                     </div>
-                    
-                    <!-- PayPal Button Container -->
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center" id="paypal-container">
-                        <div id="paypal-button-container" class="w-full"></div>
-                        <div id="paypal-loading" class="hidden">
-                            <i class="fas fa-spinner fa-spin text-indigo-600 text-2xl"></i>
-                            <p class="text-sm text-gray-600 mt-2">Cargando opciones de pago...</p>
-                        </div>
-                        <div id="paypal-disabled" class="text-gray-500">
-                            <i class="fas fa-lock text-2xl mb-2"></i>
-                            <p class="text-sm">Completa el formulario para habilitar el pago</p>
-                        </div>
-                        <div id="paypal-error" class="hidden text-red-500">
-                            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                            <p class="text-sm font-medium" id="paypal-error-title">Error</p>
-                            <p class="text-xs" id="paypal-error-message">Mensaje de error</p>
-                        </div>
+                    <div id="paypal-disabled" class="text-gray-500">
+                        <i class="fas fa-lock text-2xl mb-2"></i>
+                        <p class="text-sm">Completa el formulario para habilitar el pago</p>
                     </div>
+                    <div id="paypal-error" class="hidden text-red-500">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                        <p class="text-sm font-medium" id="paypal-error-title">Error</p>
+                        <p class="text-xs" id="paypal-error-message">Mensaje de error</p>
+                    </div>
+                </div>
 
-                    <!-- PayPal Info -->
-                    <div class="text-center">
-                        <p class="text-xs text-gray-500">
-                            <i class="fas fa-shield-alt mr-1"></i>
-                            Pago 100% seguro procesado por PayPal
-                        </p>
-                        <p class="text-xs text-gray-400 mt-1">
-                            SSL cifrado • No almacenamos información de tarjetas
-                        </p>
-                    </div>
+                <!-- PayPal Info -->
+                <div class="text-center">
+                    <p class="text-xs text-gray-500">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Pago 100% seguro procesado por PayPal
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        SSL cifrado • No almacenamos información de tarjetas
+                    </p>
                 </div>
             </div>
         </div>

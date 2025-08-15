@@ -432,6 +432,50 @@ class PayPalService
     }
 
     /**
+     * Get subscription transactions from PayPal
+     */
+    public function getSubscriptionTransactions(string $subscriptionId, string $startTime = null, string $endTime = null): array
+    {
+        // Build query parameters
+        $params = [];
+        if ($startTime) {
+            $params['start_time'] = $startTime;
+        }
+        if ($endTime) {
+            $params['end_time'] = $endTime;
+        }
+
+        $queryString = !empty($params) ? '?' . http_build_query($params) : '';
+        $result = $this->makeRequest('GET', "/v1/billing/subscriptions/{$subscriptionId}/transactions{$queryString}");
+
+        if ($result['success']) {
+            $this->logPayPalAction('subscription_transactions_retrieved', 'info', 'PayPal subscription transactions retrieved', [
+                'subscription_id' => $subscriptionId,
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'transaction_count' => count($result['data']['transactions'] ?? [])
+            ], null, $result['data'] ?? []);
+
+            return [
+                'success' => true,
+                'data' => $result['data'] ?? []
+            ];
+        } else {
+            $this->logPayPalAction('subscription_transactions_failed', 'error', 'Failed to retrieve subscription transactions', [
+                'subscription_id' => $subscriptionId,
+                'error' => $result['error'],
+                'error_data' => $result['error_data'] ?? null
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $result['error'],
+                'error_data' => $result['error_data'] ?? null
+            ];
+        }
+    }
+
+    /**
      * Cancel subscription
      */
     public function cancelSubscription(string $subscriptionId, string $reason = 'User requested cancellation'): array

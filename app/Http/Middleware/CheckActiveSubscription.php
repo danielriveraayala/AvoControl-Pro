@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\Subscription;
+use App\Models\SubscriptionPlan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -107,10 +108,17 @@ class CheckActiveSubscription
     {
         $reason = $subscription->suspension_reason ?? 'Suscripción suspendida';
         
+        // Get available subscription plans (exclude trial and custom plans)
+        $availablePlans = SubscriptionPlan::where('is_active', true)
+            ->whereNotIn('key', ['trial', 'corporate'])
+            ->orderBy('price')
+            ->get();
+        
         // Check if can be reactivated
         if ($subscription->canBeReactivated()) {
             return response()->view('subscription.suspended', [
                 'subscription' => $subscription,
+                'availablePlans' => $availablePlans,
                 'canReactivate' => true,
                 'message' => "Tu suscripción está suspendida. Motivo: $reason"
             ], 403);
@@ -118,6 +126,7 @@ class CheckActiveSubscription
 
         return response()->view('subscription.suspended', [
             'subscription' => $subscription,
+            'availablePlans' => $availablePlans,
             'canReactivate' => false,
             'message' => "Tu suscripción está suspendida permanentemente. Motivo: $reason"
         ], 403);

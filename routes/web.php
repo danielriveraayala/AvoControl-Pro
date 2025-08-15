@@ -275,6 +275,7 @@ Route::prefix('developer')
             Route::post('/{id}/change-plan', [App\Http\Controllers\Developer\SubscriptionController::class, 'changePlan'])->name('change-plan');
             Route::post('/{id}/sync-paypal', [App\Http\Controllers\Developer\SubscriptionController::class, 'syncPayPal'])->name('sync-paypal');
             Route::post('/{id}/extend-trial', [App\Http\Controllers\Developer\SubscriptionController::class, 'extendTrial'])->name('extend-trial');
+            Route::post('/{id}/mark-orphaned', [App\Http\Controllers\Developer\SubscriptionController::class, 'markAsOrphaned'])->name('mark-orphaned');
             // Legacy support
             Route::get('/data/table', [App\Http\Controllers\Developer\SubscriptionController::class, 'getData'])->name('data.table');
         });
