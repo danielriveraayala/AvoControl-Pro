@@ -8,21 +8,21 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -30,31 +30,31 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        
+
         /* Custom animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .fade-in {
             animation: fadeIn 0.3s ease-out;
         }
-        
+
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: #f1f5f9;
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 3px;
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
@@ -73,13 +73,13 @@
                         <i class="fas fa-code text-xl sm:text-2xl text-indigo-600 mr-2 sm:mr-3"></i>
                         <h1 class="text-lg sm:text-xl font-bold text-gray-900 truncate">Developer Panel</h1>
                     </div>
-                    
+
                     <!-- Navigation Links (Desktop) -->
                     <div class="hidden md:ml-10 md:flex md:space-x-4 xl:space-x-6">
                         <a href="{{ route('developer.index') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.index') ? 'border-indigo-500 text-indigo-600' : '' }}">
                             Dashboard
                         </a>
-                        
+
                         <!-- Management Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
                             <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.users.*') || request()->routeIs('developer.roles.*') || request()->routeIs('developer.tenants.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
@@ -88,8 +88,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
-                            
-                            <div x-show="open" 
+
+                            <div x-show="open"
                                  x-transition:enter="transition ease-out duration-100"
                                  x-transition:enter-start="transform opacity-0 scale-95"
                                  x-transition:enter-end="transform opacity-100 scale-100"
@@ -110,7 +110,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Billing Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
                             <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.subscriptions.*') || request()->routeIs('developer.paypal.*') || request()->routeIs('developer.billing.*') || request()->routeIs('developer.plans.*') ? 'border-indigo-500 text-indigo-600' : '' }}">
@@ -119,8 +119,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
-                            
-                            <div x-show="open" 
+
+                            <div x-show="open"
                                  x-transition:enter="transition ease-out duration-100"
                                  x-transition:enter-start="transform opacity-0 scale-95"
                                  x-transition:enter-end="transform opacity-100 scale-100"
@@ -144,7 +144,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- System Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
                             <button @click="open = !open" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center {{ request()->routeIs('developer.config.*') || request()->routeIs('developer.backups.*') || request()->routeIs('developer.logs') ? 'border-indigo-500 text-indigo-600' : '' }}">
@@ -153,8 +153,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
-                            
-                            <div x-show="open" 
+
+                            <div x-show="open"
                                  x-transition:enter="transition ease-out duration-100"
                                  x-transition:enter-start="transform opacity-0 scale-95"
                                  x-transition:enter-end="transform opacity-100 scale-100"
@@ -186,13 +186,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
-                    
+
                     <!-- System Status -->
                     <div class="hidden lg:flex items-center space-x-2">
                         @php
                             $maintenanceActive = \Cache::get('frontend_maintenance', false);
                         @endphp
-                        
+
                         @if($maintenanceActive)
                             <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                             <span class="text-sm text-yellow-600 font-medium">Frontend Maintenance</span>
@@ -201,7 +201,7 @@
                             <span class="text-sm text-gray-500">System Online</span>
                         @endif
                     </div>
-                    
+
                     <!-- User Menu -->
                     <div class="relative">
                         <div class="flex items-center space-x-2 sm:space-x-3">
@@ -214,7 +214,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Back to App -->
                     <a href="{{ route('dashboard') }}" class="hidden sm:inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <i class="fas fa-arrow-left mr-1 sm:mr-2"></i>
@@ -224,7 +224,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Mobile Menu -->
         <div class="md:hidden" id="mobile-menu" style="display: none;">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 border-t border-gray-200">
@@ -243,7 +243,7 @@
                 <a href="{{ route('developer.tenants.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.tenants.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
                     <i class="fas fa-building mr-2"></i>Tenants
                 </a>
-                
+
                 <!-- Billing Section -->
                 <div class="border-t border-gray-200 pt-2 mt-2">
                     <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Billing</div>
@@ -260,7 +260,7 @@
                         <i class="fas fa-chart-line mr-2"></i>Métricas
                     </a>
                 </div>
-                
+
                 <!-- System Section -->
                 <div class="border-t border-gray-200 pt-2 mt-2">
                     <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
@@ -280,7 +280,7 @@
                         @php
                             $maintenanceActive = \Cache::get('frontend_maintenance', false);
                         @endphp
-                        
+
                         @if($maintenanceActive)
                             <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse mr-2"></div>
                             <span class="text-sm text-yellow-600 font-medium">Frontend Maintenance</span>
@@ -289,7 +289,7 @@
                             <span class="text-sm text-gray-500">System Online</span>
                         @endif
                     </div>
-                    
+
                     <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
                         <i class="fas fa-arrow-left mr-2"></i>Back to App
                     </a>
@@ -382,14 +382,14 @@
     </footer>
 
     @stack('scripts')
-    
+
     <!-- Mobile Menu Toggle Script ---->
     <script>
         // Mobile menu toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
-            
+
             if (mobileMenuButton && mobileMenu) {
                 mobileMenuButton.addEventListener('click', function() {
                     const isHidden = mobileMenu.style.display === 'none';
@@ -414,7 +414,7 @@
             }
         });
     </script>
-    
+
     <!-- Global SweetAlert Functions -->
     <script>
         // Global SweetAlert helper functions
@@ -431,7 +431,7 @@
                     position: 'top-end'
                 });
             },
-            
+
             error: function(title, text = '') {
                 return Swal.fire({
                     icon: 'error',
@@ -441,7 +441,7 @@
                     confirmButtonColor: '#ef4444'
                 });
             },
-            
+
             warning: function(title, text = '') {
                 return Swal.fire({
                     icon: 'warning',
@@ -451,7 +451,7 @@
                     confirmButtonColor: '#f59e0b'
                 });
             },
-            
+
             info: function(title, text = '', timer = 4000) {
                 return Swal.fire({
                     icon: 'info',
@@ -464,7 +464,7 @@
                     position: 'top-end'
                 });
             },
-            
+
             confirm: function(title, text = '', confirmText = 'Sí, continuar', cancelText = 'Cancelar') {
                 return Swal.fire({
                     title: title,
@@ -477,7 +477,7 @@
                     cancelButtonText: cancelText
                 });
             },
-            
+
             confirmDanger: function(title, text = '', confirmText = 'Sí, eliminar', cancelText = 'Cancelar') {
                 return Swal.fire({
                     title: title,
@@ -490,7 +490,7 @@
                     cancelButtonText: cancelText
                 });
             },
-            
+
             loading: function(title = 'Procesando...', text = 'Por favor espera') {
                 return Swal.fire({
                     title: title,
@@ -503,12 +503,12 @@
                     }
                 });
             },
-            
+
             close: function() {
                 Swal.close();
             }
         };
-        
+
         // Helper function for AJAX responses
         window.handleAjaxResponse = function(response) {
             if (response.success) {
@@ -517,14 +517,14 @@
                 DevAlert.error('Error', response.message);
             }
         };
-        
+
         // Helper function for fetch errors
         window.handleFetchError = function(error) {
             console.error('Error:', error);
             DevAlert.error('Error de conexión', 'No se pudo conectar con el servidor. Por favor, intenta de nuevo.');
         };
     </script>
-    
+
     @stack('scripts')
 </body>
 </html>

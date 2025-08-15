@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\PayPalService;
+use App\Models\SubscriptionPlan;
 use Illuminate\Support\Str;
 
 class PayPalSyncPlans extends Command
@@ -59,43 +60,34 @@ class PayPalSyncPlans extends Command
         $this->info("✅ Product ID: {$product['id']}");
         $this->line('');
 
-        // Step 2: Process plans
-        $plans = config('paypal.plans');
+        // Step 2: Load plans from database
+        $dbPlans = SubscriptionPlan::where('is_active', true)->get();
         
-        // Fallback: try to load directly from config file if config() returns null
-        if (empty($plans)) {
-            try {
-                $paypalConfig = include(config_path('paypal.php'));
-                $plans = $paypalConfig['plans'] ?? [];
-            } catch (\Exception $e) {
-                $this->error('❌ Could not load PayPal plans configuration.');
-                $this->line("Error: {$e->getMessage()}");
-                return 1;
-            }
-        }
-        
-        if (empty($plans)) {
-            $this->error('❌ No PayPal plans found in configuration.');
+        if ($dbPlans->isEmpty()) {
+            $this->error('❌ No active subscription plans found in database.');
             return 1;
         }
+        
+        $this->info("📋 Found {$dbPlans->count()} active plans in database");
+        $this->line('');
         
         $specificPlan = $this->option('plan');
         
         if ($specificPlan) {
-            if (!isset($plans[$specificPlan])) {
-                $this->error("❌ Plan '{$specificPlan}' not found in configuration.");
+            $dbPlans = $dbPlans->where('key', $specificPlan);
+            if ($dbPlans->isEmpty()) {
+                $this->error("❌ Plan '{$specificPlan}' not found in database.");
                 return 1;
             }
-            $plans = [$specificPlan => $plans[$specificPlan]];
         }
 
         $results = [];
-        $bar = $this->output->createProgressBar(count($plans));
+        $bar = $this->output->createProgressBar($dbPlans->count());
         $bar->start();
 
-        foreach ($plans as $planKey => $planConfig) {
-            $result = $this->processPlan($planKey, $planConfig, $product['id']);
-            $results[$planKey] = $result;
+        foreach ($dbPlans as $plan) {
+            $result = $this->processPlan($plan, $product['id']);
+            $results[$plan->key] = $result;
             $bar->advance();
         }
 
@@ -106,10 +98,14 @@ class PayPalSyncPlans extends Command
         // Step 3: Display results
         $this->displayResults($results);
 
-        // Step 4: Update .env with plan IDs
-        if ($this->option('create') || $this->option('force')) {
-            $this->updateEnvFile($results);
-        }
+        // Step 4: Summary
+        $created = count(array_filter($results, fn($r) => $r['status'] === 'created'));
+        $exists = count(array_filter($results, fn($r) => $r['status'] === 'exists'));
+        $skipped = count(array_filter($results, fn($r) => $r['status'] === 'skipped'));
+        $failed = count(array_filter($results, fn($r) => $r['status'] === 'failed'));
+        
+        $this->line('');
+        $this->info("📊 Summary: {$created} created, {$exists} existing, {$skipped} skipped, {$failed} failed");
 
         $this->line('');
         $this->info('🎉 PayPal Plans Synchronization Completed!');
@@ -160,42 +156,47 @@ class PayPalSyncPlans extends Command
     /**
      * Process individual plan
      */
-    private function processPlan(string $planKey, array $planConfig, string $productId): array
+    private function processPlan(SubscriptionPlan $plan, string $productId): array
     {
-        $planId = $planKey . '_plan_' . config('paypal.mode');
+        $planKey = $plan->key;
+        $environment = config('services.paypal.environment', 'sandbox');
+        $planId = $planKey . '_plan_' . $environment;
         
-        // Skip corporate plan for automated creation (needs custom pricing)
-        if ($planKey === 'corporate') {
+        // Skip plans with $0 price (PayPal doesn't allow $0 recurring plans)
+        if ($plan->price <= 0) {
             return [
                 'status' => 'skipped',
-                'message' => 'Corporate plan requires manual configuration',
+                'message' => 'Free plans not supported by PayPal subscriptions',
                 'plan_id' => null
             ];
         }
 
-        // Skip trial plan if amount is 0 (PayPal doesn't allow $0 recurring plans)
-        if ($planKey === 'trial') {
+        // Check if already has PayPal plan ID
+        if ($plan->paypal_plan_id && !$this->option('force')) {
             return [
-                'status' => 'skipped',
-                'message' => 'Trial plan handled differently (no recurring payment)',
-                'plan_id' => null
+                'status' => 'exists',
+                'message' => 'Plan already has PayPal ID (use --force to recreate)',
+                'plan_id' => $plan->paypal_plan_id
             ];
         }
 
         $result = $this->paypalService->createPlan($productId, $planId, [
-            'name' => $planConfig['name'],
-            'description' => $planConfig['description'],
-            'amount' => $planConfig['amount'],
-            'currency' => $planConfig['currency'],
-            'interval_unit' => $planConfig['interval_unit'],
-            'interval_count' => $planConfig['interval_count'],
-            'trial_days' => $planConfig['trial_days'] ?? 0
+            'name' => $plan->name,
+            'description' => $plan->description,
+            'amount' => $plan->price,
+            'currency' => $plan->currency,
+            'interval_unit' => $plan->billing_cycle === 'yearly' ? 'YEAR' : 'MONTH',
+            'interval_count' => 1,
+            'trial_days' => $plan->trial_days ?? 0
         ]);
 
         if ($result['success']) {
+            // Update the plan with PayPal ID
+            $plan->update(['paypal_plan_id' => $result['plan_id']]);
+            
             return [
                 'status' => 'created',
-                'message' => 'Plan created successfully',
+                'message' => 'Plan created successfully and updated in database',
                 'plan_id' => $result['plan_id'],
                 'data' => $result['data']
             ];
@@ -223,6 +224,7 @@ class PayPalSyncPlans extends Command
             $status = $result['status'];
             $statusIcon = match($status) {
                 'created' => '✅',
+                'exists' => '🔄',
                 'skipped' => '⚠️',
                 'failed' => '❌',
                 default => '❓'
@@ -239,41 +241,6 @@ class PayPalSyncPlans extends Command
         $this->table($headers, $rows);
     }
 
-    /**
-     * Update .env file with plan IDs
-     */
-    private function updateEnvFile(array $results): void
-    {
-        $this->info('💾 Updating .env file with Plan IDs...');
-        
-        $envPath = base_path('.env');
-        $envContent = file_get_contents($envPath);
-        
-        foreach ($results as $planKey => $result) {
-            if ($result['status'] === 'created' && $result['plan_id']) {
-                $envKey = 'PAYPAL_' . strtoupper($planKey) . '_PLAN_ID';
-                $envLine = "{$envKey}={$result['plan_id']}";
-                
-                // Check if key already exists
-                if (strpos($envContent, $envKey) !== false) {
-                    // Update existing line
-                    $envContent = preg_replace(
-                        '/^' . $envKey . '=.*$/m',
-                        $envLine,
-                        $envContent
-                    );
-                } else {
-                    // Add new line
-                    $envContent .= "\n{$envLine}";
-                }
-                
-                $this->line("  Added: {$envLine}");
-            }
-        }
-        
-        file_put_contents($envPath, $envContent);
-        $this->info('✅ Environment file updated successfully');
-    }
 
     /**
      * Display help information

@@ -954,23 +954,27 @@ class PayPalService
     /**
      * Create subscription plan in PayPal
      */
-    public function createSubscriptionPlan($plan): array
+    public function createSubscriptionPlan($plan, $billingCycle = 'monthly'): array
     {
         try {
-            $productId = $this->createProductForPlan($plan);
+            $productId = $this->createProductForPlan($plan, $billingCycle);
             if (!$productId['success']) {
                 return $productId;
             }
 
+            // Determine price based on billing cycle
+            $price = $billingCycle === 'yearly' && $plan->annual_price ? $plan->annual_price : $plan->price;
+            $planName = $plan->name . ($billingCycle === 'yearly' ? ' (Anual)' : ' (Mensual)');
+
             $planData = [
                 'product_id' => $productId['product_id'],
-                'name' => $plan->name,
-                'description' => $plan->description ?: "Plan {$plan->name} para AvoControl Pro",
+                'name' => $planName,
+                'description' => $plan->description ?: "Plan {$planName} para AvoControl Pro",
                 'status' => 'ACTIVE',
                 'billing_cycles' => [
                     [
                         'frequency' => [
-                            'interval_unit' => $plan->billing_cycle === 'yearly' ? 'YEAR' : 'MONTH',
+                            'interval_unit' => $billingCycle === 'yearly' ? 'YEAR' : 'MONTH',
                             'interval_count' => 1
                         ],
                         'tenure_type' => 'REGULAR',
@@ -978,7 +982,7 @@ class PayPalService
                         'total_cycles' => 0, // Infinite
                         'pricing_scheme' => [
                             'fixed_price' => [
-                                'value' => number_format($plan->price, 2, '.', ''),
+                                'value' => number_format($price, 2, '.', ''),
                                 'currency_code' => $plan->currency
                             ]
                         ]
@@ -1059,12 +1063,14 @@ class PayPalService
     /**
      * Create product in PayPal (required for subscription plans)
      */
-    private function createProductForPlan($plan): array
+    private function createProductForPlan($plan, $billingCycle = 'monthly'): array
     {
         try {
+            $planName = $plan->name . ($billingCycle === 'yearly' ? ' (Anual)' : ' (Mensual)');
+            
             $productData = [
-                'name' => "AvoControl Pro - {$plan->name}",
-                'description' => $plan->description ?: "Plan {$plan->name} para gestión de centros de acopio",
+                'name' => "AvoControl Pro - {$planName}",
+                'description' => $plan->description ?: "Plan {$planName} para gestión de centros de acopio",
                 'type' => 'SERVICE',
                 'category' => 'SOFTWARE',
                 'image_url' => url('/images/logo.png'),

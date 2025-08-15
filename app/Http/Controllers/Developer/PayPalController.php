@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\PayPalService;
 use App\Models\PayPalWebhookLog;
+use App\Models\SubscriptionPlan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
 
@@ -155,6 +156,7 @@ class PayPalController extends Controller
         try {
             // Run the sync command
             Artisan::call('paypal:sync-plans', [
+                '--create' => true,
                 '--force' => $request->boolean('force'),
             ]);
 
@@ -322,28 +324,17 @@ class PayPalController extends Controller
      */
     private function getPlansStatus(): array
     {
-        // Try to get plans from config, with fallback to direct file inclusion
-        $plans = config('paypal.plans', []);
-        
-        // If config returns empty, try loading directly from file
-        if (empty($plans)) {
-            try {
-                $paypalConfig = include(config_path('paypal.php'));
-                $plans = $paypalConfig['plans'] ?? [];
-            } catch (\Exception $e) {
-                // If file loading fails, return empty array
-                $plans = [];
-            }
-        }
+        // Get plans from database instead of config files
+        $plans = SubscriptionPlan::all();
         
         $status = [];
 
-        foreach ($plans as $planKey => $planConfig) {
-            $status[$planKey] = [
-                'name' => $planConfig['name'] ?? ucfirst($planKey),
-                'price' => $planConfig['amount'] ?? 0,
-                'synced' => !empty($planConfig['paypal_plan_id']), // Check if plan has PayPal ID
-                'local_id' => $planConfig['paypal_plan_id'] ?? null,
+        foreach ($plans as $plan) {
+            $status[$plan->key] = [
+                'name' => $plan->name,
+                'price' => $plan->price,
+                'synced' => !empty($plan->paypal_plan_id), // Check if plan has PayPal ID
+                'local_id' => $plan->paypal_plan_id,
             ];
         }
 

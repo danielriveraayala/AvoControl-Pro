@@ -50,13 +50,13 @@ class PlanManagementController extends Controller
             'price' => 'required|numeric|min:0',
             'annual_price' => 'nullable|numeric|min:0',
             'annual_discount_percentage' => 'nullable|integer|min:0|max:100',
-            'currency' => 'required|string|size:3',
+            'currency' => 'required|string|in:USD',
             'billing_cycle' => 'required|in:monthly,yearly',
             'trial_days' => 'required|integer|min:0',
             'max_users' => 'nullable|integer|min:-1',
             'max_lots_per_month' => 'nullable|integer|min:-1',
             'max_storage_gb' => 'nullable|integer|min:-1',
-            'max_locations' => 'required|integer|min:1',
+            'max_locations' => 'required|integer|min:-1',
             'features' => 'array',
             'features.*' => 'string',
             'is_active' => 'boolean',
@@ -84,6 +84,12 @@ class PlanManagementController extends Controller
             if (empty($validated['annual_discount_percentage'])) $validated['annual_discount_percentage'] = null;
             if (empty($validated['button_text'])) $validated['button_text'] = null;
             if (empty($validated['popular_badge'])) $validated['popular_badge'] = null;
+            
+            // Handle boolean fields (checkboxes that aren't sent when unchecked)
+            $validated['is_active'] = $request->has('is_active');
+            $validated['is_featured'] = $request->has('is_featured');
+            $validated['is_custom'] = $request->has('is_custom');
+            $validated['show_on_landing'] = $request->has('show_on_landing');
             
             // Create the plan
             $plan = SubscriptionPlan::create($validated);
@@ -142,13 +148,13 @@ class PlanManagementController extends Controller
             'price' => 'required|numeric|min:0',
             'annual_price' => 'nullable|numeric|min:0',
             'annual_discount_percentage' => 'nullable|integer|min:0|max:100',
-            'currency' => 'required|string|size:3',
+            'currency' => 'required|string|in:USD',
             'billing_cycle' => 'required|in:monthly,yearly',
             'trial_days' => 'required|integer|min:0',
             'max_users' => 'nullable|integer|min:-1',
             'max_lots_per_month' => 'nullable|integer|min:-1',
             'max_storage_gb' => 'nullable|integer|min:-1',
-            'max_locations' => 'required|integer|min:1',
+            'max_locations' => 'required|integer|min:-1',
             'features' => 'array',
             'features.*' => 'string',
             'is_active' => 'boolean',
@@ -176,6 +182,12 @@ class PlanManagementController extends Controller
             if (empty($validated['annual_discount_percentage'])) $validated['annual_discount_percentage'] = null;
             if (empty($validated['button_text'])) $validated['button_text'] = null;
             if (empty($validated['popular_badge'])) $validated['popular_badge'] = null;
+            
+            // Handle boolean fields (checkboxes that aren't sent when unchecked)
+            $validated['is_active'] = $request->has('is_active');
+            $validated['is_featured'] = $request->has('is_featured');
+            $validated['is_custom'] = $request->has('is_custom');
+            $validated['show_on_landing'] = $request->has('show_on_landing');
             
             // Update the plan
             $plan->update($validated);
@@ -244,7 +256,7 @@ class PlanManagementController extends Controller
     }
 
     /**
-     * Sync plan with PayPal
+     * Sync plan with PayPal (double sync for annual pricing)
      */
     public function syncWithPayPal(SubscriptionPlan $plan)
     {
@@ -256,25 +268,88 @@ class PlanManagementController extends Controller
                 ]);
             }
 
-            // Create PayPal plan (this would need to be implemented in PayPalService)
-            $result = $this->paypalService->createSubscriptionPlan($plan);
+            $updateData = [];
+            $messages = [];
+            $errors = [];
 
-            if ($result['success']) {
-                $plan->update(['paypal_plan_id' => $result['plan_id']]);
+            // 1. Sync Monthly Plan
+            $monthlyResult = $this->paypalService->createSubscriptionPlan($plan, 'monthly');
+            
+            if ($monthlyResult['success']) {
+                $updateData['paypal_plan_id'] = $monthlyResult['plan_id'];
+                $messages[] = 'Plan mensual sincronizado exitosamente.';
                 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Plan sincronizado exitosamente con PayPal.',
-                    'paypal_plan_id' => $result['plan_id']
+                Log::info('Monthly PayPal plan synchronized', [
+                    'plan_id' => $plan->id,
+                    'paypal_plan_id' => $monthlyResult['plan_id']
                 ]);
             } else {
+                $errors[] = 'Error en plan mensual: ' . $monthlyResult['error'];
+                Log::error('Failed to sync monthly PayPal plan', [
+                    'plan_id' => $plan->id,
+                    'error' => $monthlyResult['error']
+                ]);
+            }
+
+            // 2. Sync Annual Plan (if annual pricing exists)
+            if ($plan->annual_price && $plan->annual_price > 0) {
+                $annualResult = $this->paypalService->createSubscriptionPlan($plan, 'yearly');
+                
+                if ($annualResult['success']) {
+                    $updateData['paypal_annual_plan_id'] = $annualResult['plan_id'];
+                    $messages[] = 'Plan anual sincronizado exitosamente.';
+                    
+                    Log::info('Annual PayPal plan synchronized', [
+                        'plan_id' => $plan->id,
+                        'paypal_annual_plan_id' => $annualResult['plan_id']
+                    ]);
+                } else {
+                    $errors[] = 'Error en plan anual: ' . $annualResult['error'];
+                    Log::error('Failed to sync annual PayPal plan', [
+                        'plan_id' => $plan->id,
+                        'error' => $annualResult['error']
+                    ]);
+                }
+            }
+
+            // Update plan with successful PayPal IDs
+            if (!empty($updateData)) {
+                $plan->update($updateData);
+            }
+
+            // Determine response
+            if (!empty($messages) && empty($errors)) {
+                // All successful
+                return response()->json([
+                    'success' => true,
+                    'message' => implode(' ', $messages),
+                    'paypal_plan_id' => $updateData['paypal_plan_id'] ?? null,
+                    'paypal_annual_plan_id' => $updateData['paypal_annual_plan_id'] ?? null
+                ]);
+            } elseif (!empty($messages) && !empty($errors)) {
+                // Partial success
+                return response()->json([
+                    'success' => true,
+                    'message' => implode(' ', $messages) . ' Advertencias: ' . implode(' ', $errors),
+                    'paypal_plan_id' => $updateData['paypal_plan_id'] ?? null,
+                    'paypal_annual_plan_id' => $updateData['paypal_annual_plan_id'] ?? null,
+                    'warnings' => $errors
+                ]);
+            } else {
+                // All failed
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al sincronizar con PayPal: ' . $result['error']
+                    'message' => 'Error al sincronizar con PayPal: ' . implode(' ', $errors)
                 ]);
             }
 
         } catch (\Exception $e) {
+            Log::error('Exception in syncWithPayPal', [
+                'plan_id' => $plan->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al sincronizar con PayPal: ' . $e->getMessage()

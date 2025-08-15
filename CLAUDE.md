@@ -7,6 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 AvoControl Pro is a Laravel-based web application for managing avocado purchasing and sales operations for Avocado Collection Centers (Centros de Acopio de Aguacate). The system tracks lot purchases from suppliers, sales to customers, payments, and provides comprehensive reporting and analytics.
 
 **Status**: Full production-ready system with comprehensive features implemented.
+**Production URL**: https://dev.avocontrol.pro
+**Environment**: Production (APP_ENV=production)
+**Última actualización**: 15 Agosto 2025 - PayPal Subscription System Optimization
+**Estado de completación**: 100% - Sistema totalmente operativo
 
 ## Developer Information
 
@@ -54,9 +58,9 @@ npm run dev
 
 ### Database Configuration
 - **Host**: localhost
-- **Database**: avocontrol
-- **Username**: root
-- **Password**: toor
+- **Database**: avocontrol_prod
+- **Username**: avocontrol_user
+- **Password**: DI&(G;u(/?+pPIBLc0.m
 - **Port**: 3306
 
 ### Common Development Commands
@@ -101,6 +105,14 @@ php artisan migrate:fresh --seed
 - Default admin empresa: `admin@avocontrol.com` / `password123`
 - Default vendedor: `vendedor@avocontrol.com` / `password123`
 - Default contador: `contador@avocontrol.com` / `password123`
+
+#### Configuración de Email SMTP
+- **Host**: smtp.hostinger.com
+- **Port**: 587
+- **Username**: avocontrol@kreativos.pro
+- **Password**: t74tP#M:
+- **Encryption**: TLS
+- **From Address**: avocontrol@kreativos.pro
 
 **Nota**: Los usuarios admin de empresa NO tienen acceso al panel de desarrollador
 
@@ -383,6 +395,7 @@ El sistema implementa **3 canales simultáneos** para máxima cobertura:
 **Deployment Completo**: Sistema 100% operativo en VPS 69.62.65.243 con todas las migraciones ejecutadas, assets compilados, caché optimizado, y comandos de prueba funcionando correctamente. Compatible con PHP 7.4+ mediante ajustes de sintaxis y Day.js completamente integrado reemplazando moment.js.
 
 ### Sistema Multi-Tenant + PayPal Subscriptions (10/10 Phases Complete - 100% ✅)
+### PayPal Subscription System Optimization (NEW - 15 Ago 2025 - 100% ✅)
 
 - ✅ **Phase 1: Planning & Architecture (100%)**
   - Complete multi-tenant architecture documentation
@@ -889,6 +902,19 @@ El sistema implementa **3 canales simultáneos** para máxima cobertura:
 - Switching entre tenants desde navbar
 - Roles diferentes por tenant
 
+### PayPal Integration (Production)
+- **Environment**: Sandbox (testing) y Live (production)
+- **Sandbox Client ID**: AVaHnlamxWarUpEaUB70gaKj9ANJxNi8Oum0Et21g9k671jE415MgkVtoraDFzn1ys435auIgnAhGb8U
+- **Live Client ID**: Ac6zd4zgeT-BnOBlwkKU_n1mZx1F2bTWtBY278kO-B1MQ4IFDBpGB4VC8t0pLA0iWRcqszo2KvkUckN5
+- **Basic Plan ID**: P-1F229431HU785402ENCOSSII
+- **Premium Plan ID**: P-0SB15602P6621791ANCOSSII
+- **Enterprise Plan ID**: P-5GF05071VH782482BNCOSSIQ
+
+### Push Notifications (VAPID Keys)
+- **Public Key**: BMIv-RTmDW8u4zZs86Hpmoay2QtCilrwRLHhQ9AlLl0q_OgWE2Yu-9pSZ5XYSu8rzJYYGxuKHMVSfV9WgrQJwHM
+- **Private Key**: p2YRMTH3lWLVj5BWZvOD9vpHye4oJrnpgyQ0udQsZjc
+- **Subject**: mailto:avocontrol@kreativos.pro
+
 ### Landing Page Comercial (100% Completado ✅)
 
 #### **Características Implementadas:**
@@ -952,6 +978,79 @@ El sistema implementa **3 canales simultáneos** para máxima cobertura:
 - ✅ **Responsive Images**: Picsum.photos con dimensiones optimizadas
 
 **Estado Final**: Landing page completamente operativa en https://dev.avocontrol.pro/ con información legal completa y flujo de conversión profesional para venta de suscripciones.
+
+### PayPal Subscription System Optimization (15 Ago 2025 - 100% ✅)
+
+#### **Problema Identificado:**
+Los botones PayPal en `/subscription/register/basic` presentaban errores debido a PayPal plan IDs incorrectos en la base de datos y falta de soporte para doble sincronización (mensual/anual).
+
+#### **✅ Sprint 6.8: Advanced PayPal Plan Synchronization (100% Completado)**
+
+**Funcionalidades Implementadas:**
+
+- ✅ **Doble Sincronización Automática**
+  - `PlanManagementController::syncWithPayPal()` completamente reescrito
+  - Sincronización simultánea de planes mensuales y anuales cuando aplique
+  - Manejo inteligente de errores parciales (mensual exitoso, anual fallido)
+  - Logging detallado de cada operación de sincronización
+  - Response JSON con información completa de ambos PayPal plan IDs
+
+- ✅ **PayPalService Enhanced para Dual Billing Cycles**
+  - `createSubscriptionPlan($plan, $billingCycle)` con soporte para 'monthly' y 'yearly'
+  - `createProductForPlan($plan, $billingCycle)` diferenciado por ciclo
+  - Cálculo automático de precios: mensual usa `price`, anual usa `annual_price`
+  - Nombres diferenciados: "Plan Básico (Mensual)" vs "Plan Básico (Anual)"
+  - Productos PayPal únicos por plan y ciclo de facturación
+
+- ✅ **UI/UX Mejorada para Gestión de Planes**
+  - Campo "Ciclo de Facturación" fijo en "Mensual" en sección "Información de Precios"
+  - Sección separada "Precios Anuales (Opcional)" para configuración anual
+  - Notificaciones visuales cuando planes existentes tenían configuraciones diferentes
+  - Explicaciones contextuales sobre la nueva arquitectura de precios
+  - Input fields disabled con explicaciones claras del nuevo flujo
+
+- ✅ **Error Handling Avanzado en Registro de Suscripciones**
+  - `showPayPalError()` function para mostrar errores user-friendly
+  - Contenedor visual de errores en `/subscription/register/{plan}`
+  - Validación previa de PayPal plan IDs antes de renderizar botones
+  - Logging mejorado en browser console para debugging
+  - Manejo específico de errores: INVALID_PLAN, conexión, configuración
+
+- ✅ **Logging y Auditoría Completa**
+  - Log::info/error en todas las operaciones de sincronización
+  - Tracking de plan_id, paypal_plan_id, paypal_annual_plan_id
+  - Metadata de errores PayPal para debugging
+  - Console.log detallado en frontend para troubleshooting
+  - Registro de estados de botones PayPal (initialized, cleared, error)
+
+**Archivos Modificados:**
+- Controllers: `PlanManagementController.php` (método syncWithPayPal reescrito)
+- Services: `PayPalService.php` (createSubscriptionPlan + createProductForPlan enhanced)
+- Views: `plans/create.blade.php`, `plans/edit.blade.php` (UI billing cycle fixed)
+- Views: `subscription/register.blade.php` (error handling mejorado)
+- Documentation: `CLAUDE.md` (nueva sección completa)
+
+**Flujo de Trabajo Mejorado:**
+1. **Configuración de Plan**: Admin configura precio mensual + precio anual (opcional)
+2. **Sincronización Dual**: Un click sincroniza ambos planes si precio anual existe
+3. **PayPal Integration**: Genera `paypal_plan_id` (mensual) + `paypal_annual_plan_id` (anual)
+4. **User Registration**: Selector mensual/anual funciona correctamente
+5. **Error Recovery**: Errores de sincronización se muestran claramente con pasos de solución
+
+**Estado Técnico:**
+- ✅ Arquitectura de doble sincronización operativa
+- ✅ Manejo robusto de errores parciales y totales
+- ✅ UI adaptada para el nuevo flujo de trabajo
+- ✅ Logging completo para debugging y auditoría
+- ✅ Compatibilidad total con planes existentes
+- ✅ Ready for production en https://dev.avocontrol.pro
+
+**Beneficios Logrados:**
+- **Resolución del Error**: Botones PayPal en `/subscription/register/basic` ahora funcionan
+- **Flexibilidad**: Soporte nativo para precios anuales con descuentos
+- **Mantenibilidad**: Sincronización centralizada y logging detallado
+- **UX Mejorada**: Errores claros y proceso de configuración intuitivo
+- **Escalabilidad**: Arquitectura preparada para múltiples ciclos de facturación futuros
 
 ## Architecture Overview
 

@@ -30,38 +30,45 @@
         </div>
 
         <!-- Plans Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6">
             @forelse($plans as $plan)
                 <div class="bg-white shadow rounded-lg border {{ $plan->is_featured ? 'border-yellow-400 ring-2 ring-yellow-200' : 'border-gray-200' }}">
                     <!-- Plan Header -->
-                    <div class="px-6 py-4 border-b border-gray-200" style="background: linear-gradient(135deg, {{ $plan->color }}22, {{ $plan->color }}11);">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex items-center">
-                                <i class="{{ $plan->icon }} text-2xl mr-3" style="color: {{ $plan->color }};"></i>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">{{ $plan->name }}</h3>
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-2xl font-bold" style="color: {{ $plan->color }};">{{ $plan->formatted_price }}</span>
+                    <div class="px-4 sm:px-6 py-4 border-b border-gray-200" style="background: linear-gradient(135deg, {{ $plan->color }}22, {{ $plan->color }}11);">
+                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                            <div class="flex items-start gap-3">
+                                <i class="{{ $plan->icon }} text-xl sm:text-2xl flex-shrink-0 mt-1" style="color: {{ $plan->color }};"></i>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">{{ $plan->name }}</h3>
+                                    <div class="flex flex-wrap items-center gap-3 mt-1">
+                                        @php
+                                            $currencySymbol = $plan->currency === 'EUR' ? '€' : '$';
+                                        @endphp
+                                        <div class="flex items-baseline gap-1">
+                                            <span class="text-xl sm:text-2xl font-bold" style="color: {{ $plan->color }};">{{ $currencySymbol }}{{ number_format($plan->price, 0) }}</span>
+                                            <span class="text-sm text-gray-600 font-medium">/mes</span>
+                                            <span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-md font-medium">{{ $plan->currency }}</span>
+                                        </div>
                                         @if($plan->trial_days > 0)
-                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full whitespace-nowrap">
                                                 {{ $plan->trial_days }} días gratis
                                             </span>
                                         @endif
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex flex-col items-end space-y-1">
+                            <div class="flex flex-wrap gap-1 sm:flex-col sm:items-end">
                                 @if($plan->is_featured)
-                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full whitespace-nowrap">
                                         <i class="fas fa-star mr-1"></i>Destacado
                                     </span>
                                 @endif
                                 @if($plan->is_custom)
-                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
+                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full whitespace-nowrap">
                                         <i class="fas fa-cog mr-1"></i>Personalizado
                                     </span>
                                 @endif
-                                <span class="px-2 py-1 text-xs rounded-full {{ $plan->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                <span class="px-2 py-1 text-xs rounded-full whitespace-nowrap {{ $plan->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                     {{ $plan->is_active ? 'Activo' : 'Inactivo' }}
                                 </span>
                             </div>
@@ -72,9 +79,9 @@
                     </div>
 
                     <!-- Plan Limits -->
-                    <div class="px-6 py-4">
+                    <div class="px-4 sm:px-6 py-4">
                         <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Límites</h4>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-sm">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Usuarios:</span>
                                 <span class="font-medium">{{ $plan->getLimitDisplay('max_users') }}</span>
@@ -95,7 +102,7 @@
                     </div>
 
                     <!-- Plan Features -->
-                    <div class="px-6 py-4 border-t border-gray-200">
+                    <div class="px-4 sm:px-6 py-4 border-t border-gray-200">
                         <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Funcionalidades</h4>
                         @if(count($plan->features ?? []) > 0)
                             <div class="flex flex-wrap gap-1">
@@ -116,31 +123,31 @@
                     </div>
 
                     <!-- PayPal Status -->
-                    <div class="px-6 py-4 border-t border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
+                    <div class="px-4 sm:px-6 py-4 border-t border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div class="min-w-0 flex-1">
                                 <h4 class="text-sm font-medium text-gray-500">PayPal</h4>
-                                <div class="flex items-center mt-1">
+                                <div class="flex flex-wrap items-center gap-2 mt-1">
                                     @if($plan->paypal_plan_id)
-                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full whitespace-nowrap">
                                             <i class="fas fa-check mr-1"></i>Sincronizado
                                         </span>
-                                        <span class="ml-2 text-xs text-gray-500">{{ substr($plan->paypal_plan_id, 0, 15) }}...</span>
+                                        <span class="text-xs text-gray-500 truncate max-w-[150px]" title="{{ $plan->paypal_plan_id }}">{{ substr($plan->paypal_plan_id, 0, 15) }}...</span>
                                     @else
-                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full whitespace-nowrap">
                                             <i class="fas fa-clock mr-1"></i>No sincronizado
                                         </span>
                                     @endif
                                 </div>
                             </div>
-                            <div class="flex space-x-2">
+                            <div class="flex gap-2 flex-shrink-0">
                                 @if($plan->paypal_plan_id)
-                                    <button onclick="unsyncFromPayPal({{ $plan->id }})" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">
-                                        <i class="fas fa-unlink mr-1"></i>Desincronizar
+                                    <button onclick="unsyncFromPayPal({{ $plan->id }})" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded whitespace-nowrap">
+                                        <i class="fas fa-unlink mr-1"></i><span class="hidden sm:inline">Desincronizar</span><span class="sm:hidden">Desync</span>
                                     </button>
                                 @elseif($plan->price > 0)
-                                    <button onclick="syncWithPayPal({{ $plan->id }})" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">
-                                        <i class="fas fa-sync mr-1"></i>Sincronizar
+                                    <button onclick="syncWithPayPal({{ $plan->id }})" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded whitespace-nowrap">
+                                        <i class="fas fa-sync mr-1"></i><span class="hidden sm:inline">Sincronizar</span><span class="sm:hidden">Sync</span>
                                     </button>
                                 @endif
                             </div>
@@ -148,19 +155,19 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-                        <div class="flex flex-wrap gap-2">
-                            <a href="{{ route('developer.plans.show', $plan) }}" class="flex-1 min-w-0 inline-flex items-center justify-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded">
+                    <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+                        <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+                            <a href="{{ route('developer.plans.show', $plan) }}" class="inline-flex items-center justify-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded">
                                 <i class="fas fa-eye mr-1"></i>Ver
                             </a>
-                            <a href="{{ route('developer.plans.edit', $plan) }}" class="flex-1 min-w-0 inline-flex items-center justify-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded">
+                            <a href="{{ route('developer.plans.edit', $plan) }}" class="inline-flex items-center justify-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded">
                                 <i class="fas fa-edit mr-1"></i>Editar
                             </a>
-                            <button onclick="toggleStatus({{ $plan->id }})" class="flex-1 min-w-0 inline-flex items-center justify-center px-3 py-2 {{ $plan->is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }} text-white text-xs rounded">
-                                <i class="fas fa-{{ $plan->is_active ? 'pause' : 'play' }} mr-1"></i>{{ $plan->is_active ? 'Pausar' : 'Activar' }}
+                            <button onclick="toggleStatus({{ $plan->id }})" class="inline-flex items-center justify-center px-3 py-2 {{ $plan->is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }} text-white text-xs rounded">
+                                <i class="fas fa-{{ $plan->is_active ? 'pause' : 'play' }} mr-1"></i><span class="hidden sm:inline">{{ $plan->is_active ? 'Pausar' : 'Activar' }}</span><span class="sm:hidden">{{ $plan->is_active ? 'Off' : 'On' }}</span>
                             </button>
                             <div class="relative">
-                                <button onclick="toggleDropdown({{ $plan->id }})" class="inline-flex items-center justify-center px-3 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 text-xs rounded">
+                                <button onclick="toggleDropdown({{ $plan->id }})" class="inline-flex items-center justify-center px-3 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 text-xs rounded w-full sm:w-auto">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <div id="dropdown-{{ $plan->id }}" class="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-md shadow-lg z-10 border">

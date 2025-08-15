@@ -30,4 +30,17 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'paypal' => [
+        'client_id' => env('PAYPAL_ENVIRONMENT') === 'live' 
+            ? env('PAYPAL_LIVE_CLIENT_ID') 
+            : env('PAYPAL_SANDBOX_CLIENT_ID'),
+        'client_secret' => env('PAYPAL_ENVIRONMENT') === 'live' 
+            ? env('PAYPAL_LIVE_CLIENT_SECRET') 
+            : env('PAYPAL_SANDBOX_CLIENT_SECRET'),
+        'webhook_id' => env('PAYPAL_ENVIRONMENT') === 'live' 
+            ? env('PAYPAL_LIVE_WEBHOOK_ID') 
+            : env('PAYPAL_SANDBOX_WEBHOOK_ID'),
+        'environment' => env('PAYPAL_ENVIRONMENT', 'sandbox'),
+    ],
+
 ];

@@ -194,7 +194,7 @@
                     </div>
                     <button onclick="syncPlans()" class="inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 self-start">
                         <i class="fas fa-sync mr-1 sm:mr-2"></i>
-                        <span class="hidden sm:inline">Sincronizar</span> Planes
+                        Sincronizar Planes
                     </button>
                 </div>
             </div>
@@ -378,7 +378,7 @@ function syncPlans() {
     ).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Sincronizando...', 'Conectando con PayPal y sincronizando planes');
-            
+
             fetch('{{ route('developer.paypal.sync-plans') }}', {
                 method: 'POST',
                 headers: {
@@ -416,7 +416,7 @@ function closeTestWebhook() {
 function sendTestWebhook() {
     const eventType = document.getElementById('event_type').value;
     const subscriptionId = document.getElementById('subscription_id').value;
-    
+
     DevAlert.loading('Enviando webhook...', 'Procesando webhook de prueba');
 
     fetch('{{ route('developer.paypal.test-webhook') }}', {

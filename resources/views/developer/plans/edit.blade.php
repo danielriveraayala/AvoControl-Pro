@@ -104,31 +104,46 @@
                             @enderror
                         </div>
 
-                        <!-- Currency -->
+                        <!-- Currency (Fixed to USD) -->
                         <div>
                             <label for="currency" class="block text-sm font-medium text-gray-700">Moneda*</label>
-                            <select name="currency" id="currency" required
-                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="USD" {{ old('currency', $plan->currency) == 'USD' ? 'selected' : '' }}>USD - Dólar Americano</option>
-                                <option value="EUR" {{ old('currency', $plan->currency) == 'EUR' ? 'selected' : '' }}>EUR - Euro</option>
-                                <option value="MXN" {{ old('currency', $plan->currency) == 'MXN' ? 'selected' : '' }}>MXN - Peso Mexicano</option>
-                            </select>
-                            @error('currency')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <div class="mt-1 relative">
+                                <input type="hidden" name="currency" value="USD">
+                                <div class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-700 sm:text-sm">
+                                    <i class="fas fa-dollar-sign mr-2"></i>USD - Dólar Americano
+                                    <span class="ml-2 text-xs text-gray-500">(Moneda fija para PayPal)</span>
+                                </div>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">La moneda está fijada a USD para compatibilidad con PayPal</p>
+                            @if($plan->currency !== 'USD')
+                                <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                                    <p class="text-xs text-yellow-800">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        Nota: Este plan tenía moneda {{ $plan->currency }}. Se actualizará a USD al guardar.
+                                    </p>
+                                </div>
+                            @endif
                         </div>
 
-                        <!-- Billing Cycle -->
+                        <!-- Billing Cycle (Fixed to Monthly) -->
                         <div>
                             <label for="billing_cycle" class="block text-sm font-medium text-gray-700">Ciclo de Facturación*</label>
-                            <select name="billing_cycle" id="billing_cycle" required
-                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="monthly" {{ old('billing_cycle', $plan->billing_cycle) == 'monthly' ? 'selected' : '' }}>Mensual</option>
-                                <option value="yearly" {{ old('billing_cycle', $plan->billing_cycle) == 'yearly' ? 'selected' : '' }}>Anual</option>
-                            </select>
-                            @error('billing_cycle')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <div class="mt-1 relative">
+                                <input type="hidden" name="billing_cycle" value="monthly">
+                                <div class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-700 sm:text-sm">
+                                    <i class="fas fa-calendar mr-2"></i>Mensual
+                                    <span class="ml-2 text-xs text-gray-500">(Ciclo base fijo)</span>
+                                </div>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">El ciclo base es mensual. Los precios anuales se configuran por separado.</p>
+                            @if($plan->billing_cycle !== 'monthly')
+                                <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                                    <p class="text-xs text-yellow-800">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        Nota: Este plan tenía ciclo {{ $plan->billing_cycle }}. Se actualizará a mensual al guardar.
+                                    </p>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -181,18 +196,21 @@
 
                     <!-- Current annual pricing info -->
                     @if($plan->hasAnnualPricing())
-                        <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+                        <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md" id="current-annual-pricing">
                             <div class="flex">
                                 <div class="flex-shrink-0">
                                     <i class="fas fa-check-circle text-green-400"></i>
                                 </div>
                                 <div class="ml-3">
                                     <h4 class="text-sm font-medium text-green-900">Precios Anuales Configurados</h4>
-                                    <div class="mt-2 text-sm text-green-700">
-                                        <p><strong>Precio mensual:</strong> ${{ number_format($plan->price, 2) }}</p>
-                                        <p><strong>Precio anual:</strong> ${{ number_format($plan->annual_price, 2) }}</p>
-                                        <p><strong>Ahorro anual:</strong> ${{ number_format($plan->getAnnualSavings(), 2) }}</p>
-                                        <p><strong>Equivalente mensual:</strong> ${{ number_format($plan->getMonthlyEquivalent(), 2) }}</p>
+                                    <div class="mt-2 text-sm text-green-700" id="current-pricing-content">
+                                        @php
+                                            $currencySymbol = $plan->currency === 'EUR' ? '€' : '$';
+                                        @endphp
+                                        <p><strong>Precio mensual:</strong> {{ $currencySymbol }}{{ number_format($plan->price, 2) }} {{ $plan->currency }}</p>
+                                        <p><strong>Precio anual:</strong> {{ $currencySymbol }}{{ number_format($plan->annual_price, 2) }} {{ $plan->currency }}</p>
+                                        <p><strong>Ahorro anual:</strong> {{ $currencySymbol }}{{ number_format($plan->getAnnualSavings(), 2) }} {{ $plan->currency }}</p>
+                                        <p><strong>Equivalente mensual:</strong> {{ $currencySymbol }}{{ number_format($plan->getMonthlyEquivalent(), 2) }} {{ $plan->currency }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -261,9 +279,10 @@
                         <!-- Max Locations -->
                         <div>
                             <label for="max_locations" class="block text-sm font-medium text-gray-700">Máximo Ubicaciones*</label>
-                            <input type="number" name="max_locations" id="max_locations" value="{{ old('max_locations', $plan->max_locations) }}" min="1"
+                            <input type="number" name="max_locations" id="max_locations" value="{{ old('max_locations', $plan->max_locations) }}" min="-1"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                   placeholder="1">
+                                   placeholder="1 (-1 = ilimitado)">
+                            <p class="mt-1 text-xs text-gray-500">-1 para ilimitado</p>
                             @error('max_locations')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -451,27 +470,68 @@ document.getElementById('key').addEventListener('input', function(e) {
         .replace(/^_|_$/g, '');
 });
 
-// Annual pricing calculation
+// Currency symbols and names
+const currencyData = {
+    'USD': { symbol: '$', name: 'USD' },
+    'EUR': { symbol: '€', name: 'EUR' },
+    'MXN': { symbol: '$', name: 'MXN' }
+};
+
+// Update current annual pricing section (Fixed to USD)
+function updateCurrentAnnualPricing() {
+    const currentPricingContent = document.getElementById('current-pricing-content');
+    if (!currentPricingContent) return;
+    
+    const currencySymbol = '$';
+    const currencyName = 'USD';
+    
+    // Get original values from the plan
+    const originalMonthlyPrice = {{ $plan->price }};
+    const originalAnnualPrice = {{ $plan->annual_price ?: 0 }};
+    const originalAnnualSavings = {{ $plan->hasAnnualPricing() ? $plan->getAnnualSavings() : 0 }};
+    const originalMonthlyEquivalent = {{ $plan->hasAnnualPricing() ? $plan->getMonthlyEquivalent() : 0 }};
+    
+    currentPricingContent.innerHTML = `
+        <p><strong>Precio mensual:</strong> ${currencySymbol}${originalMonthlyPrice.toFixed(2)} ${currencyName}</p>
+        <p><strong>Precio anual:</strong> ${currencySymbol}${originalAnnualPrice.toFixed(2)} ${currencyName}</p>
+        <p><strong>Ahorro anual:</strong> ${currencySymbol}${originalAnnualSavings.toFixed(2)} ${currencyName}</p>
+        <p><strong>Equivalente mensual:</strong> ${currencySymbol}${originalMonthlyEquivalent.toFixed(2)} ${currencyName}</p>
+    `;
+}
+
+// Annual pricing calculation (Fixed to USD)
 function updateAnnualCalculation() {
     const monthlyPrice = parseFloat(document.getElementById('price').value) || 0;
     const discountPercentage = parseInt(document.getElementById('annual_discount_percentage').value) || 15;
+    const currencySymbol = '$';
+    const currencyName = 'USD';
     
     if (monthlyPrice > 0) {
         const yearlyTotal = monthlyPrice * 12;
         const discountAmount = yearlyTotal * (discountPercentage / 100);
-        const annualPrice = yearlyTotal - discountAmount;
+        const annualPriceCalculated = yearlyTotal - discountAmount;
+        
+        // Round up to the nearest integer to maintain whole prices
+        const annualPrice = Math.ceil(annualPriceCalculated);
         const monthlyEquivalent = annualPrice / 12;
         
+        // Calculate actual discount percentage after rounding
+        const actualDiscountAmount = yearlyTotal - annualPrice;
+        const actualDiscountPercentage = (actualDiscountAmount / yearlyTotal) * 100;
+        
         document.getElementById('annual-calculation').innerHTML = `
-            <strong>Precio mensual:</strong> $${monthlyPrice.toFixed(2)}<br>
-            <strong>Total anual sin descuento:</strong> $${yearlyTotal.toFixed(2)}<br>
-            <strong>Descuento ${discountPercentage}%:</strong> -$${discountAmount.toFixed(2)}<br>
-            <strong>Precio anual sugerido:</strong> $${annualPrice.toFixed(2)}<br>
-            <strong>Equivalente mensual:</strong> $${monthlyEquivalent.toFixed(2)}
+            <strong>Precio mensual:</strong> ${currencySymbol}${monthlyPrice.toFixed(0)} ${currencyName}<br>
+            <strong>Total anual sin descuento:</strong> ${currencySymbol}${yearlyTotal.toFixed(0)} ${currencyName}<br>
+            <strong>Descuento aplicado:</strong> -${currencySymbol}${actualDiscountAmount.toFixed(0)} ${currencyName} (${actualDiscountPercentage.toFixed(1)}%)<br>
+            <strong>Precio anual sugerido:</strong> ${currencySymbol}${annualPrice.toFixed(0)} ${currencyName}<br>
+            <strong>Equivalente mensual:</strong> ${currencySymbol}${monthlyEquivalent.toFixed(2)} ${currencyName}
         `;
     } else {
         document.getElementById('annual-calculation').textContent = 'Modifica el precio mensual para ver el cálculo automático';
     }
+    
+    // Also update current annual pricing section
+    updateCurrentAnnualPricing();
 }
 
 // Auto-calculate button
@@ -481,8 +541,10 @@ document.getElementById('auto-calculate').addEventListener('click', function() {
     
     if (monthlyPrice > 0) {
         const yearlyTotal = monthlyPrice * 12;
-        const annualPrice = yearlyTotal * (1 - (discountPercentage / 100));
-        document.getElementById('annual_price').value = annualPrice.toFixed(2);
+        const annualPriceCalculated = yearlyTotal * (1 - (discountPercentage / 100));
+        // Round up to maintain whole prices
+        const annualPrice = Math.ceil(annualPriceCalculated);
+        document.getElementById('annual_price').value = annualPrice.toFixed(0);
         updateAnnualCalculation();
     } else {
         alert('Por favor ingresa primero el precio mensual');

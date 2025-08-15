@@ -322,6 +322,10 @@ Route::prefix('subscription')->name('subscription.')->group(function () {
     Route::get('/cancelled', [App\Http\Controllers\SubscriptionController::class, 'cancelled'])->name('cancelled');
     Route::get('/plans', [App\Http\Controllers\SubscriptionController::class, 'plans'])->name('plans');
     
+    // Pre-registration for PayPal flow
+    Route::get('/register/{plan}', [App\Http\Controllers\SubscriptionController::class, 'showRegister'])->name('register');
+    Route::post('/register', [App\Http\Controllers\SubscriptionController::class, 'storeRegister'])->name('register.store');
+    
     // Registration with trial
     Route::post('/register-trial', [App\Http\Controllers\SubscriptionController::class, 'registerWithTrial'])->name('register-trial');
     

@@ -172,7 +172,12 @@ class TenantResolver
             'contact',
             'login',
             'register',
-            'password/*'
+            'password/*',
+            'subscription/register',
+            'subscription/register/*',
+            'subscription/success',
+            'subscription/cancelled',
+            'paypal/webhook'
         ];
 
         foreach ($skipRoutes as $route) {

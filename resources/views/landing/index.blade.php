@@ -220,47 +220,122 @@
         
         .pricing-card {
             background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            text-align: center;
+            border-radius: 24px;
+            padding: 0;
             position: relative;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
         
-        .pricing-card.highlighted {
-            transform: scale(1.05);
-            box-shadow: 0 20px 40px rgba(46,125,50,0.2);
-            border: 2px solid var(--primary-color);
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
         
-        .pricing-card.highlighted::before {
-            content: 'MÁS POPULAR';
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent-color);
-            color: var(--dark-color);
-            padding: 0.25rem 1rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 700;
+        .pricing-card.featured {
+            border: 2px solid var(--plan-color);
+            transform: scale(1.02);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+        }
+        
+        .pricing-card.featured:hover {
+            transform: scale(1.02) translateY(-8px);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.2);
         }
 
         .plan-badge {
             position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 20px;
+            right: 20px;
+            background: var(--plan-color);
             color: white;
-            padding: 0.25rem 1rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .plan-header {
+            padding: 32px 24px 24px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--plan-color)10, var(--plan-color)05);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        
+        .plan-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            background: var(--plan-color);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        
+        .plan-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin: 0 0 16px;
+            line-height: 1.2;
+        }
+        
+        .plan-price {
+            margin-bottom: 12px;
+        }
+        
+        .price-amount {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+        
+        .currency {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--plan-color);
+        }
+        
+        .amount {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--dark-color);
+            line-height: 1;
+        }
+        
+        .price-period {
+            font-size: 1rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .plan-subtitle {
+            margin-top: 12px;
+        }
+        
+        .trial-info, .savings-info {
+            font-size: 0.875rem;
+            color: var(--plan-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
         /* Pricing Toggle Switch Styles */
@@ -272,14 +347,192 @@
         }
 
         .toggle-label {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #999;
-            transition: color 0.3s ease;
+            font-size: 1rem;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+            text-decoration: none;
         }
 
         .toggle-label.active {
-            color: var(--dark-color);
+            color: var(--primary-color);
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .pricing-toggle {
+            margin-bottom: 3rem !important;
+        }
+        
+        .plan-features {
+            padding: 24px;
+            flex-grow: 1;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.02));
+            border-radius: 12px;
+            margin: 8px;
+        }
+        
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        
+        .feature-category {
+            margin-bottom: 24px;
+        }
+        
+        .feature-category:last-child {
+            margin-bottom: 0;
+        }
+        
+        .feature-category-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            margin: 0 -8px;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        
+        .feature-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            transform: translateX(4px);
+        }
+        
+        .feature-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--plan-color);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(var(--plan-color-rgb), 0.1);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .plan-action {
+            padding: 24px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            background: rgba(248, 250, 252, 0.5);
+        }
+        
+        .plan-button {
+            display: block;
+            width: 100%;
+            padding: 18px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            cursor: pointer;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .plan-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .plan-button:hover::before {
+            left: 100%;
+        }
+        
+        .trial-button {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .trial-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
+            color: white;
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+        
+        .primary-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .primary-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5);
+            color: white;
+            background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+        }
+        
+        .contact-button {
+            background: linear-gradient(135deg, var(--plan-color), color-mix(in srgb, var(--plan-color) 80%, black));
+            color: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .contact-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+            color: white;
+            filter: brightness(1.1);
+        }
+        
+        .plan-button:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+        
+        @media (max-width: 640px) {
+            .plan-button {
+                padding: 16px 24px;
+                font-size: 1rem;
+                letter-spacing: 0.3px;
+            }
+        }
+        
+        .plan-button-paypal {
+            min-height: 56px;
+            margin-bottom: 12px;
+        }
+        
+        .plan-note {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
         .switch {
@@ -344,55 +597,6 @@
             margin-bottom: 0.5rem;
         }
         
-        .pricing-header {
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 1.5rem;
-        }
-        
-        .plan-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--dark-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        .plan-price {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .plan-price sup {
-            font-size: 1.5rem;
-        }
-        
-        .plan-price span {
-            font-size: 1rem;
-            color: var(--text-light);
-        }
-        
-        .pricing-features {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 2rem;
-            flex-grow: 1;
-        }
-        
-        .pricing-features li {
-            padding: 0.75rem 0;
-            color: var(--text-dark);
-            position: relative;
-            padding-left: 1.5rem;
-        }
-        
-        .pricing-features li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: var(--secondary-color);
-            font-weight: 700;
-        }
         
         /* Testimonials */
         .testimonials {
@@ -595,8 +799,8 @@
                 font-size: 2.5rem;
             }
             
-            .pricing-card.highlighted {
-                transform: scale(1.02);
+            .pricing-card.featured {
+                transform: none;
             }
             
             .features, .pricing, .testimonials, .faq, .cta {
@@ -657,16 +861,29 @@
             
             .pricing-card {
                 margin-bottom: 2rem;
-                padding: 1.5rem;
             }
             
-            .pricing-card.highlighted {
+            .pricing-card.featured {
                 transform: none;
                 margin-bottom: 2rem;
             }
             
-            .plan-price {
-                font-size: 2.5rem;
+            .plan-header {
+                padding: 24px 20px 20px;
+            }
+            
+            .plan-icon {
+                width: 56px;
+                height: 56px;
+                font-size: 24px;
+            }
+            
+            .amount {
+                font-size: 2.8rem;
+            }
+            
+            .plan-features, .plan-action {
+                padding: 20px;
             }
             
             .testimonial-card {
@@ -746,21 +963,40 @@
                 font-size: 0.9rem;
             }
             
-            .pricing-card {
-                padding: 1.25rem;
+            .plan-header {
+                padding: 20px 16px 16px;
             }
             
-            .plan-name {
+            .plan-title {
                 font-size: 1.3rem;
             }
             
-            .plan-price {
-                font-size: 2rem;
+            .plan-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+                margin-bottom: 16px;
             }
             
-            .pricing-features li {
+            .amount {
+                font-size: 2.2rem;
+            }
+            
+            .currency {
+                font-size: 1.2rem;
+            }
+            
+            .plan-features, .plan-action {
+                padding: 16px;
+            }
+            
+            .feature-item {
+                gap: 10px;
+                padding: 6px 0;
+            }
+            
+            .feature-item span {
                 font-size: 0.9rem;
-                padding: 0.5rem 0;
             }
             
             .testimonial-content {
@@ -838,6 +1074,23 @@
                 padding: 0.5rem 1rem;
                 font-size: 0.9rem;
             }
+        }
+        
+        /* Alineación a la derecha para feature-items en fichas de planes */
+        .pricing-card .feature-item {
+            flex-direction: row-reverse;
+            justify-content: flex-start;
+            text-align: right;
+        }
+        
+        .pricing-card .feature-item .feature-icon {
+            margin-left: 8px;
+            margin-right: 0;
+        }
+        
+        .pricing-card .feature-item span {
+            text-align: right;
+            flex: 1;
         }
         
         /* Touch-friendly adjustments */
@@ -979,158 +1232,267 @@
 
             {{-- Switch de precios: solo mostrar si hay planes con precio anual --}}
             @if($plans['hasAnnualPlans'] ?? false)
-            <div class="pricing-toggle text-center mb-5" data-aos="fade-up" data-aos-delay="150">
-                <span class="toggle-label active" id="monthlyLabel">Mensual</span>
-                <label class="switch mx-3">
-                    <input type="checkbox" id="pricingToggle">
-                    <span class="slider"></span>
-                </label>
-                <span class="toggle-label" id="yearlyLabel">
-                    Anual <small class="badge bg-success ms-2">Ahorra hasta 15%</small>
-                </span>
+            <div class="pricing-toggle text-center mb-4" data-aos="fade-up" data-aos-delay="150">
+                <div class="d-inline-flex align-items-center p-1 bg-light rounded-pill shadow-sm">
+                    <span class="toggle-label active px-3 py-2 rounded-pill fw-semibold" id="monthlyLabel">Mensual</span>
+                    <label class="switch mx-2">
+                        <input type="checkbox" id="pricingToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label px-3 py-2 rounded-pill fw-semibold" id="yearlyLabel">
+                        Anual <small class="badge bg-success ms-2">{{ $plans['discountBadge'] ?? 'Ahorra hasta 15%' }}</small>
+                    </span>
+                </div>
             </div>
             @endif
             
+            {{-- Spacer entre switch y planes --}}
+            <div class="mb-5"></div>
+            
             {{-- Sección de Planes --}}
-            <div class="pricing-plans">
+            <div class="pricing-plans mt-4">
                 
                 <div class="row g-4 align-items-stretch justify-content-center">
                     @if(isset($plans['list']) && $plans['list']->count() > 0)
                         @foreach($plans['list'] as $plan)
-                        <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
-                            <div class="pricing-card {{ $plan->is_featured ? 'highlighted' : '' }}" 
-                                 style="border-top: 4px solid {{ $plan->color ?? '#3B82F6' }};"
+                        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
+                            <div class="pricing-card {{ $plan->is_featured ? 'featured' : '' }}" 
                                  data-plan-key="{{ $plan->key }}"
-                                 data-has-annual="{{ $plan->hasAnnualPricing() ? 'true' : 'false' }}">
+                                 data-has-annual="{{ $plan->hasAnnualPricing() ? 'true' : 'false' }}"
+                                 style="--plan-color: {{ $plan->color ?? '#3B82F6' }}">
                                 
-                                {{-- Badge --}}
-                                <div class="plan-badge-container">
-                                    @if($plan->popular_badge)
-                                        <div class="plan-badge" style="background: {{ $plan->color ?? '#3B82F6' }};">
-                                            {{ $plan->popular_badge }}
-                                        </div>
-                                    @endif
-                                </div>
+                                {{-- Badge Popular --}}
+                                @if($plan->popular_badge)
+                                    <div class="plan-badge">
+                                        {{ $plan->popular_badge }}
+                                    </div>
+                                @endif
                                 
-                                {{-- Header con icono, nombre y precio --}}
-                                <div class="pricing-header">
-                                    @if($plan->icon)
-                                        <i class="{{ $plan->icon }} mb-3" style="font-size: 2.5rem; color: {{ $plan->color ?? '#3B82F6' }};"></i>
-                                    @endif
-                                    
-                                    <div class="plan-name">{{ $plan->name }}</div>
-                                    
-                                    {{-- Precio dinámico --}}
-                                    <div class="plan-price" data-price-container>
-                                        @if($plan->price == 0)
-                                            <span data-price-value>Gratis</span>
+                                {{-- Card Header --}}
+                                <div class="plan-header">
+                                    <div class="plan-icon">
+                                        @if($plan->icon)
+                                            <i class="{{ $plan->icon }}"></i>
                                         @else
-                                            <sup>$</sup><span data-price-value>{{ number_format($plan->price, 0) }}</span>
+                                            <i class="fas fa-box"></i>
                                         @endif
-                                        <span data-price-duration>/mes</span>
                                     </div>
                                     
-                                    {{-- Info adicional (trial o ahorros) --}}
-                                    <div class="plan-additional-info">
-                                        {{-- Trial info (por defecto visible) --}}
+                                    <h3 class="plan-title">{{ $plan->name }}</h3>
+                                    
+                                    <div class="plan-price" data-price-container>
+                                        @if($plan->price == 0)
+                                            <div class="price-amount">
+                                                <span class="currency">Gratis</span>
+                                            </div>
+                                        @else
+                                            <div class="price-amount">
+                                                <span class="currency">$</span>
+                                                <span class="amount" data-price-value>{{ number_format($plan->price, 0) }}</span>
+                                            </div>
+                                            <div class="price-period" data-price-duration>/mes USD</div>
+                                        @endif
+                                    </div>
+                                    
+                                    {{-- Trial o Savings Info --}}
+                                    <div class="plan-subtitle">
                                         @if($plan->trial_days > 0)
                                             <div class="trial-info" data-trial-info>
-                                                <small class="text-muted">{{ $plan->trial_days }} días de prueba gratis</small>
+                                                <i class="fas fa-gift me-1"></i>
+                                                {{ $plan->trial_days }} días de prueba gratis
                                             </div>
                                         @endif
                                         
-                                        {{-- Savings info (oculto por defecto, se muestra en modo anual) --}}
                                         @if($plan->hasAnnualPricing())
                                             <div class="savings-info d-none" data-savings-info>
-                                                <small class="text-success">
-                                                    Ahorras ${{ number_format($plan->getAnnualSavings(), 0) }} 
-                                                    ({{ $plan->annual_discount_percentage }}%)
-                                                </small>
-                                                <small class="d-block text-muted">
-                                                    ≈ ${{ number_format($plan->getMonthlyEquivalent(), 0) }}/mes
-                                                </small>
+                                                <i class="fas fa-tag me-1"></i>
+                                                Ahorras ${{ number_format($plan->getAnnualSavings(), 0) }} 
+                                                ({{ $plan->annual_discount_percentage }}%)
                                             </div>
                                         @endif
                                     </div>
                                 </div>
                                 
-                                {{-- Lista de características --}}
-                                <ul class="pricing-features">
-                                    {{-- Features del plan --}}
-                                    @if($plan->features && is_array($plan->features))
-                                        @foreach($plan->features as $feature)
-                                            @php
-                                                $availableFeatures = \App\Models\SubscriptionPlan::getAvailableFeatures();
-                                                $featureLabel = null;
-                                                foreach($availableFeatures as $categoryFeatures) {
-                                                    if(isset($categoryFeatures[$feature])) {
-                                                        $featureLabel = $categoryFeatures[$feature];
-                                                        break;
-                                                    }
-                                                }
-                                            @endphp
-                                            @if($featureLabel)
-                                                <li>{{ $featureLabel }}</li>
-                                            @endif
-                                        @endforeach
-                                    @endif
-                                    
-                                    {{-- Límites del plan --}}
-                                    @if($plan->max_users > 0)
-                                        <li>{{ $plan->max_users == -1 ? 'Usuarios ilimitados' : $plan->max_users . ' usuarios' }}</li>
-                                    @endif
-                                    @if($plan->max_lots_per_month > 0)
-                                        <li>{{ $plan->max_lots_per_month == -1 ? 'Lotes ilimitados' : number_format($plan->max_lots_per_month) . ' lotes/mes' }}</li>
-                                    @endif
-                                    @if($plan->max_storage_gb > 0)
-                                        <li>{{ $plan->max_storage_gb == -1 ? 'Almacenamiento ilimitado' : $plan->max_storage_gb . 'GB almacenamiento' }}</li>
-                                    @endif
-                                    @if($plan->max_locations > 0)
-                                        <li>{{ $plan->max_locations == -1 ? 'Ubicaciones ilimitadas' : $plan->max_locations . ' ubicaciones' }}</li>
-                                    @endif
-                                </ul>
-                                
-                                {{-- Footer con botones --}}
-                                <div class="pricing-footer">
-                                    <div class="button-container" data-button-container>
-                                        {{-- Botón PayPal (si está sincronizado) --}}
-                                        @if($plan->paypal_plan_id)
-                                            <div id="paypal-button-{{ $plan->key }}" class="paypal-button-container" data-paypal-button></div>
-                                            <small class="text-muted d-block mt-2">Pago seguro con PayPal</small>
-                                        @else
-                                            {{-- Botón de contactar (si no está sincronizado) --}}
-                                            <a href="#contact" class="btn btn-primary-custom w-100" 
-                                               style="background: {{ $plan->color ?? '#3B82F6' }}; border-color: {{ $plan->color ?? '#3B82F6' }};"
-                                               data-cta-button>
-                                                <span data-cta-text>{{ $plan->button_text ?? 'Contactar' }}</span>
-                                            </a>
-                                            <small class="text-muted d-block mt-2">Te contactaremos para configurar tu plan</small>
+                                {{-- Plan Features --}}
+                                <div class="plan-features">
+                                    {{-- Características principales mejoradas --}}
+                                    <div class="features-list">
+                                        {{-- Categoría: Límites optimizada --}}
+                                        <div class="feature-category">
+                                            <div class="feature-category-title">Capacidad & Límites</div>
+                                            <div class="feature-items-grid">
+                                                @if($plan->max_users > 0)
+                                                    <div class="feature-item">
+                                                        <i class="fas fa-users feature-icon"></i>
+                                                        <span>{{ $plan->max_users == -1 ? 'Usuarios ilimitados' : $plan->max_users . ' usuarios' }}</span>
+                                                    </div>
+                                                @endif
+                                                @if($plan->max_lots_per_month > 0)
+                                                    <div class="feature-item">
+                                                        <i class="fas fa-boxes feature-icon"></i>
+                                                        <span>{{ $plan->max_lots_per_month == -1 ? 'Lotes ilimitados' : number_format($plan->max_lots_per_month) . ' lotes/mes' }}</span>
+                                                    </div>
+                                                @endif
+                                                @if($plan->max_storage_gb > 0)
+                                                    <div class="feature-item">
+                                                        <i class="fas fa-cloud feature-icon"></i>
+                                                        <span>{{ $plan->max_storage_gb == -1 ? 'Almacenamiento ilimitado' : $plan->max_storage_gb . 'GB almacenamiento' }}</span>
+                                                    </div>
+                                                @endif
+                                                @if($plan->max_locations > 0)
+                                                    <div class="feature-item">
+                                                        <i class="fas fa-map-marker-alt feature-icon"></i>
+                                                        <span>{{ $plan->max_locations == -1 ? 'Ubicaciones ilimitadas' : $plan->max_locations . ' ubicaciones' }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        
+                                        {{-- Categoría: Funcionalidades destacadas --}}
+                                        @if($plan->features && is_array($plan->features))
+                                        <div class="feature-category">
+                                            <div class="feature-category-title">Funcionalidades Destacadas</div>
+                                            <div class="feature-items-grid">
+                                                @php
+                                                    $availableFeatures = \App\Models\SubscriptionPlan::getAvailableFeatures();
+                                                    $featureIcons = [
+                                                        'basic_reports' => 'fas fa-chart-line',
+                                                        'advanced_reports' => 'fas fa-chart-bar', 
+                                                        'custom_reports' => 'fas fa-chart-pie',
+                                                        'export_excel' => 'fas fa-file-excel',
+                                                        'export_pdf' => 'fas fa-file-pdf',
+                                                        'email_notifications' => 'fas fa-envelope',
+                                                        'push_notifications' => 'fas fa-bell',
+                                                        'sms_notifications' => 'fas fa-sms',
+                                                        'api_access' => 'fas fa-code',
+                                                        'automatic_backups' => 'fas fa-shield-alt',
+                                                        'cloud_storage' => 'fas fa-cloud-upload-alt',
+                                                        'multi_location' => 'fas fa-sitemap',
+                                                        'custom_branding' => 'fas fa-palette',
+                                                        'priority_support' => 'fas fa-headset',
+                                                        'phone_support' => 'fas fa-phone',
+                                                        'dedicated_manager' => 'fas fa-user-tie',
+                                                        'email_support' => 'fas fa-envelope-open',
+                                                        'manual_backups' => 'fas fa-save'
+                                                    ];
+                                                    $displayedFeatures = array_slice($plan->features, 0, 6);
+                                                @endphp
+                                                @foreach($displayedFeatures as $feature)
+                                                    @php
+                                                        $featureLabel = null;
+                                                        foreach($availableFeatures as $categoryFeatures) {
+                                                            if(isset($categoryFeatures[$feature])) {
+                                                                $featureLabel = $categoryFeatures[$feature];
+                                                                break;
+                                                            }
+                                                        }
+                                                        $featureIcon = $featureIcons[$feature] ?? 'fas fa-check';
+                                                    @endphp
+                                                    @if($featureLabel)
+                                                        <div class="feature-item">
+                                                            <i class="{{ $featureIcon }} feature-icon"></i>
+                                                            <span>{{ $featureLabel }}</span>
+                                                        </div>
+                                                    @endif
+                                                @endforeach
+                                                @if(count($plan->features) > 6)
+                                                    <div class="feature-item">
+                                                        <i class="fas fa-plus feature-icon"></i>
+                                                        <span>Y {{ count($plan->features) - 6 }} funcionalidades más</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
                                         @endif
                                     </div>
+                                </div>
+                                
+                                {{-- Plan Action --}}
+                                <div class="plan-action">
+                                    @if($plan->key === 'trial')
+                                        {{-- Botón Trial Gratuito --}}
+                                        <a href="{{ route('subscription.register', $plan->key) }}" class="plan-button trial-button" data-cta-button>
+                                            <span data-cta-text>
+                                                <i class="fas fa-rocket me-2"></i>
+                                                Comenzar Gratis
+                                            </span>
+                                        </a>
+                                        <div class="plan-note" data-trial-info>
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            Sin tarjeta • {{ $plan->trial_days }} días gratis
+                                        </div>
+                                        @if($plan->hasAnnualPricing())
+                                        <div class="plan-note d-none" data-savings-info>
+                                            <i class="fas fa-piggy-bank me-1"></i>
+                                            Ahorra ${{ number_format($plan->getAnnualSavings(), 0) }} anuales
+                                        </div>
+                                        @endif
+                                    @elseif($plan->key !== 'trial')
+                                        {{-- Botón de Registro (TODOS los planes van a registro) --}}
+                                        <a href="{{ route('subscription.register', $plan->key) }}" class="plan-button primary-button" data-cta-button>
+                                            <span data-cta-text>
+                                                <i class="fas fa-credit-card me-2"></i>
+                                                {{ $plan->button_text ?? 'Contratar Ahora' }}
+                                            </span>
+                                        </a>
+                                        <div class="plan-note" data-trial-info>
+                                            <i class="fas fa-gift me-1"></i>
+                                            @if($plan->trial_days > 0)
+                                                {{ $plan->trial_days }} días gratis • Sin tarjeta
+                                            @else
+                                                Pago seguro
+                                            @endif
+                                        </div>
+                                        @if($plan->hasAnnualPricing())
+                                        <div class="plan-note d-none" data-savings-info>
+                                            <i class="fas fa-piggy-bank me-1"></i>
+                                            Ahorra ${{ number_format($plan->getAnnualSavings(), 0) }} anuales
+                                        </div>
+                                        @endif
+                                    @else
+                                        {{-- Botón Contactar --}}
+                                        <a href="{{ route('subscription.register', $plan->key) }}" class="plan-button contact-button" data-cta-button>
+                                            <span data-cta-text>
+                                                <i class="fas fa-envelope me-2"></i>
+                                                {{ $plan->button_text ?? 'Contactar' }}
+                                            </span>
+                                        </a>
+                                        <div class="plan-note" data-trial-info>
+                                            <i class="fas fa-phone me-1"></i>
+                                            @if($plan->trial_days > 0)
+                                                {{ $plan->trial_days }} días gratis • Consulta personalizada
+                                            @else
+                                                Consulta personalizada
+                                            @endif
+                                        </div>
+                                        @if($plan->hasAnnualPricing())
+                                        <div class="plan-note d-none" data-savings-info>
+                                            <i class="fas fa-piggy-bank me-1"></i>
+                                            Ahorra ${{ number_format($plan->getAnnualSavings(), 0) }} anuales
+                                        </div>
+                                        @endif
+                                    @endif
                                 </div>
                                 
                                 {{-- Data attributes para JavaScript --}}
                                 <script type="application/json" data-plan-data>
-                                {
-                                    "key": "{{ $plan->key }}",
-                                    "name": "{{ $plan->name }}",
-                                    "monthly": {
-                                        "price": {{ $plan->price }},
-                                        "duration": "mes",
-                                        "paypal_plan_id": {{ $plan->paypal_plan_id ? '"' . $plan->paypal_plan_id . '"' : 'null' }}
-                                    }
-                                    @if($plan->hasAnnualPricing())
-                                    ,
-                                    "annual": {
-                                        "price": {{ $plan->annual_price }},
-                                        "duration": "año",
-                                        "savings": {{ $plan->getAnnualSavings() }},
-                                        "monthly_equivalent": {{ $plan->getMonthlyEquivalent() }},
-                                        "discount_percentage": {{ $plan->annual_discount_percentage }},
-                                        "paypal_plan_id": {{ $plan->paypal_annual_plan_id ? '"' . $plan->paypal_annual_plan_id . '"' : 'null' }}
-                                    }
-                                    @endif
-                                }
+                                {!! json_encode([
+                                    'key' => $plan->key,
+                                    'name' => $plan->name,
+                                    'monthly' => [
+                                        'price' => $plan->price,
+                                        'duration' => 'mes',
+                                        'paypal_plan_id' => $plan->paypal_plan_id
+                                    ],
+                                    'annual' => $plan->hasAnnualPricing() ? [
+                                        'price' => $plan->annual_price,
+                                        'duration' => 'año',
+                                        'savings' => $plan->getAnnualSavings(),
+                                        'monthly_equivalent' => $plan->getMonthlyEquivalent(),
+                                        'discount_percentage' => $plan->annual_discount_percentage,
+                                        'paypal_plan_id' => $plan->paypal_annual_plan_id
+                                    ] : null
+                                ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
                                 </script>
                             </div>
                         </div>
@@ -1345,15 +1707,18 @@
             const pricingCards = document.querySelectorAll('.pricing-card');
             
             pricingCards.forEach(card => {
-                const monthlyData = JSON.parse(card.getAttribute('data-monthly'));
-                const annualDataAttr = card.getAttribute('data-annual');
+                const planDataScript = card.querySelector('script[data-plan-data]');
+                if (!planDataScript) return;
                 
-                // Skip cards that don't have annual pricing
-                if (isYearly && !annualDataAttr) {
-                    return;
-                }
-                
-                const currentData = isYearly && annualDataAttr ? JSON.parse(annualDataAttr) : monthlyData;
+                try {
+                    const planData = JSON.parse(planDataScript.textContent);
+                    
+                    // Skip cards that don't have annual pricing when yearly is selected
+                    if (isYearly && !planData.annual) {
+                        return;
+                    }
+                    
+                    const currentData = isYearly && planData.annual ? planData.annual : planData.monthly;
                 
                 // Update price
                 const priceValue = card.querySelector('[data-price-value]');
@@ -1365,7 +1730,7 @@
                     } else {
                         priceValue.textContent = Number(currentData.price).toLocaleString();
                     }
-                    priceDuration.textContent = '/' + currentData.duration;
+                    priceDuration.textContent = '/' + currentData.duration + ' USD';
                 }
                 
                 // Update badge
@@ -1385,21 +1750,30 @@
                     }
                 }
                 
-                // Update trial info and savings
-                const trialInfo = card.querySelector('[data-trial-info]');
-                const savingsInfo = card.querySelector('[data-savings-info]');
+                // Update trial info and savings (handle multiple elements)
+                const trialInfoElements = card.querySelectorAll('[data-trial-info]');
+                const savingsInfoElements = card.querySelectorAll('[data-savings-info]');
+                const planKey = planData.key;
                 
-                if (trialInfo && savingsInfo) {
-                    if (isYearly && currentData.annual_savings) {
-                        // Show savings for yearly plans
-                        trialInfo.classList.add('d-none');
-                        savingsInfo.classList.remove('d-none');
-                        savingsInfo.innerHTML = `<small class="text-success">Ahorras $${Number(currentData.annual_savings).toLocaleString()}</small>
-                                               <small class="d-block text-muted">≈ $${Number(currentData.monthly_equivalent).toLocaleString()}/mes</small>`;
+                if (trialInfoElements.length > 0 || savingsInfoElements.length > 0) {
+                    // FORZAR QUE SIEMPRE SE MUESTREN LOS DÍAS DE PRUEBA - NUNCA OCULTAR
+                    trialInfoElements.forEach(el => {
+                        el.classList.remove('d-none');
+                        el.style.display = 'block'; // FORZAR
+                        el.style.visibility = 'visible'; // FORZAR
+                    });
+                    
+                    // Mostrar ahorros ADICIONALMENTE (sin ocultar trial)
+                    if (isYearly && currentData.annual_savings && currentData.price > 0) {
+                        savingsInfoElements.forEach(el => {
+                            el.classList.remove('d-none');
+                            // Only update content for elements in the plan header/subtitle
+                            if (el.closest('.plan-subtitle')) {
+                                el.innerHTML = `<i class="fas fa-tag me-1"></i>Ahorras $${Number(currentData.annual_savings).toLocaleString()} (${currentData.discount_percentage}%)`;
+                            }
+                        });
                     } else {
-                        // Show trial info for monthly plans
-                        savingsInfo.classList.add('d-none');
-                        trialInfo.classList.remove('d-none');
+                        savingsInfoElements.forEach(el => el.classList.add('d-none'));
                     }
                 }
                 
@@ -1416,6 +1790,10 @@
                     debugInfo.textContent = `Debug: PayPal ID = ${currentData.paypal_plan_id || 'NULL'}`;
                 }
                 @endif
+                
+                } catch (error) {
+                    console.error('Error updating pricing card:', error, card);
+                }
             });
         }
         
@@ -1501,6 +1879,12 @@
 
         // Dynamic Pricing Toggle Functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Make pricing plans visible
+            const pricingPlans = document.querySelector('.pricing-plans');
+            if (pricingPlans) {
+                pricingPlans.classList.add('active');
+            }
+            
             const pricingToggle = document.getElementById('pricingToggle');
             const monthlyLabel = document.getElementById('monthlyLabel');
             const yearlyLabel = document.getElementById('yearlyLabel');
@@ -1510,11 +1894,32 @@
                     const isAnnual = this.checked;
                     updatePricing(isAnnual);
                     updateToggleLabels(isAnnual);
+                    
+                    // PayPal buttons REMOVED - No need to reinitialize anything
                 });
             }
             
-            // Initialize PayPal buttons for monthly plans
-            initializePayPalButtons(false);
+            // Initialize PayPal buttons after SDK loads
+            function initPayPalWithRetry(attempts = 0) {
+                if (window.paypal) {
+                    initializePayPalButtons(false);
+                } else if (attempts < 5) {
+                    setTimeout(() => {
+                        initPayPalWithRetry(attempts + 1);
+                    }, 500 + (attempts * 200)); // Progressive delay
+                } else {
+                    console.error('PayPal SDK failed to load after 5 attempts');
+                    // Show all CTA buttons as fallback
+                    document.querySelectorAll('[data-cta-button]').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
+                    document.querySelectorAll('[data-paypal-button]').forEach(container => {
+                        container.style.display = 'none';
+                    });
+                }
+            }
+            
+            initPayPalWithRetry();
         });
 
         function updatePricing(isAnnual) {
@@ -1538,24 +1943,31 @@
                             priceDuration.textContent = '';
                         } else {
                             priceValue.textContent = new Intl.NumberFormat('es-MX').format(cycleData.price);
-                            priceDuration.textContent = '/' + cycleData.duration;
+                            priceDuration.textContent = '/' + cycleData.duration + ' USD';
                         }
                     }
                     
-                    // Toggle trial info vs savings info
-                    const trialInfo = card.querySelector('[data-trial-info]');
-                    const savingsInfo = card.querySelector('[data-savings-info]');
+                    // Toggle trial info vs savings info (handle multiple elements)
+                    const trialInfoElements = card.querySelectorAll('[data-trial-info]');
+                    const savingsInfoElements = card.querySelectorAll('[data-savings-info]');
+                    const planKey = planData.key;
                     
-                    if (isAnnual && planData.annual) {
-                        if (trialInfo) trialInfo.classList.add('d-none');
-                        if (savingsInfo) savingsInfo.classList.remove('d-none');
+                    // FORZAR QUE SIEMPRE SE MUESTREN LOS DÍAS DE PRUEBA - NUNCA OCULTAR JAMAS
+                    trialInfoElements.forEach(el => {
+                        el.classList.remove('d-none');
+                        el.style.display = 'block'; // FORZAR
+                        el.style.visibility = 'visible'; // FORZAR
+                    });
+                    
+                    // Solo mostrar ahorros ADICIONALMENTE (sin ocultar trial NUNCA)
+                    if (isAnnual && planData.annual && planData.annual.price > 0) {
+                        savingsInfoElements.forEach(el => el.classList.remove('d-none'));
                     } else {
-                        if (trialInfo) trialInfo.classList.remove('d-none');
-                        if (savingsInfo) savingsInfo.classList.add('d-none');
+                        savingsInfoElements.forEach(el => el.classList.add('d-none'));
                     }
                     
-                    // Update PayPal buttons
-                    updatePayPalButton(card, cycleData);
+                    // PayPal buttons REMOVED - All buttons are now CTA buttons to registration
+                    // No need to update PayPal buttons
                     
                 } catch (error) {
                     console.error('Error parsing plan data:', error);
@@ -1582,7 +1994,12 @@
             const paypalContainer = card.querySelector('[data-paypal-button]');
             const ctaButton = card.querySelector('[data-cta-button]');
             
-            if (!paypalContainer) return;
+            // Solo procesar tarjetas que tienen contenedor PayPal (planes de pago)
+            if (!paypalContainer) {
+                // Esta tarjeta no tiene PayPal configurado (ej: plan gratuito)
+                if (ctaButton) ctaButton.style.display = 'block';
+                return;
+            }
             
             // Clear existing PayPal button
             paypalContainer.innerHTML = '';
@@ -1594,27 +2011,41 @@
                 
                 // Initialize PayPal button
                 if (window.paypal) {
-                    window.paypal.Buttons({
-                        style: {
-                            shape: 'rect',
-                            color: 'blue',
-                            layout: 'vertical',
-                            label: 'subscribe'
-                        },
-                        createSubscription: function(data, actions) {
-                            return actions.subscription.create({
-                                'plan_id': cycleData.paypal_plan_id
-                            });
-                        },
-                        onApprove: function(data, actions) {
-                            // Redirect to success page or handle subscription activation
-                            window.location.href = '/subscription/success?subscription_id=' + data.subscriptionID;
-                        },
-                        onError: function(err) {
-                            console.error('PayPal error:', err);
-                            alert('Error al procesar el pago. Por favor, inténtalo de nuevo.');
-                        }
-                    }).render(paypalContainer);
+                    try {
+                        window.paypal.Buttons({
+                            style: {
+                                shape: 'rect',
+                                color: 'blue',
+                                layout: 'vertical',
+                                label: 'subscribe',
+                                height: 45
+                            },
+                            createSubscription: function(data, actions) {
+                                return actions.subscription.create({
+                                    'plan_id': cycleData.paypal_plan_id
+                                });
+                            },
+                            onApprove: function(data, actions) {
+                                // Redirect to success page or handle subscription activation
+                                window.location.href = '/subscription/success?subscription_id=' + data.subscriptionID;
+                            },
+                            onCancel: function(data) {
+                                console.log('PayPal payment cancelled:', data);
+                                // No need to show alert for cancellation
+                            },
+                            onError: function(err) {
+                                console.error('PayPal error:', err);
+                                alert('Error al procesar el pago. Por favor, inténtalo de nuevo.');
+                            }
+                        }).render(paypalContainer);
+                    } catch (error) {
+                        console.error('Error rendering PayPal button:', error);
+                        // Show fallback CTA button
+                        if (ctaButton) ctaButton.style.display = 'block';
+                        paypalContainer.style.display = 'none';
+                    }
+                } else {
+                    console.error('PayPal SDK not available');
                 }
             } else {
                 // Show CTA button and hide PayPal
@@ -1626,7 +2057,7 @@
         function initializePayPalButtons(isAnnual = false) {
             const planCards = document.querySelectorAll('[data-plan-key]');
             
-            planCards.forEach(card => {
+            planCards.forEach((card, index) => {
                 const planDataScript = card.querySelector('script[data-plan-data]');
                 if (!planDataScript) return;
                 
@@ -1941,72 +2372,46 @@
     }
     </script>
 
-    <!-- PayPal SDK and Buttons -->
-    @if(config('services.paypal.client_id'))
-    <script src="https://www.paypal.com/sdk/js?client-id={{ config('services.paypal.client_id') }}&vault=true&intent=subscription"></script>
+    <!-- Define PayPal functions first -->
     <script>
-        // Render PayPal buttons for monthly plans
-        @if(isset($plans['monthly']))
-            @foreach($plans['monthly'] as $plan)
-                @if(!empty($plan['paypal_plan_id']))
-                    if (document.getElementById('paypal-button-monthly-{{ $plan['key'] }}')) {
-                        paypal.Buttons({
-                            style: {
-                                shape: 'rect',
-                                color: 'gold',
-                                layout: 'vertical',
-                                label: 'subscribe'
-                            },
-                            createSubscription: function(data, actions) {
-                                return actions.subscription.create({
-                                    'plan_id': '{{ $plan['paypal_plan_id'] }}'
-                                });
-                            },
-                            onApprove: function(data, actions) {
-                                // Redirect to registration with subscription ID
-                                window.location.href = '/register?subscription=' + data.subscriptionID + '&plan={{ $plan['key'] }}';
-                            },
-                            onError: function(err) {
-                                console.error('PayPal Error:', err);
-                                alert('Ocurrió un error al procesar el pago. Por favor intenta nuevamente.');
-                            }
-                        }).render('#paypal-button-monthly-{{ $plan['key'] }}');
-                    }
-                @endif
-            @endforeach
-        @endif
+        function showFallbackButtons() {
+            // Show all CTA buttons as fallback when PayPal fails
+            document.querySelectorAll('[data-cta-button]').forEach(btn => {
+                btn.style.display = 'block';
+            });
+            document.querySelectorAll('[data-paypal-button]').forEach(container => {
+                container.style.display = 'none';
+            });
+        }
 
-        // Render PayPal buttons for yearly plans
-        @if(isset($plans['yearly']))
-            @foreach($plans['yearly'] as $plan)
-                @if(!empty($plan['paypal_plan_id']))
-                    if (document.getElementById('paypal-button-yearly-{{ $plan['key'] }}')) {
-                        paypal.Buttons({
-                            style: {
-                                shape: 'rect',
-                                color: 'gold',
-                                layout: 'vertical',
-                                label: 'subscribe'
-                            },
-                            createSubscription: function(data, actions) {
-                                return actions.subscription.create({
-                                    'plan_id': '{{ $plan['paypal_plan_id'] }}'
-                                });
-                            },
-                            onApprove: function(data, actions) {
-                                // Redirect to registration with subscription ID
-                                window.location.href = '/register?subscription=' + data.subscriptionID + '&plan={{ $plan['key'] }}';
-                            },
-                            onError: function(err) {
-                                console.error('PayPal Error:', err);
-                                alert('Ocurrió un error al procesar el pago. Por favor intenta nuevamente.');
-                            }
-                        }).render('#paypal-button-yearly-{{ $plan['key'] }}');
-                    }
-                @endif
-            @endforeach
-        @endif
+        // Initialize PayPal buttons after SDK loads
+        function initPayPalWithRetry(attempts = 0) {
+            if (window.paypal) {
+                initializePayPalButtons(false);
+            } else if (attempts < 5) {
+                setTimeout(() => {
+                    initPayPalWithRetry(attempts + 1);
+                }, 500 + (attempts * 200)); // Progressive delay
+            } else {
+                console.error('PayPal SDK failed to load after 5 attempts');
+                showFallbackButtons();
+            }
+        }
     </script>
+
+    <!-- PayPal SDK -->
+    @if(config('services.paypal.client_id'))
+    <script>
+        console.log('Loading PayPal SDK with vault=true for subscriptions...');
+    </script>
+    <script src="https://www.paypal.com/sdk/js?client-id={{ config('services.paypal.client_id') }}&currency=USD&vault=true&intent=subscription" 
+            onload="console.log('✅ PayPal SDK loaded successfully', window.paypal); initPayPalWithRetry();"
+            onerror="console.error('❌ PayPal SDK failed to load'); showFallbackButtons();"></script>
+    @else
+        <script>
+            console.error('PayPal client_id not configured');
+            document.addEventListener('DOMContentLoaded', showFallbackButtons);
+        </script>
     @endif
 </body>
 </html>

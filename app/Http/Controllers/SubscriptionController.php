@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Models\Tenant;
 use App\Models\Subscription;
+use App\Models\SubscriptionPlan;
 use App\Services\PayPalService;
 use App\Mail\TrialWelcomeEmail;
 use App\Mail\TrialReminderEmail;
@@ -162,6 +163,227 @@ class SubscriptionController extends Controller
     }
 
     /**
+     * Show registration form for a specific plan
+     */
+    public function showRegister($planKey)
+    {
+        // Get plan details
+        $plan = SubscriptionPlan::where('key', $planKey)->where('is_active', true)->first();
+        
+        if (!$plan) {
+            return redirect()->route('home')->with('error', 'Plan no encontrado.');
+        }
+        
+        return view('subscription.register', compact('plan'));
+    }
+    
+    /**
+     * Store registration data and redirect to PayPal
+     */
+    public function storeRegister(Request $request)
+    {
+        try {
+            \Log::info('Hybrid registration attempt', [
+                'has_subscription_id' => $request->has('subscription_id'),
+                'user_agent' => $request->userAgent(),
+                'ip' => $request->ip()
+            ]);
+            
+            // Validate input data
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:8|confirmed',
+                'company_name' => 'required|string|max:255',
+                'plan_key' => 'required|string|exists:subscription_plans,key',
+                'billing_cycle' => 'required|in:monthly,yearly',
+                'subscription_id' => 'nullable|string' // PayPal subscription ID (if coming from PayPal approval)
+            ], [
+                'name.required' => 'El nombre es requerido.',
+                'email.required' => 'El email es requerido.',
+                'email.email' => 'Ingresa un email válido.',
+                'email.unique' => 'Este email ya está registrado.',
+                'password.required' => 'La contraseña es requerida.',
+                'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+                'password.confirmed' => 'Las contraseñas no coinciden.',
+                'company_name.required' => 'El nombre de la empresa es requerido.',
+                'plan_key.required' => 'Debe seleccionar un plan.',
+                'plan_key.exists' => 'El plan seleccionado no es válido.',
+                'billing_cycle.required' => 'Debe seleccionar un ciclo de facturación.',
+                'billing_cycle.in' => 'El ciclo de facturación no es válido.'
+            ]);
+
+            if ($validator->fails()) {
+                \Log::warning('Validation failed in hybrid registration', [
+                    'errors' => $validator->errors()->toArray(),
+                    'request_data' => $request->except(['password', 'password_confirmation'])
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Datos de registro inválidos.',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $validated = $validator->validated();
+            
+            // If this is coming from PayPal approval, create the user immediately
+            if ($request->has('subscription_id')) {
+                return $this->createUserWithSubscription($validated, $request->subscription_id);
+            }
+            
+            // Otherwise, just return the PayPal plan ID for frontend to handle
+            $plan = SubscriptionPlan::where('key', $validated['plan_key'])->first();
+            
+            if (!$plan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Plan no encontrado.'
+                ], 404);
+            }
+            
+            $isYearly = $validated['billing_cycle'] === 'yearly';
+            
+            // Get appropriate PayPal plan ID
+            $paypalPlanId = $isYearly && $plan->paypal_annual_plan_id 
+                ? $plan->paypal_annual_plan_id 
+                : $plan->paypal_plan_id;
+                
+            if (!$paypalPlanId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Este plan no está disponible para suscripción automática. Por favor contacta al soporte.'
+                ], 400);
+            }
+            
+            \Log::info('Returning PayPal plan ID for frontend', [
+                'plan_key' => $validated['plan_key'],
+                'billing_cycle' => $validated['billing_cycle'],
+                'paypal_plan_id' => $paypalPlanId,
+                'email' => $validated['email']
+            ]);
+            
+            // Return PayPal plan ID for frontend to handle
+            return response()->json([
+                'success' => true,
+                'paypal_plan_id' => $paypalPlanId,
+                'plan_name' => $plan->name,
+                'redirect_url' => route('subscription.success')
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in hybrid storeRegister', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['password', 'password_confirmation'])
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor. Por favor intenta nuevamente.'
+            ], 500);
+        }
+    }
+    
+    /**
+     * Create user with subscription after PayPal approval
+     */
+    private function createUserWithSubscription(array $validated, string $subscriptionId)
+    {
+        DB::beginTransaction();
+        
+        try {
+            // 1. Create user
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => bcrypt($validated['password']),
+                'email_verified_at' => now(),
+                'pending_cleanup_at' => now()->addDay() // Mark for cleanup in 24h if no subscription
+            ]);
+            
+            // 2. Create tenant
+            $tenant = Tenant::create([
+                'uuid' => Str::uuid(),
+                'name' => $validated['company_name'],
+                'slug' => Str::slug($validated['company_name'] . '-' . time()),
+                'email' => $validated['email'],
+                'plan' => $validated['plan_key'],
+                'status' => 'active',
+                'trial_ends_at' => null,
+                'owner_id' => $user->id
+            ]);
+            
+            // 3. Associate user with tenant
+            $tenant->users()->attach($user->id, [
+                'role' => 'owner',
+                'status' => 'active',
+                'joined_at' => now(),
+                'invited_at' => now()
+            ]);
+            
+            // 4. Set as current tenant for user
+            $user->update(['current_tenant_id' => $tenant->id]);
+            
+            // 5. Get plan details
+            $plan = SubscriptionPlan::where('key', $validated['plan_key'])->first();
+            $isYearly = $validated['billing_cycle'] === 'yearly';
+            
+            $planPrice = $isYearly && $plan->annual_price ? $plan->annual_price : $plan->price;
+            $billingCycle = $isYearly ? 'yearly' : 'monthly';
+            
+            // 6. Create subscription
+            $subscription = Subscription::create([
+                'tenant_id' => $tenant->id,
+                'plan' => $validated['plan_key'],
+                'status' => 'active', // Will be updated by PayPal webhook
+                'amount' => $planPrice,
+                'currency' => 'USD',
+                'billing_cycle' => $billingCycle,
+                'paypal_subscription_id' => $subscriptionId,
+                'starts_at' => now(),
+                'next_billing_date' => now()->addMonth(),
+                'is_trial' => false,
+                'trial_days' => $plan->trial_days ?? 0
+            ]);
+            
+            // 7. Clear pending cleanup since user now has subscription
+            $user->update(['pending_cleanup_at' => null]);
+            
+            DB::commit();
+            
+            \Log::info('User and subscription created successfully via hybrid flow', [
+                'user_id' => $user->id,
+                'tenant_id' => $tenant->id,
+                'subscription_id' => $subscription->id,
+                'paypal_subscription_id' => $subscriptionId
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Cuenta creada exitosamente.',
+                'user_id' => $user->id,
+                'redirect_url' => route('subscription.success', ['subscription_id' => $subscriptionId])
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            
+            \Log::error('Failed to create user with subscription in hybrid flow', [
+                'subscription_id' => $subscriptionId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear la cuenta. Por favor contacta al soporte.'
+            ], 500);
+        }
+    }
+    
+    /**
      * Handle PayPal subscription success
      */
     public function success(Request $request)
@@ -171,11 +393,18 @@ class SubscriptionController extends Controller
 
         if (!$subscriptionId) {
             return redirect()
-                ->route('subscription.plans')
+                ->route('home')
                 ->with('error', 'No se pudo confirmar tu suscripción. Por favor intenta nuevamente.');
         }
 
         try {
+            \Log::info('Processing PayPal subscription success', [
+                'subscription_id' => $subscriptionId,
+                'token' => $token,
+                'user_id' => auth()->id(),
+                'has_pending_registration' => session()->has('pending_registration')
+            ]);
+
             // Get subscription details from PayPal
             $paypalResponse = $this->paypalService->getSubscription($subscriptionId);
             
@@ -184,9 +413,32 @@ class SubscriptionController extends Controller
             }
 
             $paypalSubscription = $paypalResponse['data'];
+            
+            // Handle user registration if coming from registration flow
+            if (session()->has('pending_registration') && !auth()->check()) {
+                $user = $this->createUserFromPendingRegistration($subscriptionId, $paypalSubscription);
+                if ($user) {
+                    auth()->login($user);
+                    session()->forget('pending_registration');
+                    
+                    return redirect()
+                        ->route('dashboard')
+                        ->with('success', '¡Bienvenido! Tu cuenta y suscripción han sido creadas exitosamente.')
+                        ->with('subscription_info', [
+                            'plan' => $user->currentTenant->subscription->getPlanNameFormatted(),
+                            'next_billing' => $user->currentTenant->subscription->getNextBillingDateFormatted()
+                        ]);
+                }
+            }
 
-            // Find and update local subscription
+            // Find and update existing local subscription
             $subscription = Subscription::where('paypal_subscription_id', $subscriptionId)->first();
+            
+            \Log::info('Subscription lookup result', [
+                'subscription_found' => $subscription ? true : false,
+                'subscription_id_searched' => $subscriptionId,
+                'total_subscriptions' => Subscription::count()
+            ]);
             
             if ($subscription) {
                 $subscription->update([
@@ -198,17 +450,66 @@ class SubscriptionController extends Controller
                         : Carbon::now()->addMonth()
                 ]);
 
-                // Update tenant status
-                $subscription->tenant->update(['status' => 'active']);
-            }
-
-            return redirect()
-                ->route('dashboard')
-                ->with('success', '¡Tu suscripción ha sido activada exitosamente!')
-                ->with('subscription_info', [
-                    'plan' => $subscription->getPlanNameFormatted(),
-                    'next_billing' => $subscription->getNextBillingDateFormatted()
+                // Update tenant status if tenant exists
+                if ($subscription->tenant) {
+                    $subscription->tenant->update(['status' => 'active']);
+                } else {
+                    \Log::warning('Subscription has no associated tenant', [
+                        'subscription_id' => $subscription->id,
+                        'tenant_id' => $subscription->tenant_id
+                    ]);
+                }
+                
+                return redirect()
+                    ->route('dashboard')
+                    ->with('success', '¡Tu suscripción ha sido activada exitosamente!')
+                    ->with('subscription_info', [
+                        'plan' => $subscription->getPlanNameFormatted(),
+                        'next_billing' => $subscription->getNextBillingDateFormatted()
+                    ]);
+            } else {
+                // Subscription not found in local database - create it
+                \Log::warning('PayPal subscription not found in local database, creating new one', [
+                    'paypal_subscription_id' => $subscriptionId,
+                    'paypal_plan_id' => $paypalSubscription['plan_id'] ?? 'unknown',
+                    'user_id' => auth()->id()
                 ]);
+                
+                // Try to determine plan from PayPal plan_id
+                $planKey = $this->getPlanKeyFromPayPalPlanId($paypalSubscription['plan_id'] ?? null);
+                
+                if (!$planKey) {
+                    \Log::error('Could not determine plan from PayPal plan_id', [
+                        'paypal_plan_id' => $paypalSubscription['plan_id'] ?? 'missing',
+                        'subscription_id' => $subscriptionId
+                    ]);
+                    
+                    return redirect()
+                        ->route('dashboard')
+                        ->with('warning', 'Tu suscripción ha sido procesada pero necesita configuración adicional. Contacta al soporte.');
+                }
+                
+                // Create subscription in local database
+                $subscription = $this->createSubscriptionFromPayPal(
+                    $subscriptionId, 
+                    $paypalSubscription, 
+                    $planKey
+                );
+                
+                if ($subscription) {
+                    return redirect()
+                        ->route('dashboard')
+                        ->with('success', '¡Tu suscripción ha sido activada exitosamente!')
+                        ->with('subscription_info', [
+                            'plan' => $subscription->getPlanNameFormatted(),
+                            'next_billing' => $subscription->getNextBillingDateFormatted()
+                        ]);
+                } else {
+                    return redirect()
+                        ->route('dashboard')
+                        ->with('warning', 'Tu suscripción ha sido procesada pero hubo un problema al configurarla. Contacta al soporte.');
+                }
+            }
 
         } catch (\Exception $e) {
             \Log::error('Failed to process PayPal subscription success', [
@@ -467,5 +768,212 @@ class SubscriptionController extends Controller
         ]);
 
         return back()->with('success', 'Tu plan ha sido actualizado. Los cambios se aplicarán en tu próximo período de facturación.');
+    }
+    
+    /**
+     * Get plan key from PayPal plan ID
+     */
+    private function getPlanKeyFromPayPalPlanId($paypalPlanId): ?string
+    {
+        if (!$paypalPlanId) {
+            return null;
+        }
+        
+        // Map PayPal plan IDs to local plan keys
+        $planMapping = [
+            config('services.paypal.basic_plan_id') => 'basic',
+            config('services.paypal.premium_plan_id') => 'premium', 
+            config('services.paypal.enterprise_plan_id') => 'enterprise',
+            config('services.paypal.corporate_plan_id') => 'corporate',
+        ];
+        
+        return $planMapping[$paypalPlanId] ?? null;
+    }
+    
+    /**
+     * Create subscription from PayPal data
+     */
+    private function createSubscriptionFromPayPal($subscriptionId, $paypalSubscription, $planKey): ?Subscription
+    {
+        try {
+            $user = auth()->user();
+            
+            // Get or create tenant for user
+            $tenant = $user->currentTenant;
+            if (!$tenant) {
+                // Create a tenant if user doesn't have one
+                $tenant = Tenant::create([
+                    'uuid' => Str::uuid(),
+                    'name' => $user->name . '\'s Company',
+                    'slug' => Str::slug($user->name . '-company-' . time()),
+                    'email' => $user->email,
+                    'plan' => $planKey,
+                    'status' => 'active',
+                    'trial_ends_at' => null,
+                ]);
+                
+                // Associate user with tenant
+                $tenant->users()->attach($user->id, [
+                    'role' => 'owner',
+                    'status' => 'active',
+                    'joined_at' => now()
+                ]);
+                
+                // Set as current tenant
+                $user->update(['current_tenant_id' => $tenant->id]);
+            }
+            
+            // Get plan details
+            $planData = $this->getPlanData($planKey);
+            
+            $subscription = Subscription::create([
+                'tenant_id' => $tenant->id,
+                'plan' => $planKey,
+                'status' => strtolower($paypalSubscription['status']),
+                'amount' => $planData['price'] ?? 0,
+                'currency' => 'USD',
+                'billing_cycle' => $planData['billing_cycle'] ?? 'monthly',
+                'paypal_subscription_id' => $subscriptionId,
+                'paypal_metadata' => $paypalSubscription,
+                'starts_at' => Carbon::parse($paypalSubscription['start_time']),
+                'next_billing_date' => isset($paypalSubscription['billing_info']['next_billing_time']) 
+                    ? Carbon::parse($paypalSubscription['billing_info']['next_billing_time'])
+                    : Carbon::now()->addMonth(),
+                'is_trial' => false
+            ]);
+            
+            \Log::info('Created subscription from PayPal data', [
+                'subscription_id' => $subscription->id,
+                'tenant_id' => $tenant->id,
+                'plan' => $planKey
+            ]);
+            
+            return $subscription;
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to create subscription from PayPal data', [
+                'paypal_subscription_id' => $subscriptionId,
+                'plan_key' => $planKey,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return null;
+        }
+    }
+    
+    /**
+     * Get plan data by key
+     */
+    private function getPlanData($planKey): array
+    {
+        $plans = [
+            'basic' => ['price' => 29.00, 'billing_cycle' => 'monthly'],
+            'premium' => ['price' => 79.00, 'billing_cycle' => 'monthly'],
+            'enterprise' => ['price' => 199.00, 'billing_cycle' => 'monthly'],
+            'corporate' => ['price' => 499.00, 'billing_cycle' => 'monthly'],
+        ];
+        
+        return $plans[$planKey] ?? ['price' => 0, 'billing_cycle' => 'monthly'];
+    }
+    
+    /**
+     * Create user from pending registration data
+     */
+    private function createUserFromPendingRegistration($subscriptionId, $paypalSubscription): ?User
+    {
+        try {
+            $pendingData = session('pending_registration');
+            
+            if (!$pendingData) {
+                \Log::error('No pending registration data found', ['subscription_id' => $subscriptionId]);
+                return null;
+            }
+            
+            \Log::info('Creating user from pending registration', [
+                'email' => $pendingData['email'],
+                'company_name' => $pendingData['company_name'],
+                'plan_key' => $pendingData['plan_key']
+            ]);
+            
+            DB::beginTransaction();
+            
+            // 1. Create user
+            $user = User::create([
+                'name' => $pendingData['name'],
+                'email' => $pendingData['email'],
+                'password' => $pendingData['password'], // Already hashed
+                'email_verified_at' => now()
+            ]);
+            
+            // 2. Create tenant
+            $tenant = Tenant::create([
+                'uuid' => Str::uuid(),
+                'name' => $pendingData['company_name'],
+                'slug' => Str::slug($pendingData['company_name'] . '-' . time()),
+                'email' => $pendingData['email'],
+                'plan' => $pendingData['plan_key'],
+                'status' => 'active',
+                'trial_ends_at' => null,
+                'owner_id' => $user->id
+            ]);
+            
+            // 3. Associate user with tenant
+            $tenant->users()->attach($user->id, [
+                'role' => 'owner',
+                'status' => 'active',
+                'joined_at' => now(),
+                'invited_at' => now()
+            ]);
+            
+            // 4. Set as current tenant for user
+            $user->update(['current_tenant_id' => $tenant->id]);
+            
+            // 5. Get plan details
+            $plan = SubscriptionPlan::where('key', $pendingData['plan_key'])->first();
+            $isYearly = $pendingData['billing_cycle'] === 'yearly';
+            
+            $planPrice = $isYearly && $plan->annual_price ? $plan->annual_price : $plan->price;
+            $billingCycle = $isYearly ? 'yearly' : 'monthly';
+            
+            // 6. Create subscription
+            $subscription = Subscription::create([
+                'tenant_id' => $tenant->id,
+                'plan' => $pendingData['plan_key'],
+                'status' => strtolower($paypalSubscription['status']),
+                'amount' => $planPrice,
+                'currency' => 'USD',
+                'billing_cycle' => $billingCycle,
+                'paypal_subscription_id' => $subscriptionId,
+                'paypal_metadata' => $paypalSubscription,
+                'starts_at' => Carbon::parse($paypalSubscription['start_time']),
+                'next_billing_date' => isset($paypalSubscription['billing_info']['next_billing_time']) 
+                    ? Carbon::parse($paypalSubscription['billing_info']['next_billing_time'])
+                    : Carbon::now()->addMonth(),
+                'is_trial' => false,
+                'trial_days' => $plan->trial_days ?? 0
+            ]);
+            
+            DB::commit();
+            
+            \Log::info('User and subscription created successfully', [
+                'user_id' => $user->id,
+                'tenant_id' => $tenant->id,
+                'subscription_id' => $subscription->id
+            ]);
+            
+            return $user;
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            
+            \Log::error('Failed to create user from pending registration', [
+                'subscription_id' => $subscriptionId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return null;
+        }
     }
 }

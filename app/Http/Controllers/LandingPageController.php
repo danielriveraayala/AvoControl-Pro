@@ -32,10 +32,28 @@ class LandingPageController extends Controller
             return $plan->hasAnnualPricing();
         });
 
+        // Calculate discount range for the badge
+        $discountBadge = 'Ahorra hasta 15%'; // Default
+        if ($hasAnnualPlans) {
+            $discounts = $dbPlans->filter(function ($plan) {
+                return $plan->hasAnnualPricing();
+            })->pluck('annual_discount_percentage')->filter()->unique()->values();
+
+            if ($discounts->count() === 1) {
+                // All plans have the same discount
+                $discountBadge = "Ahorra hasta {$discounts->first()}%";
+            } elseif ($discounts->count() > 1) {
+                // Different discounts - show the maximum
+                $maxDiscount = $discounts->max();
+                $discountBadge = "Ahorra hasta {$maxDiscount}%";
+            }
+        }
+
         // Prepare plans data for the view
         $plans = [
             'list' => $dbPlans,
-            'hasAnnualPlans' => $hasAnnualPlans
+            'hasAnnualPlans' => $hasAnnualPlans,
+            'discountBadge' => $discountBadge
         ];
 
         // Features sections

@@ -45,11 +45,11 @@
                     <!-- Search -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
-                        <input type="text" name="search" value="{{ request('search') }}" 
+                        <input type="text" name="search" value="{{ request('search') }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                placeholder="Nombre o email">
                     </div>
-                    
+
                     <!-- Role Filter -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Rol</label>
@@ -62,7 +62,7 @@
                             @endforeach
                         </select>
                     </div>
-                    
+
                     <!-- Status Filter -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
@@ -72,10 +72,10 @@
                             <option value="suspended" {{ request('status') == 'suspended' ? 'selected' : '' }}>Suspendidos</option>
                         </select>
                     </div>
-                    
+
                     <!-- Actions -->
                     <div class="flex space-x-2">
-                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium">
+                        <button type="submit" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                             Filtrar
                         </button>
                         <a href="{{ route('developer.users.index') }}" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-md text-sm font-medium text-center">
@@ -93,7 +93,7 @@
                     Lista de Usuarios ({{ $users->total() }} total)
                 </h3>
             </div>
-            
+
             <!-- Mobile Cards (visible on small screens) -->
             <div class="block sm:hidden">
                 @forelse($users as $user)
@@ -112,8 +112,8 @@
                                     <div class="text-xs text-gray-500">{{ $user->email }}</div>
                                 </div>
                             </div>
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                {{ $user->role === 'super_admin' ? 'bg-purple-100 text-purple-800' : 
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                {{ $user->role === 'super_admin' ? 'bg-purple-100 text-purple-800' :
                                    ($user->role === 'admin' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
                                 {{ ucfirst(str_replace('_', ' ', $user->role)) }}
                             </span>
@@ -179,14 +179,14 @@
                                         </div>
                                     </div>
                                 </td>
-                                
+
                                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                                     <div class="flex flex-wrap gap-1">
                                         @foreach($user->roles as $role)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
-                                                {{ $role->name === 'super_admin' ? 'bg-purple-100 text-purple-800' : 
-                                                   ($role->name === 'admin' ? 'bg-blue-100 text-blue-800' : 
-                                                   ($role->name === 'vendedor' ? 'bg-green-100 text-green-800' : 
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                                {{ $role->name === 'super_admin' ? 'bg-purple-100 text-purple-800' :
+                                                   ($role->name === 'admin' ? 'bg-blue-100 text-blue-800' :
+                                                   ($role->name === 'vendedor' ? 'bg-green-100 text-green-800' :
                                                    'bg-gray-100 text-gray-800')) }}">
                                                 {{ $role->display_name }}
                                                 @if($role->pivot->is_primary)
@@ -196,7 +196,7 @@
                                         @endforeach
                                     </div>
                                 </td>
-                                
+
                                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                                     @if($user->suspended_at)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -211,12 +211,12 @@
                                         </span>
                                     @endif
                                 </td>
-                                
+
                                 <td class="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <div>{{ $user->updated_at->format('d/m/Y H:i') }}</div>
                                     <div class="text-xs">{{ $user->updated_at->diffForHumans() }}</div>
                                 </td>
-                                
+
                                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex flex-wrap gap-1 sm:gap-2">
                                         <a href="{{ route('developer.users.show', $user) }}" class="text-indigo-600 hover:text-indigo-900 text-xs sm:text-sm">
@@ -225,7 +225,7 @@
                                         <a href="{{ route('developer.users.edit', $user) }}" class="text-blue-600 hover:text-blue-900 text-xs sm:text-sm">
                                             Editar
                                         </a>
-                                        
+
                                         @if($user->suspended_at)
                                             <button onclick="activateUser({{ $user->id }})" class="text-green-600 hover:text-green-900 text-xs sm:text-sm">
                                                 Activar
@@ -237,11 +237,11 @@
                                                 </button>
                                             @endif
                                         @endif
-                                        
+
                                         <button onclick="resetPassword({{ $user->id }})" class="text-purple-600 hover:text-purple-900 text-xs sm:text-sm">
                                             Reset
                                         </button>
-                                        
+
                                         @if(!$user->hasRole('super_admin') && $user->id !== auth()->id())
                                             <button onclick="deleteUser({{ $user->id }})" class="text-red-600 hover:text-red-900 text-xs sm:text-sm">
                                                 Eliminar
@@ -260,7 +260,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Pagination -->
             @if($users->hasPages())
                 <div class="px-4 sm:px-6 py-4 border-t border-gray-200">
@@ -292,7 +292,7 @@ function suspendUser(userId) {
     }).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Suspendiendo usuario...', 'Por favor espera');
-            
+
             fetch(`/developer/users/${userId}/suspend`, {
                 method: 'POST',
                 headers: {
@@ -326,7 +326,7 @@ function activateUser(userId) {
     ).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Activando usuario...', 'Por favor espera');
-            
+
             fetch(`/developer/users/${userId}/activate`, {
                 method: 'POST',
                 headers: {
@@ -369,35 +369,35 @@ function resetPassword(userId) {
         preConfirm: () => {
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            
+
             if (!newPassword || !confirmPassword) {
                 Swal.showValidationMessage('Ambas contraseñas son requeridas');
                 return false;
             }
-            
+
             if (newPassword.length < 8) {
                 Swal.showValidationMessage('La contraseña debe tener al menos 8 caracteres');
                 return false;
             }
-            
+
             if (newPassword !== confirmPassword) {
                 Swal.showValidationMessage('Las contraseñas no coinciden');
                 return false;
             }
-            
+
             return { newPassword, confirmPassword };
         }
     }).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Restableciendo contraseña...', 'Por favor espera');
-            
+
             fetch(`/developer/users/${userId}/reset-password`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     new_password: result.value.newPassword,
                     new_password_confirmation: result.value.confirmPassword
                 })
@@ -424,7 +424,7 @@ function deleteUser(userId) {
     ).then((result) => {
         if (result.isConfirmed) {
             DevAlert.loading('Eliminando usuario...', 'Por favor espera');
-            
+
             fetch(`/developer/users/${userId}`, {
                 method: 'DELETE',
                 headers: {

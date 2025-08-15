@@ -279,7 +279,7 @@ class Subscription extends Model
     /**
      * Start grace period
      */
-    public function startGracePeriod(int $days = null): void
+    public function startGracePeriod(?int $days = null): void
     {
         $graceDays = $days ?? $this->grace_period_days;
         

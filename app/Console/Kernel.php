@@ -138,6 +138,15 @@ class Kernel extends ConsoleKernel
                  ->description('Verificación nocturna de cuentas para suspensión');
 
         // ===============================
+        // LIMPIEZA DE USUARIOS FANTASMA
+        // ===============================
+        
+        // Limpiar usuarios fantasma cada 6 horas
+        $schedule->command('users:cleanup-phantom')
+                 ->cron('0 */6 * * *')
+                 ->description('Limpiar usuarios que no completaron el pago en 24h');
+
+        // ===============================
         // COMANDOS EXISTENTES
         // ===============================
         

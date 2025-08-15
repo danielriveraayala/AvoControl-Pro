@@ -30,6 +30,7 @@ class User extends Authenticatable
         'password_changed_at',
         'created_by',
         'email_verified_at',
+        'pending_cleanup_at',
     ];
 
     /**
@@ -51,6 +52,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'suspended_at' => 'datetime',
         'password_changed_at' => 'datetime',
+        'pending_cleanup_at' => 'datetime',
         'role' => 'string',
     ];
 
