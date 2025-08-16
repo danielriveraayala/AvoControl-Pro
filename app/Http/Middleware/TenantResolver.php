@@ -20,60 +20,10 @@ class TenantResolver
             return $next($request);
         }
 
-        // Check if we're on a tenant subdomain and require authentication
-        $host = $request->getHost();
-        $parts = explode('.', $host);
-        
-        if (count($parts) >= 3 && $parts[1] === 'avocontrol' && $parts[2] === 'pro') {
-            $subdomain = $parts[0];
-            
-            // Skip special subdomains
-            if (!in_array($subdomain, ['dev', 'www', 'api'])) {
-                // Check if this subdomain corresponds to a tenant
-                $potentialTenant = Tenant::where('slug', $subdomain)->where('status', 'active')->first();
-                
-                if ($potentialTenant && !auth()->check()) {
-                    // This is a tenant subdomain and user is not authenticated
-                    $fullUrl = $request->fullUrl();
-                    
-                    Log::info('Redirecting unauthenticated user from tenant subdomain', [
-                        'subdomain' => $subdomain,
-                        'intended_url' => $fullUrl
-                    ]);
-                    
-                    // Store intended URL and redirect to login
-                    session(['url.intended' => $fullUrl]);
-                    session()->put('url.intended', $fullUrl);
-                    
-                    return redirect()->guest('https://avocontrol.pro/login')
-                        ->with('error', 'Debes iniciar sesión para acceder a esta empresa.');
-                }
-            }
-        }
-
         // Try to resolve tenant
         $tenant = $this->resolveTenant($request);
 
         if ($tenant) {
-            // Check if user has access to this tenant (if authenticated)
-            if (auth()->check()) {
-                $user = auth()->user();
-                
-                // Super admins can access any tenant
-                if (!$user->hasRole('super_admin')) {
-                    $hasTenantAccess = $user->tenants()
-                        ->where('tenants.id', $tenant->id)
-                        ->where('tenants.status', 'active')
-                        ->exists();
-                    
-                    if (!$hasTenantAccess) {
-                        // User doesn't have access to this tenant
-                        return redirect()->route('tenant.select')
-                            ->with('error', 'No tienes acceso a esta empresa.');
-                    }
-                }
-            }
-            
             // Set tenant in application context
             app()->instance('current_tenant', $tenant);
             
@@ -227,10 +177,7 @@ class TenantResolver
             'subscription/register/*',
             'subscription/success',
             'subscription/cancelled',
-            'subscription/suspended',
-            'subscription/expired',
-            'paypal/webhook',
-            'tenant/select'
+            'paypal/webhook'
         ];
 
         foreach ($skipRoutes as $route) {
