@@ -45,6 +45,8 @@
             --light-color: #F1F8E9;
             --text-dark: #333333;
             --text-light: #666666;
+            --gradient-primary: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+            --gradient-accent: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
         }
         
         * {
@@ -57,13 +59,14 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: var(--text-dark);
             line-height: 1.6;
+            overflow-x: hidden;
         }
         
-        /* Navigation */
+        /* Navigation - Optimized for all devices */
         .navbar {
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            padding: 0.75rem 0;
             position: fixed;
             width: 100%;
             top: 0;
@@ -74,48 +77,161 @@
         .navbar.scrolled {
             padding: 0.5rem 0;
             background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
         }
         
         .navbar-brand {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--primary-color) !important;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            margin-right: 0.5rem;
+            font-size: 1.5rem;
+        }
+        
+        /* Responsive navbar for tablets and mobile */
+        @media (max-width: 991px) {
+            .navbar-collapse {
+                background: white;
+                margin-top: 1rem;
+                padding: 1rem;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            }
+        }
+        
+        @media (min-width: 768px) and (max-width: 991px) {
+            /* Tablet specific styles */
+            .navbar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .navbar-nav .nav-item {
+                margin: 0.25rem 0.5rem;
+            }
         }
         
         .navbar-nav .nav-link {
             color: var(--text-dark) !important;
             font-weight: 500;
-            margin: 0 0.5rem;
-            transition: color 0.3s ease;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            border-radius: 5px;
         }
         
         .navbar-nav .nav-link:hover {
             color: var(--primary-color) !important;
+            background: rgba(46,125,50,0.05);
         }
         
+        /* Mobile menu improvements */
+        .navbar-toggler {
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+        
+        .navbar-toggler-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        
+        /* CTA Buttons - Sales Funnel Optimized */
         .btn-primary-custom {
-            background: var(--primary-color);
+            background: var(--gradient-primary);
             color: white;
             border: none;
-            padding: 0.5rem 1.5rem;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary-custom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-primary-custom:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(46,125,50,0.3);
+        }
+        
+        .btn-secondary-custom {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 0.75rem 2rem;
             border-radius: 50px;
             font-weight: 600;
             transition: all 0.3s ease;
         }
         
-        .btn-primary-custom:hover {
-            background: var(--dark-color);
+        .btn-secondary-custom:hover {
+            background: var(--primary-color);
+            color: white;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(46,125,50,0.3);
         }
         
-        /* Hero Section */
+        /* Pulse animation for CTAs */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46,125,50,0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(46,125,50,0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(46,125,50,0);
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Hero Section - Sales Funnel Optimized */
         .hero {
             background: linear-gradient(135deg, var(--light-color) 0%, #ffffff 100%);
-            padding: 120px 0 80px;
-            margin-top: 76px;
+            padding: 100px 0 60px;
+            margin-top: 60px;
             position: relative;
             overflow: hidden;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        @media (min-width: 992px) {
+            .hero {
+                padding: 120px 0 80px;
+                margin-top: 76px;
+                min-height: 90vh;
+            }
         }
         
         .hero::before {
@@ -130,17 +246,58 @@
         }
         
         .hero h1 {
-            font-size: 3rem;
+            font-size: 2rem;
             font-weight: 700;
             color: var(--dark-color);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             line-height: 1.2;
         }
         
+        @media (min-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .hero h1 {
+                font-size: 3rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+        
         .hero p {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             color: var(--text-light);
             margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+        
+        @media (min-width: 768px) {
+            .hero p {
+                font-size: 1.25rem;
+            }
+        }
+        
+        /* Trust indicators */
+        .trust-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+            align-items: center;
+        }
+        
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .trust-badge i {
+            color: var(--secondary-color);
         }
         
         .hero-image {
@@ -1143,72 +1300,118 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Navigation - Optimized for All Devices -->
     <nav class="navbar navbar-expand-lg" id="mainNav">
         <div class="container">
             <a class="navbar-brand" href="#page-top">
-                <i class="fas fa-leaf"></i> AvoControl Pro
+                <i class="fas fa-leaf"></i> 
+                <span>AvoControl Pro</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="#features">Características</a>
+                        <a class="nav-link" href="#features" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show">Características</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#pricing">Precios</a>
+                        <a class="nav-link" href="#pricing" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show">Precios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#testimonials">Testimonios</a>
+                        <a class="nav-link" href="#testimonials" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show">Testimonios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#faq">FAQ</a>
+                        <a class="nav-link" href="#faq" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show">FAQ</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#contact">Contacto</a>
-                    </li>
-                    <li class="nav-item ms-3">
-                        <a class="btn btn-primary-custom" href="{{ route('login') }}">Iniciar Sesión</a>
+                    <li class="nav-item ms-0 ms-lg-3 mt-3 mt-lg-0">
+                        <a class="btn btn-primary-custom pulse" href="{{ route('login') }}">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Iniciar Sesión</span>
+                        </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
     
-    <!-- Hero Section -->
+    <!-- Hero Section - Sales Funnel Optimized -->
     <section class="hero" id="page-top">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-6" data-aos="fade-right">
-                    <h1>Sistema de Gestión Integral para Centros de Acopio de Aguacate</h1>
-                    <p>Optimiza tu operación, controla inventarios, gestiona ventas y maximiza tus ganancias con la plataforma más completa del mercado.</p>
-                    <div class="d-flex gap-3 flex-wrap">
-                        <a href="#pricing" class="btn btn-primary-custom btn-lg">
+                <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                    <!-- Urgency Badge -->
+                    <div class="mb-3">
+                        <span class="badge bg-warning text-dark px-3 py-2">
+                            <i class="fas fa-fire"></i> Oferta Limitada: 50% de descuento este mes
+                        </span>
+                    </div>
+                    
+                    <h1 class="mb-3">Aumenta tus Ganancias <span class="text-primary">30%</span> con el Sistema #1 para Centros de Acopio</h1>
+                    <p class="lead mb-4">Más de <strong>500 centros de acopio</strong> ya confían en AvoControl Pro para gestionar inventarios, optimizar ventas y maximizar utilidades.</p>
+                    
+                    <!-- CTA Buttons -->
+                    <div class="d-flex gap-3 flex-column flex-sm-row mb-4">
+                        <a href="#pricing" class="btn btn-primary-custom btn-lg pulse">
+                            <i class="fas fa-rocket"></i>
                             Comenzar Prueba Gratis
                         </a>
-                        <a href="#features" class="btn btn-outline-success btn-lg">
-                            Ver Características
+                        <a href="#demo" class="btn btn-secondary-custom btn-lg">
+                            <i class="fas fa-play-circle"></i>
+                            Ver Demo
                         </a>
                     </div>
-                    <div class="mt-4">
-                        <div class="d-flex flex-column gap-1">
-                            <small class="text-muted">
-                                <i class="fas fa-check-circle text-success"></i> Sin tarjeta de crédito
-                            </small>
-                            <small class="text-muted">
-                                <i class="fas fa-check-circle text-success"></i> 7 días gratis
-                            </small>
-                            <small class="text-muted">
-                                <i class="fas fa-check-circle text-success"></i> Cancela cuando quieras
-                            </small>
+                    
+                    <!-- Trust Indicators -->
+                    <div class="trust-badges">
+                        <div class="trust-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Sin tarjeta de crédito</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="fas fa-clock"></i>
+                            <span>Configuración en 5 min</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="fas fa-headset"></i>
+                            <span>Soporte 24/7</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Proof -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <div class="d-flex">
+                                    <img src="https://i.pravatar.cc/30?img=1" class="rounded-circle" style="width: 30px; margin-right: -10px; border: 2px solid white;">
+                                    <img src="https://i.pravatar.cc/30?img=2" class="rounded-circle" style="width: 30px; margin-right: -10px; border: 2px solid white;">
+                                    <img src="https://i.pravatar.cc/30?img=3" class="rounded-circle" style="width: 30px; margin-right: -10px; border: 2px solid white;">
+                                    <img src="https://i.pravatar.cc/30?img=4" class="rounded-circle" style="width: 30px; border: 2px solid white;">
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-warning mb-1">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <small class="text-muted">+500 empresas activas</small>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
                 <div class="col-lg-6" data-aos="fade-left">
-                    <div class="hero-image mt-5 mt-lg-0">
-                        <img src="https://picsum.photos/600/400?random=10" alt="Dashboard AvoControl Pro">
+                    <div class="hero-image position-relative">
+                        <img src="https://picsum.photos/600/400?random=10" alt="Dashboard AvoControl Pro" class="img-fluid">
+                        <!-- Play button overlay for demo video -->
+                        <div class="position-absolute top-50 start-50 translate-middle">
+                            <a href="#demo" class="btn btn-white rounded-circle" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.9); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                                <i class="fas fa-play text-primary" style="font-size: 24px; margin-left: 5px;"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1622,79 +1825,77 @@
         </div>
     </section>
     
-    <!-- CTA Section -->
+    <!-- CTA Section - Sales Funnel Optimized -->
     <section class="cta" id="cta">
         <div class="container">
-            <div data-aos="zoom-in">
-                <h2>¿Listo para Transformar tu Centro de Acopio?</h2>
-                <p>Únete a cientos de empresas que ya confían en AvoControl Pro</p>
-                <a href="#pricing" class="btn btn-cta">
-                    Comenzar Prueba Gratuita de 7 Días
-                </a>
+            <div class="text-center" data-aos="zoom-in">
+                <!-- Urgency Indicator -->
+                <div class="mb-3">
+                    <span class="badge bg-warning text-dark px-4 py-2 fs-6">
+                        <i class="fas fa-clock"></i> Oferta válida por tiempo limitado
+                    </span>
+                </div>
+                
+                <h2 class="mb-3">¿Listo para Aumentar tus Ganancias 30%?</h2>
+                <p class="lead mb-4">Únete a <strong>+500 centros de acopio</strong> que ya transformaron su negocio</p>
+                
+                <!-- Benefits List -->
+                <div class="row justify-content-center mb-4">
+                    <div class="col-md-8">
+                        <div class="d-flex flex-wrap justify-content-center gap-3 text-start">
+                            <div class="text-white">
+                                <i class="fas fa-check-circle text-warning"></i> Setup en 5 minutos
+                            </div>
+                            <div class="text-white">
+                                <i class="fas fa-check-circle text-warning"></i> Sin tarjeta de crédito
+                            </div>
+                            <div class="text-white">
+                                <i class="fas fa-check-circle text-warning"></i> Soporte 24/7 incluido
+                            </div>
+                            <div class="text-white">
+                                <i class="fas fa-check-circle text-warning"></i> Cancela cuando quieras
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CTA Buttons -->
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center align-items-center">
+                    <a href="#pricing" class="btn btn-cta btn-lg pulse">
+                        <i class="fas fa-rocket me-2"></i>
+                        Comenzar Prueba Gratuita de 7 Días
+                    </a>
+                    <a href="#demo" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-play-circle me-2"></i>
+                        Ver Demo en Vivo
+                    </a>
+                </div>
+                
+                <!-- Trust Element -->
+                <div class="mt-4">
+                    <small class="text-white-50">
+                        <i class="fas fa-shield-alt"></i> 
+                        Garantía de satisfacción de 30 días o te devolvemos tu dinero
+                    </small>
+                </div>
             </div>
         </div>
     </section>
     
-    <!-- Footer -->
-    <footer id="contact">
+    <!-- Footer - Simplified -->
+    <footer id="contact" class="py-4">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-4">
-                    <h5>AvoControl Pro</h5>
-                    <p>
-                        La solución integral para la gestión eficiente de centros de acopio de aguacate.
-                    </p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h5>Producto</h5>
-                    <ul>
-                        <li><a href="#features">Características</a></li>
-                        <li><a href="#pricing">Precios</a></li>
-                        <li><a href="#">API</a></li>
-                        <li><a href="#">Integraciones</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h5>Empresa</h5>
-                    <ul>
-                        <li><a href="#">Acerca de</a></li>
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Empleos</a></li>
-                        <li><a href="#">Partners</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h5>Soporte</h5>
-                    <ul>
-                        <li><a href="#">Centro de Ayuda</a></li>
-                        <li><a href="#">Documentación</a></li>
-                        <li><a href="#">Guías</a></li>
-                        <li><a href="#">Status</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h5>Legal</h5>
-                    <ul>
-                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="privacy">Privacidad</a></li>
-                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="terms">Términos</a></li>
-                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="cookies">Cookies</a></li>
-                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="licenses">Licencias</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2025 AvoControl Pro. Todos los derechos reservados. | Desarrollado por Kreativos Pro</p>
+            <div class="text-center">
+                <p class="mb-2 text-white-50">
+                    <a href="#" class="text-white-50 text-decoration-none me-3" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="privacy">Privacidad</a>
+                    <a href="#" class="text-white-50 text-decoration-none me-3" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="terms">Términos</a>
+                    <a href="#" class="text-white-50 text-decoration-none" data-bs-toggle="modal" data-bs-target="#legalModal" data-bs-tab="cookies">Cookies</a>
+                </p>
+                <p class="mb-0 text-white">
+                    &copy; 2025 <strong>AvoControl Pro</strong>. Todos los derechos reservados. 
+                    <span class="d-none d-sm-inline">|</span>
+                    <span class="d-block d-sm-inline">Desarrollado con ❤️ por <a href="https://kreativos.pro" target="_blank" class="text-white">Kreativos Pro</a></span>
+                </p>
             </div>
         </div>
     </footer>
