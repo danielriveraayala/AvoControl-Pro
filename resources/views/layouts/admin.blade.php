@@ -229,7 +229,7 @@
                         <i class="fas fa-user mr-2"></i> Perfil
                     </a>
                     <div class="dropdown-divider"></div>
-                    <form method="POST" action="{{ route('logout') }}" class="dropdown-item">
+                    <form method="POST" action="{{ route('tenant.logout') }}" class="dropdown-item">
                         @csrf
                         <button type="submit" class="btn btn-link p-0 text-dark" style="text-decoration: none;">
                             <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión

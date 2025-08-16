@@ -115,6 +115,32 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
+     * Handle logout from tenant subdomain by redirecting to main domain
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function tenantLogout(Request $request)
+    {
+        // If we're on a tenant subdomain, redirect to main domain for logout
+        $host = $request->getHost();
+        $parts = explode('.', $host);
+        
+        if (count($parts) >= 3 && $parts[1] === 'avocontrol' && $parts[2] === 'pro') {
+            $subdomain = $parts[0];
+            
+            // Skip special subdomains
+            if (!in_array($subdomain, ['dev', 'www', 'api'])) {
+                // This is a tenant subdomain - redirect to main domain logout
+                return redirect()->away('https://avocontrol.pro/logout');
+            }
+        }
+        
+        // If we're already on main domain, proceed with normal logout
+        return $this->destroy($request);
+    }
+
+    /**
      * Destroy an authenticated session.
      *
      * @param  \Illuminate\Http\Request  $request
