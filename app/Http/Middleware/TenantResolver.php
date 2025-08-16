@@ -20,6 +20,11 @@ class TenantResolver
             return $next($request);
         }
 
+        // Check if user is accessing from main domain and should be redirected to tenant subdomain
+        if ($this->shouldRedirectToTenantSubdomain($request)) {
+            return $this->redirectToUserTenant($request);
+        }
+
         // Try to resolve tenant
         $tenant = $this->resolveTenant($request);
 
@@ -252,5 +257,75 @@ class TenantResolver
     {
         $tenant = self::getCurrentTenant();
         return $tenant ? $tenant->id : null;
+    }
+
+    /**
+     * Check if user should be redirected from main domain to tenant subdomain
+     */
+    protected function shouldRedirectToTenantSubdomain(Request $request): bool
+    {
+        // Only redirect authenticated users
+        if (!auth()->check()) {
+            return false;
+        }
+
+        $host = $request->getHost();
+        
+        // Only redirect if accessing from main domain (avocontrol.pro)
+        if ($host !== 'avocontrol.pro') {
+            return false;
+        }
+
+        // Skip redirect for certain routes that should remain on main domain
+        $skipRedirectRoutes = [
+            'login', 'logout', 'register', 'password/*',
+            'subscription/*', 'paypal/*', 'tenant/select', 'developer/*'
+        ];
+
+        foreach ($skipRedirectRoutes as $route) {
+            if ($request->is($route)) {
+                return false;
+            }
+        }
+
+        // Skip for super admin (they should access developer panel from main domain)
+        if (auth()->user()->hasRole('super_admin')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Redirect user to their tenant subdomain
+     */
+    protected function redirectToUserTenant(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Get user's tenants
+        $userTenants = $user->tenants()->where('tenants.status', 'active')->get();
+        
+        if ($userTenants->count() === 1) {
+            // Single tenant - redirect directly
+            $tenant = $userTenants->first();
+            $user->update(['current_tenant_id' => $tenant->id]);
+            
+            $path = $request->getPathInfo();
+            $query = $request->getQueryString();
+            $tenantUrl = 'https://' . $tenant->slug . '.avocontrol.pro' . $path;
+            
+            if ($query) {
+                $tenantUrl .= '?' . $query;
+            }
+            
+            return redirect()->away($tenantUrl);
+        } elseif ($userTenants->count() > 1) {
+            // Multiple tenants - redirect to tenant selection
+            return redirect()->route('tenant.select');
+        } else {
+            // No tenants - redirect to tenant selection
+            return redirect()->route('tenant.select')->with('warning', 'No tienes acceso a ninguna empresa.');
+        }
     }
 }
