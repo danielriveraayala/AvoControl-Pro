@@ -9,8 +9,8 @@ AvoControl Pro is a Laravel-based web application for managing avocado purchasin
 **Status**: Full production-ready system with comprehensive features implemented.
 **Production URL**: https://dev.avocontrol.pro
 **Environment**: Production (APP_ENV=production)
-**Última actualización**: 16 Agosto 2025 - Email Notification System Enhancement
-**Estado de completación**: 100% - Sistema totalmente operativo con notificaciones automáticas por email
+**Última actualización**: 16 Agosto 2025 - Automatic Tenant Subdomain Redirection System
+**Estado de completación**: 100% - Sistema totalmente operativo con redirección automática de tenant subdomain
 
 ## Developer Information
 
@@ -1085,6 +1085,35 @@ El sistema implementa **3 canales simultáneos** para máxima cobertura:
 - ✅ **Responsive Images**: Picsum.photos con dimensiones optimizadas
 
 **Estado Final**: Landing page completamente operativa en https://dev.avocontrol.pro/ con información legal completa y flujo de conversión profesional para venta de suscripciones.
+
+### Sistema de Redirección Automática de Tenant Subdomain (16 Agosto 2025 - 100% ✅)
+
+#### **Problema Resuelto:**
+Los usuarios autenticados podían acceder tanto al dominio principal como a su tenant subdomain, causando confusión de contexto.
+
+#### **✅ Solución Implementada:**
+- **Redirección Automática**: Usuarios siempre en su tenant subdomain correcto
+- **Preservación de Intent**: Mantiene path y query parameters originales
+- **Super Admin Bypass**: Desarrolladores mantienen acceso al panel desde dominio principal
+- **Route Protection**: Exclusión de rutas críticas para evitar loops
+
+#### **Funcionamiento:**
+```
+https://avocontrol.pro/dashboard 
+→ https://tenant-slug.avocontrol.pro/dashboard
+
+https://avocontrol.pro/configuration?tab=smtp
+→ https://tenant-slug.avocontrol.pro/configuration?tab=smtp
+```
+
+#### **Archivos Modificados:**
+- `app/Http/Middleware/TenantResolver.php`: Métodos `shouldRedirectToTenantSubdomain()` y `redirectToUserTenant()`
+
+#### **Beneficios:**
+- **UX Consistency**: Un solo flujo de navegación para usuarios
+- **Security**: Prevención de acceso accidental a contexto incorrecto
+- **Developer Friendly**: Panel developer sigue accesible
+- **Seamless Experience**: Redirección transparente sin intervención manual
 
 ### PayPal Subscription System Optimization (15 Ago 2025 - 100% ✅)
 

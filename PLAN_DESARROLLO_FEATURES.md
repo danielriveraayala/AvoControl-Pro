@@ -4,7 +4,7 @@
 
 **Status**: ✅ PRODUCCIÓN COMPLETA - 100% FUNCIONAL  
 **URL**: https://dev.avocontrol.pro  
-**Última actualización**: Email Notification System Enhancement (16 Ago 2025)
+**Última actualización**: Automatic Tenant Subdomain Redirection System (16 Ago 2025)
 
 ---
 
@@ -31,6 +31,7 @@
 - **API Integration**: 100% ✅
 - **Email Registration System**: 100% ✅ (16 Ago 2025)
 - **Invoice PDF Generation**: 100% ✅ (16 Ago 2025)
+- **Automatic Tenant Redirection**: 100% ✅ (16 Ago 2025)
 
 ---
 
@@ -254,7 +255,63 @@
 
 ---
 
-## 🔄 PayPal Automatic Refund Detection & Access Control (NUEVO - 15 Ago 2025)
+## 🔀 Automatic Tenant Subdomain Redirection System (NUEVO - 16 Ago 2025)
+
+### ✅ Problema Resuelto
+**Issue Principal**: Los usuarios autenticados podían acceder tanto al dominio principal (`https://avocontrol.pro/dashboard`) como a su tenant subdomain (`https://tenant-slug.avocontrol.pro/dashboard`), causando confusión en la experiencia de usuario y inconsistencias en el tenant context.
+
+### ✅ Solución Comprehensive Implementada
+
+#### 🎯 **Automatic Detection & Redirection**
+- **Smart Detection**: Middleware detecta cuando usuarios autenticados acceden desde el dominio principal
+- **Intelligent Redirection**: Redirección automática preservando path y query parameters originales
+- **Single Tenant Users**: Redirección directa a su tenant subdomain
+- **Multi-Tenant Users**: Redirección a página de selección de tenant
+- **Super Admin Bypass**: Los desarrolladores mantienen acceso completo al panel developer
+
+#### 🛡️ **Route Protection & Security**
+- **Route Exclusions**: Sistema excluye rutas críticas para evitar redirect loops:
+  - Rutas de autenticación: login, logout, register, password reset
+  - Rutas del sistema: developer panel, subscription, PayPal webhooks
+  - Landing page y rutas públicas
+- **Conditional Logic**: Verificación de autenticación antes de aplicar redirección
+- **Safety Measures**: Prevención de loops infinitos y errores de redirección
+
+#### ⚡ **Technical Implementation**
+- **File Modified**: `app/Http/Middleware/TenantResolver.php`
+- **New Methods Added**:
+  - `shouldRedirectToTenantSubdomain()`: Detecta cuándo aplicar redirección
+  - `redirectToUserTenant()`: Maneja la lógica de redirección inteligente
+- **Path Preservation**: Sistema mantiene la URL original que el usuario intentaba acceder
+- **Query Parameters**: Preservación completa de parámetros GET en la redirección
+
+#### 🎯 **User Experience Enhancement**
+- **Seamless Experience**: Los usuarios son redirigidos automáticamente sin intervención manual
+- **Context Preservation**: La intención original del usuario se mantiene (ej: /dashboard → tenant-subdomain/dashboard)
+- **No User Confusion**: Eliminación del acceso dual, usuarios siempre en su tenant correcto
+- **Developer Access**: Super admins mantienen flexibilidad para panel developer
+
+### 📊 Impacto del Sistema
+- **UX Consistency**: Usuarios siempre en el contexto correcto de su tenant
+- **Security Enhancement**: Prevención de acceso accidental a contexto incorrecto
+- **Developer Workflow**: Panel developer sigue accesible desde dominio principal
+- **Maintenance Simplification**: Un solo flujo de navegación para usuarios finales
+
+### 🔧 Technical Details
+```php
+// Ejemplo de redirección automática
+https://avocontrol.pro/dashboard 
+→ https://centro-de-acopio-el-durazno-1755337667.avocontrol.pro/dashboard
+
+https://avocontrol.pro/configuration?tab=email
+→ https://tenant-slug.avocontrol.pro/configuration?tab=email
+```
+
+**Estado**: ✅ **Completamente implementado y operativo en producción**
+
+---
+
+## 🔄 PayPal Automatic Refund Detection & Access Control (LEGACY - 15 Ago 2025)
 
 ### ✅ Problema Resuelto
 **Issue Principal**: Sistema no detectaba reembolsos de PayPal automáticamente y no bloqueaba acceso a usuarios sin suscripción activa
@@ -345,7 +402,7 @@
 |--------|--------|------------|-------|
 | **Core Business Logic** | ✅ Completado | 100% | Lotes, Ventas, Pagos, Clientes, Proveedores |
 | **Sistema RBAC** | ✅ Completado | 100% | 8 roles, 52 permisos, middleware completo |
-| **Multi-Tenant** | ✅ Completado | 100% | Isolation, switching, settings |
+| **Multi-Tenant** | ✅ Completado | 100% | Isolation, switching, settings, auto-redirection |
 | **PayPal Subscriptions** | ✅ Completado | 100% | Dual billing, webhooks, automation |
 | **Notifications System** | ✅ Completado | 100% | 3 canales, CRON, templates |
 | **Developer Panel** | ✅ Completado | 100% | User management, system config |
@@ -408,7 +465,7 @@
 
 **AvoControl Pro** representa un sistema empresarial completo y maduro, con todas las funcionalidades core implementadas y operativas en producción. El proyecto alcanza un **100% de completación** en todos los módulos principales, con arquitectura escalable, seguridad robusta, y experiencia de usuario optimizada.
 
-**Última actualización**: 15 Agosto 2025 - PayPal Subscription System Optimization
+**Última actualización**: 16 Agosto 2025 - Automatic Tenant Subdomain Redirection System
 **Estado**: ✅ PRODUCCIÓN COMPLETA - READY FOR ENTERPRISE USE
 
 ---
@@ -796,6 +853,10 @@
 - Integración con sistema de colas para envío asíncrono
 - Modelo EmailLog para auditoría completa de envíos
 - Notificaciones automáticas a administradores
+- **✅ Sistema de redirección automática de tenant subdomain implementado**
+- **✅ Middleware TenantResolver mejorado con redirección inteligente**
+- **✅ Preservación de path y query parameters en redirecciones**
+- **✅ Exclusión de super_admin para acceso al developer panel**
 
 🚀 **Agosto 2025 - Semana 13-14 (En Desarrollo):**
 - Optimizaciones basadas en feedback de usuarios
