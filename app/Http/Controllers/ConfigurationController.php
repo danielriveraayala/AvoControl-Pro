@@ -200,7 +200,7 @@ class ConfigurationController extends Controller
 
             // Ordering for DataTables
             if ($request->has('order')) {
-                $columns = ['sort_order', 'name', 'color', 'caliber_min', 'weight_min', 'active'];
+                $columns = ['sort_order', 'name', 'color', 'weight_min', 'active'];
                 $orderColumn = $columns[$request->order[0]['column']] ?? 'sort_order';
                 $orderDirection = $request->order[0]['dir'] ?? 'asc';
                 $query->orderBy($orderColumn, $orderDirection);
@@ -223,9 +223,6 @@ class ConfigurationController extends Controller
                                     <div class="color-preview me-2" style="width: 20px; height: 20px; background-color: '.$quality->color.'; border-radius: 4px; border: 1px solid #ccc;"></div>
                                     <small class="text-muted">'.$quality->color.'</small>
                                 </div>',
-                    'caliber' => $quality->caliber_min && $quality->caliber_max 
-                                ? $quality->caliber_min . ' - ' . $quality->caliber_max 
-                                : ($quality->caliber_min ?: ($quality->caliber_max ?: 'Sin especificar')),
                     'weight' => $quality->weight_min && $quality->weight_max 
                                ? $quality->weight_min . 'g - ' . $quality->weight_max . 'g'
                                : ($quality->weight_min ? $quality->weight_min . 'g+' : ($quality->weight_max ? $quality->weight_max . 'g-' : 'Sin especificar')),

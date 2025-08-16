@@ -291,9 +291,7 @@ $(document).ready(function() {
             { data: 'current_balance', name: 'current_balance', orderable: false },
             { data: 'actions', name: 'actions', orderable: false, searchable: false }
         ],
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
-        },
+        language: getDataTablesSpanishConfig(),
         responsive: true,
         pageLength: 25,
         order: [[0, 'asc']],

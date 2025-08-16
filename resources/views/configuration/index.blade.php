@@ -540,14 +540,11 @@
                         { data: 'sort_order', name: 'sort_order', width: '80px' },
                         { data: 'name', name: 'name' },
                         { data: 'color', name: 'color', orderable: false },
-                        { data: 'caliber', name: 'caliber', orderable: false },
                         { data: 'weight', name: 'weight', orderable: false },
                         { data: 'status', name: 'active', orderable: false },
                         { data: 'actions', name: 'actions', orderable: false, searchable: false }
                     ],
-                    language: {
-                        url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
-                    },
+                    language: getDataTablesSpanishConfig(),
                     responsive: true,
                     pageLength: 10,
                     order: [[0, 'asc']]

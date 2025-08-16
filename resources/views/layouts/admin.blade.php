@@ -432,6 +432,9 @@
 <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap4.min.js"></script>
 
+<!-- DataTables Spanish Configuration -->
+<script src="{{ asset('js/datatables-spanish.js') }}"></script>
+
 <!-- Day.js - Modern date library -->
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.min.js"></script>

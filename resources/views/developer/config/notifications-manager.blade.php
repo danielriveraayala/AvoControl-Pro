@@ -316,9 +316,7 @@ function initializeNotificationsTable() {
             { data: 'created_at', name: 'created_at' },
             { data: 'actions', name: 'actions', orderable: false, searchable: false }
         ],
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
-        },
+        language: getDataTablesSpanishConfig(),
         responsive: true,
         pageLength: 25,
         order: [[8, 'desc']],
