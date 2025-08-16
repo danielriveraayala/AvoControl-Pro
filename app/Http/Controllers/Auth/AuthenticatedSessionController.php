@@ -35,8 +35,16 @@ class AuthenticatedSessionController extends Controller
         // Check if user has a tenant and redirect to tenant subdomain
         $user = Auth::user();
         
-        // Check if there's an intended URL (e.g., from trying to access a tenant subdomain)
+        // Check for intended URL from session (set by our middleware)
         $intendedUrl = session('url.intended');
+        
+        // Log for debugging
+        \Log::info('Login redirect debug', [
+            'user_email' => $user->email,
+            'intended_url' => $intendedUrl,
+            'session_intended' => session('url.intended'),
+            'laravel_intended' => redirect()->intended()->getTargetUrl()
+        ]);
         
         // If there's an intended URL and it's a tenant subdomain
         if ($intendedUrl) {

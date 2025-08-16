@@ -35,11 +35,15 @@ class RequireAuthForTenantSubdomains
             if ($tenant) {
                 // This is a tenant subdomain - require authentication
                 if (!Auth::check()) {
-                    // Store intended URL for redirect after login
-                    session(['url.intended' => $request->url()]);
+                    // Store the full URL as intended for redirect after login
+                    $fullUrl = $request->fullUrl();
                     
-                    // Redirect to main domain login (relative to avoid https/http issues)
-                    return redirect('//avocontrol.pro/login')
+                    // Store in session AND use Laravel's intended mechanism
+                    session(['url.intended' => $fullUrl]);
+                    session()->put('url.intended', $fullUrl);
+                    
+                    // Also use Laravel's redirect()->guest() which sets intended automatically
+                    return redirect()->guest('//avocontrol.pro/login')
                         ->with('error', 'Debes iniciar sesión para acceder a esta empresa.');
                 }
                 

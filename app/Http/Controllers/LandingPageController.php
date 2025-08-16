@@ -29,8 +29,11 @@ class LandingPageController extends Controller
                     return redirect('/dashboard');
                 } else {
                     // User not logged in, redirect to main domain login
-                    session(['url.intended' => $request->url()]);
-                    return redirect('//avocontrol.pro/login')
+                    $fullUrl = $request->fullUrl();
+                    session(['url.intended' => $fullUrl]);
+                    session()->put('url.intended', $fullUrl);
+                    
+                    return redirect()->guest('//avocontrol.pro/login')
                         ->with('info', 'Por favor inicia sesión para acceder a esta empresa.');
                 }
             }
