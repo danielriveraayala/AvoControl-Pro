@@ -24,7 +24,7 @@
                             
                             <p class="text-gray-600 mb-4">
                                 <span class="block text-sm">
-                                    <strong>Dominio:</strong> {{ $tenant->slug }}.avocontrol.com
+                                    <strong>Dominio:</strong> {{ $tenant->slug }}.avocontrol.pro
                                 </span>
                                 @if($tenant->pivot->role_within_tenant)
                                     <span class="block text-sm mt-1">
@@ -33,7 +33,7 @@
                                 @endif
                             </p>
                             
-                            <a href="http://{{ $tenant->slug }}.avocontrol.com/dashboard" 
+                            <a href="http://{{ $tenant->slug }}.avocontrol.pro/dashboard" 
                                class="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition duration-200">
                                 Acceder
                             </a>

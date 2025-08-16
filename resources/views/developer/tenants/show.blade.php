@@ -19,7 +19,7 @@
                         </div>
                         <div class="ml-3 sm:ml-4 min-w-0">
                             <h1 class="text-lg sm:text-2xl font-bold text-gray-900 truncate">{{ $tenant->name }}</h1>
-                            <p class="text-xs sm:text-sm text-gray-600 truncate">{{ $tenant->slug }}.avocontrol.com</p>
+                            <p class="text-xs sm:text-sm text-gray-600 truncate">{{ $tenant->slug }}.avocontrol.pro</p>
                         </div>
                     </div>
                     <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
@@ -206,9 +206,9 @@
                         <div class="flex justify-between">
                             <dt class="text-sm font-medium text-gray-500">URL del Tenant</dt>
                             <dd class="text-sm">
-                                <a href="http://{{ $tenant->slug }}.avocontrol.com" target="_blank" 
+                                <a href="http://{{ $tenant->slug }}.avocontrol.pro" target="_blank" 
                                    class="text-blue-600 hover:text-blue-800 font-medium">
-                                    {{ $tenant->slug }}.avocontrol.com
+                                    {{ $tenant->slug }}.avocontrol.pro
                                     <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                     </svg>
@@ -294,7 +294,7 @@
                         Actualizar Estadísticas
                     </button>
                     
-                    <a href="http://{{ $tenant->slug }}.avocontrol.com" target="_blank" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm">
+                    <a href="http://{{ $tenant->slug }}.avocontrol.pro" target="_blank" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm">
                         Ver Sitio Tenant
                     </a>
                 </div>

@@ -19,7 +19,7 @@
                         </div>
                         <div class="ml-3 sm:ml-4 min-w-0">
                             <h1 class="text-lg sm:text-2xl font-bold text-gray-900 truncate">Editar Tenant</h1>
-                            <p class="text-xs sm:text-sm text-gray-600 truncate">{{ $tenant->name }} - {{ $tenant->slug }}.avocontrol.com</p>
+                            <p class="text-xs sm:text-sm text-gray-600 truncate">{{ $tenant->name }} - {{ $tenant->slug }}.avocontrol.pro</p>
                         </div>
                     </div>
                     <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
@@ -143,7 +143,7 @@
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                         </svg>
-                                        URL: <span class="font-mono font-medium" id="slugPreview">{{ $tenant->slug }}</span>.avocontrol.com
+                                        URL: <span class="font-mono font-medium" id="slugPreview">{{ $tenant->slug }}</span>.avocontrol.pro
                                     </div>
                                     @error('slug')
                                         <p class="mt-1 text-sm text-red-600 flex items-center">
@@ -339,7 +339,7 @@
                     <div class="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
                         <!-- Left side - Additional Actions -->
                         <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-                            <a href="http://{{ $tenant->slug }}.avocontrol.com" target="_blank" 
+                            <a href="http://{{ $tenant->slug }}.avocontrol.pro" target="_blank" 
                                class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>

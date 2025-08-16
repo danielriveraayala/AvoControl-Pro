@@ -53,7 +53,7 @@ class AuthenticatedSessionController extends Controller
             $tenant = $userTenants->first();
             $user->update(['current_tenant_id' => $tenant->id]);
             
-            $tenantUrl = 'http://' . $tenant->slug . '.avocontrol.com/dashboard';
+            $tenantUrl = 'http://' . $tenant->slug . '.avocontrol.pro/dashboard';
             return redirect()->away($tenantUrl);
         }
         

@@ -181,7 +181,7 @@
                                             </div>
                                             <div class="ml-3">
                                                 <div class="text-sm font-medium text-gray-900">{{ $subscription->tenant_name }}</div>
-                                                <div class="text-sm text-gray-500">{{ $subscription->tenant_domain }}.avocontrol.com</div>
+                                                <div class="text-sm text-gray-500">{{ $subscription->tenant_domain }}.avocontrol.pro</div>
                                                 <div class="text-xs text-gray-400">{{ $subscription->contact_name }} ({{ $subscription->contact_email }})</div>
                                             </div>
                                         </div>
