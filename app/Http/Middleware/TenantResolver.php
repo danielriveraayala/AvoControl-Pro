@@ -177,7 +177,10 @@ class TenantResolver
             'subscription/register/*',
             'subscription/success',
             'subscription/cancelled',
-            'paypal/webhook'
+            'subscription/suspended',
+            'subscription/expired',
+            'paypal/webhook',
+            'tenant/select'
         ];
 
         foreach ($skipRoutes as $route) {

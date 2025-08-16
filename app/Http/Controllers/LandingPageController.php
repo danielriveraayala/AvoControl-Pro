@@ -11,8 +11,30 @@ class LandingPageController extends Controller
     /**
      * Display the landing page
      */
-    public function index()
+    public function index(Request $request)
     {
+        // Check if we're on a subdomain - if so, redirect to login or dashboard
+        $host = $request->getHost();
+        $parts = explode('.', $host);
+        
+        // If we're on a subdomain (3+ parts), don't show landing page
+        if (count($parts) >= 3) {
+            $subdomain = $parts[0];
+            
+            // Skip for special subdomains
+            if (!in_array($subdomain, ['dev', 'www', 'api'])) {
+                // This is a tenant subdomain
+                if (auth()->check()) {
+                    // User is logged in, redirect to dashboard
+                    return redirect('/dashboard');
+                } else {
+                    // User not logged in, redirect to main domain login
+                    session(['url.intended' => $request->url()]);
+                    return redirect('//avocontrol.pro/login')
+                        ->with('info', 'Por favor inicia sesión para acceder a esta empresa.');
+                }
+            }
+        }
         // SEO meta data
         $seo = [
             'title' => 'AvoControl Pro - Sistema de Gestión para Centros de Acopio de Aguacate',
