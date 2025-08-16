@@ -19,6 +19,13 @@ class RequireAuthForTenantSubdomains
     {
         $host = $request->getHost();
         
+        // Debug log
+        \Log::info('RequireAuthForTenantSubdomains middleware', [
+            'host' => $host,
+            'url' => $request->url(),
+            'authenticated' => \Auth::check()
+        ]);
+        
         // Check if we're on a subdomain
         if ($this->isSubdomain($host)) {
             // Extract subdomain
@@ -32,11 +39,22 @@ class RequireAuthForTenantSubdomains
             // Check if subdomain corresponds to a tenant
             $tenant = Tenant::where('slug', $subdomain)->first();
             
+            \Log::info('Subdomain check', [
+                'subdomain' => $subdomain,
+                'tenant_found' => $tenant ? true : false,
+                'tenant_id' => $tenant ? $tenant->id : null
+            ]);
+            
             if ($tenant) {
                 // This is a tenant subdomain - require authentication
                 if (!Auth::check()) {
                     // Store the full URL as intended for redirect after login
                     $fullUrl = $request->fullUrl();
+                    
+                    \Log::info('Storing intended URL for unauthenticated user', [
+                        'intended_url' => $fullUrl,
+                        'subdomain' => $subdomain
+                    ]);
                     
                     // Store in session AND use Laravel's intended mechanism
                     session(['url.intended' => $fullUrl]);

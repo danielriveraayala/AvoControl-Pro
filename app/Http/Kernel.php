@@ -37,7 +37,6 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\RequireAuthForTenantSubdomains::class, // Check subdomain auth first
             \App\Http\Middleware\TenantResolver::class,
             \App\Http\Middleware\TenantContext::class,
             \App\Http\Middleware\CheckActiveSubscription::class,
