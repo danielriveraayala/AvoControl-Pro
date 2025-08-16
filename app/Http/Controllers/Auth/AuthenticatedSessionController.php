@@ -17,11 +17,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function create()
     {
-        \Log::info('LOGIN PAGE ACCESSED', [
-            'url' => request()->fullUrl(),
-            'host' => request()->getHost(),
-            'user_agent' => request()->userAgent()
-        ]);
         return view('auth.login');
     }
 
@@ -33,53 +28,23 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-        \Log::info('LOGIN ATTEMPT START', [
-            'email' => $request->input('email'),
-            'has_password' => !empty($request->input('password')),
-            'request_host' => $request->getHost(),
-            'request_url' => $request->fullUrl()
-        ]);
-
-        try {
-            $request->authenticate();
-            \Log::info('AUTHENTICATION SUCCESS');
-        } catch (\Exception $e) {
-            \Log::error('AUTHENTICATION FAILED', [
-                'error' => $e->getMessage(),
-                'email' => $request->input('email')
-            ]);
-            throw $e;
-        }
+        $request->authenticate();
 
         $request->session()->regenerate();
-        \Log::info('SESSION REGENERATED');
 
         // Check if user has a tenant and redirect to tenant subdomain
         $user = Auth::user();
         
-        \Log::info('USER AUTHENTICATED', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'current_tenant_id' => $user->current_tenant_id
-        ]);
-        
         // Super admin goes to developer panel
         if ($user->hasRole('super_admin')) {
-            \Log::info('REDIRECTING SUPER ADMIN', ['url' => 'https://avocontrol.pro/developer']);
             return redirect()->to('https://avocontrol.pro/developer');
         }
         
         // Get user's tenants
         $userTenants = $user->tenants()->where('tenants.status', 'active')->get();
         
-        \Log::info('USER TENANTS FOUND', [
-            'count' => $userTenants->count(),
-            'tenant_slugs' => $userTenants->pluck('slug')->toArray()
-        ]);
-        
         // If user has multiple tenants, let them choose
         if ($userTenants->count() > 1) {
-            \Log::info('MULTIPLE TENANTS - REDIRECTING TO SELECTION');
             return redirect()->route('tenant.select');
         }
         
@@ -89,12 +54,10 @@ class AuthenticatedSessionController extends Controller
             $user->update(['current_tenant_id' => $tenant->id]);
             
             $tenantUrl = 'https://' . $tenant->slug . '.avocontrol.pro/dashboard';
-            \Log::info('SINGLE TENANT - REDIRECTING', ['url' => $tenantUrl]);
             return redirect()->away($tenantUrl);
         }
         
         // Default redirect if no tenant
-        \Log::info('NO TENANTS - DEFAULT REDIRECT', ['url' => RouteServiceProvider::HOME]);
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
