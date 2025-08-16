@@ -23,6 +23,16 @@ use App\Http\Controllers\NotificationController;
 |
 */
 
+// TEST ROUTE FOR DEBUGGING
+Route::get('/test-debug', function () {
+    \Log::info('TEST ROUTE ACCESSED');
+    return response()->json([
+        'status' => 'working',
+        'time' => now(),
+        'app_env' => app()->environment()
+    ]);
+});
+
 // Landing Page Routes (Public - redirect if authenticated)
 Route::middleware([\App\Http\Middleware\RedirectAuthenticatedFromLanding::class])->group(function () {
     Route::get('/', [App\Http\Controllers\LandingPageController::class, 'index'])->name('home');

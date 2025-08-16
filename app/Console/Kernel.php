@@ -46,10 +46,10 @@ class Kernel extends ConsoleKernel
                  ->monthlyOn(1, '07:00')
                  ->description('Enviar estado financiero mensual (email + push)');
 
-        // Procesar notificaciones programadas (cada 5 minutos)
-        $schedule->command('notifications:process-scheduled')
-                 ->everyFiveMinutes()
-                 ->description('Procesar notificaciones programadas (email + push)');
+        // Procesar notificaciones programadas (cada 5 minutos) - TEMPORARILY DISABLED FOR DEBUGGING
+        // $schedule->command('notifications:process-scheduled')
+        //          ->everyFiveMinutes()
+        //          ->description('Procesar notificaciones programadas (email + push)');
 
         // Limpiar notificaciones antiguas (semanal - Domingos 2:00 AM)
         $schedule->command('notifications:cleanup')
