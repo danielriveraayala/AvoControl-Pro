@@ -43,7 +43,7 @@ class AuthenticatedSessionController extends Controller
             'user_email' => $user->email,
             'intended_url' => $intendedUrl,
             'session_intended' => session('url.intended'),
-            'laravel_intended' => redirect()->intended()->getTargetUrl()
+            'has_intended_url' => !empty($intendedUrl)
         ]);
         
         // If there's an intended URL and it's a tenant subdomain
@@ -80,9 +80,9 @@ class AuthenticatedSessionController extends Controller
                         // Clear the intended URL from session
                         session()->forget('url.intended');
                         
-                        // Ensure we use HTTPS for the redirect
-                        $secureUrl = str_replace('http://', 'https://', $intendedUrl);
-                        return redirect($secureUrl);
+                        // Redirect to tenant dashboard (not the original URL which might be /login)
+                        $tenantDashboardUrl = 'https://' . $subdomain . '.avocontrol.pro/dashboard';
+                        return redirect($tenantDashboardUrl);
                     }
                 }
             }
