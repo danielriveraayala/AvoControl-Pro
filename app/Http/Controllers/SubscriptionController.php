@@ -14,6 +14,10 @@ use App\Models\SubscriptionPlan;
 use App\Services\PayPalService;
 use App\Mail\TrialWelcomeEmail;
 use App\Mail\TrialReminderEmail;
+use App\Mail\RegistrationConfirmationEmail;
+use App\Mail\WelcomeWithInvoiceEmail;
+use App\Services\InvoiceService;
+use App\Models\EmailLog;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
@@ -449,6 +453,9 @@ class SubscriptionController extends Controller
                 'subscription_id' => $subscription->id,
                 'paypal_subscription_id' => $subscriptionId
             ]);
+            
+            // 9. Send registration confirmation email (async)
+            $this->sendRegistrationEmails($user, $subscription, $tenant, $plan);
             
             return response()->json([
                 'success' => true,
@@ -1064,6 +1071,157 @@ class SubscriptionController extends Controller
             ]);
             
             return null;
+        }
+    }
+    
+    /**
+     * Send registration confirmation emails to user
+     */
+    private function sendRegistrationEmails($user, $subscription, $tenant, $plan = null)
+    {
+        try {
+            // If no plan object passed, get it from subscription
+            if (!$plan) {
+                $plan = SubscriptionPlan::where('key', $subscription->plan)->first();
+            }
+            
+            \Log::info('Starting registration email process', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'plan' => $subscription->plan,
+                'is_trial' => $subscription->is_trial ?? false
+            ]);
+            
+            // Determine which email to send based on subscription type
+            if ($subscription->is_trial || $subscription->plan === 'trial') {
+                // For trial users - send simple confirmation email
+                $emailLog = EmailLog::logEmailQueued(
+                    'trial_welcome',
+                    $user->email,
+                    'Bienvenido a AvoControl Pro - Trial Gratuito',
+                    $user,
+                    $subscription,
+                    $tenant,
+                    ['plan' => $subscription->plan, 'trial_days' => $subscription->trial_days]
+                );
+                
+                Mail::to($user->email)->queue(
+                    new RegistrationConfirmationEmail($user, $subscription, $tenant)
+                );
+                
+                \Log::info('Queued trial registration confirmation email', [
+                    'user_email' => $user->email,
+                    'subscription_id' => $subscription->id,
+                    'email_log_id' => $emailLog->id
+                ]);
+                
+            } else {
+                // For paid subscriptions - check if we need to generate invoice
+                $payment = $subscription->payments()
+                    ->where('status', 'completed')
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+                
+                if ($payment && $payment->amount > 0) {
+                    // Send email with invoice attachment
+                    $emailLog = EmailLog::logEmailQueued(
+                        'welcome_with_invoice',
+                        $user->email,
+                        'Bienvenido a AvoControl Pro - Factura y Credenciales',
+                        $user,
+                        $subscription,
+                        $tenant,
+                        [
+                            'plan' => $subscription->plan,
+                            'amount' => $payment->amount,
+                            'payment_id' => $payment->id,
+                            'invoice_attached' => true
+                        ]
+                    );
+                    
+                    $emailLog->update(['invoice_attached' => true]);
+                    
+                    Mail::to($user->email)->queue(
+                        new WelcomeWithInvoiceEmail($user, $subscription, $payment, $tenant)
+                    );
+                    
+                    \Log::info('Queued welcome email with invoice', [
+                        'user_email' => $user->email,
+                        'subscription_id' => $subscription->id,
+                        'payment_id' => $payment->id,
+                        'amount' => $payment->amount,
+                        'email_log_id' => $emailLog->id
+                    ]);
+                    
+                } else {
+                    // Send simple confirmation email (fallback)
+                    $emailLog = EmailLog::logEmailQueued(
+                        'registration_confirmation',
+                        $user->email,
+                        'Bienvenido a AvoControl Pro - Cuenta Creada',
+                        $user,
+                        $subscription,
+                        $tenant,
+                        ['plan' => $subscription->plan, 'fallback_reason' => 'no_payment_found']
+                    );
+                    
+                    Mail::to($user->email)->queue(
+                        new RegistrationConfirmationEmail($user, $subscription, $tenant)
+                    );
+                    
+                    \Log::info('Queued registration confirmation email (no payment found)', [
+                        'user_email' => $user->email,
+                        'subscription_id' => $subscription->id,
+                        'email_log_id' => $emailLog->id
+                    ]);
+                }
+            }
+            
+            // Also send notification to admin
+            $adminEmails = ['avocontrol@kreativos.pro', 'developer@avocontrol.com'];
+            foreach ($adminEmails as $adminEmail) {
+                try {
+                    $adminEmailLog = EmailLog::logEmailQueued(
+                        'admin_notification',
+                        $adminEmail,
+                        "[AvoControl Pro] Nuevo registro: {$user->name} - Plan {$subscription->plan}",
+                        $user,
+                        $subscription,
+                        $tenant,
+                        [
+                            'admin_email' => $adminEmail,
+                            'user_plan' => $subscription->plan,
+                            'user_name' => $user->name
+                        ]
+                    );
+                    
+                    Mail::to($adminEmail)->queue(
+                        new \App\Mail\AdminNewRegistrationNotification($user, $subscription, $tenant)
+                    );
+                    
+                    \Log::info('Queued admin notification email', [
+                        'admin_email' => $adminEmail,
+                        'user_email' => $user->email,
+                        'subscription_id' => $subscription->id,
+                        'email_log_id' => $adminEmailLog->id
+                    ]);
+                    
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to send admin notification', [
+                        'admin_email' => $adminEmail,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+            
+        } catch (\Exception $e) {
+            // Log error but don't fail the registration process
+            \Log::error('Failed to send registration emails', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 }

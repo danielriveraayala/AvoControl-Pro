@@ -2,167 +2,212 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class EmailLog extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'notification_id',
+        'uuid',
+        'user_id',
+        'subscription_id',
+        'tenant_id',
+        'email_type',
         'recipient_email',
-        'recipient_name',
         'subject',
-        'mailable_class',
-        'priority',
         'status',
         'sent_at',
         'failed_at',
         'error_message',
+        'metadata',
+        'queue_job_id',
         'attempts',
-        'data'
+        'invoice_attached',
+        'email_size_bytes',
+        'processing_time_ms'
     ];
 
     protected $casts = [
         'sent_at' => 'datetime',
         'failed_at' => 'datetime',
-        'data' => 'array'
+        'metadata' => 'json',
+        'invoice_attached' => 'boolean',
+        'attempts' => 'integer',
+        'email_size_bytes' => 'integer',
+        'processing_time_ms' => 'integer'
     ];
 
-    /**
-     * Relationship with notification
-     */
-    public function notification()
+    protected static function boot()
     {
-        return $this->belongsTo(Notification::class);
+        parent::boot();
+        
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = Str::uuid();
+            }
+        });
     }
 
     /**
-     * Scope for successful emails
+     * Relationships
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function subscription()
+    {
+        return $this->belongsTo(Subscription::class);
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * Scopes
      */
     public function scopeSuccessful($query)
     {
         return $query->where('status', 'sent');
     }
 
-    /**
-     * Scope for failed emails
-     */
     public function scopeFailed($query)
     {
         return $query->where('status', 'failed');
     }
 
-    /**
-     * Scope for pending emails
-     */
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    /**
-     * Scope for specific priority
-     */
-    public function scopeByPriority($query, $priority)
+    public function scopeByType($query, $type)
     {
-        return $query->where('priority', $priority);
+        return $query->where('email_type', $type);
+    }
+
+    public function scopeWithInvoice($query)
+    {
+        return $query->where('invoice_attached', true);
+    }
+
+    public function scopeRecentFirst($query)
+    {
+        return $query->orderBy('created_at', 'desc');
     }
 
     /**
-     * Scope for date range
+     * Helper Methods
      */
-    public function scopeByDateRange($query, $startDate, $endDate)
-    {
-        return $query->whereBetween('created_at', [$startDate, $endDate]);
-    }
-
-    /**
-     * Static method to log email sending attempt
-     */
-    public static function logAttempt($notificationId, $recipient, $subject, $mailableClass, $priority = 'normal', $additionalData = [])
-    {
-        return static::create([
-            'notification_id' => $notificationId,
-            'recipient_email' => is_array($recipient) ? $recipient['email'] : $recipient,
-            'recipient_name' => is_array($recipient) ? ($recipient['name'] ?? null) : null,
-            'subject' => $subject,
-            'mailable_class' => $mailableClass,
-            'priority' => $priority,
-            'status' => 'pending',
-            'attempts' => 1,
-            'data' => $additionalData
-        ]);
-    }
-
-    /**
-     * Mark email as sent
-     */
-    public function markAsSent()
+    public function markAsSent($processingTimeMs = null)
     {
         $this->update([
             'status' => 'sent',
             'sent_at' => now(),
-            'error_message' => null
+            'processing_time_ms' => $processingTimeMs
         ]);
     }
 
-    /**
-     * Mark email as failed
-     */
-    public function markAsFailed($errorMessage, $isRetryable = true)
+    public function markAsFailed($errorMessage, $processingTimeMs = null)
     {
         $this->update([
-            'status' => $isRetryable ? 'retrying' : 'failed',
+            'status' => 'failed',
             'failed_at' => now(),
             'error_message' => $errorMessage,
+            'processing_time_ms' => $processingTimeMs,
             'attempts' => $this->attempts + 1
         ]);
     }
 
+    public function incrementAttempts()
+    {
+        $this->increment('attempts');
+    }
+
     /**
-     * Get email statistics for a date range
+     * Get formatted status
      */
-    public static function getStats($startDate = null, $endDate = null)
+    public function getFormattedStatus()
+    {
+        $statuses = [
+            'pending' => 'Pendiente',
+            'queued' => 'En Cola',
+            'sent' => 'Enviado',
+            'failed' => 'Fallido',
+            'retrying' => 'Reintentando'
+        ];
+
+        return $statuses[$this->status] ?? ucfirst($this->status);
+    }
+
+    /**
+     * Get formatted email type
+     */
+    public function getFormattedEmailType()
+    {
+        $types = [
+            'registration_confirmation' => 'Confirmación de Registro',
+            'welcome_with_invoice' => 'Bienvenida con Factura',
+            'trial_welcome' => 'Bienvenida Trial',
+            'admin_notification' => 'Notificación Admin',
+            'subscription_reminder' => 'Recordatorio Suscripción',
+            'payment_confirmation' => 'Confirmación de Pago',
+            'invoice_delivery' => 'Entrega de Factura'
+        ];
+
+        return $types[$this->email_type] ?? ucfirst($this->email_type);
+    }
+
+    /**
+     * Static methods for logging
+     */
+    public static function logEmailQueued($emailType, $recipientEmail, $subject, $user = null, $subscription = null, $tenant = null, $metadata = [])
+    {
+        return static::create([
+            'user_id' => $user?->id,
+            'subscription_id' => $subscription?->id,
+            'tenant_id' => $tenant?->id,
+            'email_type' => $emailType,
+            'recipient_email' => $recipientEmail,
+            'subject' => $subject,
+            'status' => 'queued',
+            'metadata' => $metadata,
+            'attempts' => 0
+        ]);
+    }
+
+    /**
+     * Get statistics
+     */
+    public static function getStats($period = 'today')
     {
         $query = static::query();
-        
-        if ($startDate && $endDate) {
-            $query->byDateRange($startDate, $endDate);
-        } elseif (!$startDate && !$endDate) {
-            // Default to last 30 days
-            $query->where('created_at', '>=', now()->subDays(30));
+
+        switch ($period) {
+            case 'today':
+                $query->whereDate('created_at', today());
+                break;
+            case 'week':
+                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                break;
+            case 'month':
+                $query->whereMonth('created_at', now()->month);
+                break;
         }
 
-        $stats = [
-            'total_emails' => $query->count(),
-            'sent_emails' => $query->clone()->successful()->count(),
-            'failed_emails' => $query->clone()->failed()->count(),
-            'pending_emails' => $query->clone()->pending()->count(),
+        return [
+            'total' => $query->count(),
+            'sent' => $query->where('status', 'sent')->count(),
+            'failed' => $query->where('status', 'failed')->count(),
+            'pending' => $query->where('status', 'pending')->count(),
+            'queued' => $query->where('status', 'queued')->count(),
+            'success_rate' => $query->count() > 0 ? round(($query->where('status', 'sent')->count() / $query->count()) * 100, 2) : 0
         ];
-
-        // Calculate success rate
-        $stats['success_rate'] = $stats['total_emails'] > 0 
-            ? round(($stats['sent_emails'] / $stats['total_emails']) * 100, 2) 
-            : 0;
-
-        // Get stats by priority
-        $stats['by_priority'] = [
-            'critical' => $query->clone()->byPriority('critical')->count(),
-            'high' => $query->clone()->byPriority('high')->count(),
-            'normal' => $query->clone()->byPriority('normal')->count(),
-            'low' => $query->clone()->byPriority('low')->count(),
-        ];
-
-        // Get recent failures for analysis
-        $stats['recent_failures'] = static::failed()
-            ->where('failed_at', '>=', now()->subHours(24))
-            ->orderBy('failed_at', 'desc')
-            ->limit(10)
-            ->get(['recipient_email', 'subject', 'error_message', 'failed_at'])
-            ->toArray();
-
-        return $stats;
     }
 }

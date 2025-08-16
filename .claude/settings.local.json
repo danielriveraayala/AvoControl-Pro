@@ -47,7 +47,8 @@
       "Bash(sed:*)",
       "Bash(chown:*)",
       "Bash(cp:*)",
-      "Bash(sudo systemctl restart:*)"
+      "Bash(sudo systemctl restart:*)",
+      "Bash(touch:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
