@@ -747,10 +747,12 @@
 | ✅ 6-8 | **Multi-Tenant Core** | **COMPLETADO** | 100% | Base de datos, modelos, middleware, UI y service provider funcionando |
 | ✅ 9-11 | **PayPal Subscriptions** | **COMPLETADO** | 100% | Sistema completo PayPal, testing, panel gestión |
 | ✅ 12 | **Email System** | **COMPLETADO** | 100% | Sistema de emails con facturas PDF para registro |
-| ⏳ 15-20 | **PWA** | PENDIENTE | 0% | App web instalable con funcionalidad offline |
+| 🚀 13-17 | **Optimizaciones + Features** | **EN DESARROLLO** | 0% | Empleados, nómina, gastos, reportes, marca blanca |
+| ⏳ 18-25 | **PWA + Analytics** | OPCIONAL | 0% | App web instalable, analytics avanzados |
 
-**Tiempo total estimado: 20 semanas (5 meses)**
-**Progreso actual: 12/20 semanas completadas (60%)**
+**Tiempo total estimado: 25 semanas (6 meses)**
+**Progreso actual: 12/25 semanas completadas (48%)**
+**Progreso core: 12/17 semanas completadas (71%)**
 
 ### 📊 **Resumen de Progreso por Sistema:**
 
@@ -795,12 +797,201 @@
 - Modelo EmailLog para auditoría completa de envíos
 - Notificaciones automáticas a administradores
 
-⏳ **Pendiente - Semana 15-20:**
-- Progressive Web App completa
+🚀 **Agosto 2025 - Semana 13-14 (En Desarrollo):**
+- Optimizaciones basadas en feedback de usuarios
+- Mejoras de UX/UI en módulos existentes
+- Nuevas funcionalidades críticas de negocio
+
+⏳ **Pendiente - Según Prioridad de Negocio:**
+- Progressive Web App (Opcional - Pospuesto)
 - Funcionalidad offline con IndexedDB
 - Service Worker y Background Sync
-- Push notifications PWA
-- App instalable en dispositivos móviles
+
+---
+
+## 🎯 NUEVA FASE: OPTIMIZACIONES Y FEATURES CRÍTICAS (SEMANA 13-20)
+
+### **Sprint 13.1: Optimizaciones de UI/UX (Semana 13)**
+
+#### ✅ Gestión de Calidades - Simplificación
+- **Tarea**: Quitar "Rango de Calibre" en /configuration > Gestión de Calidades
+- **Objetivo**: Dejar solo "Rango de Peso (gramos)" para simplificar interfaz
+- **Archivos**: `quality_grades` migration, `QualityGradeController.php`, vistas relacionadas
+- **Estimación**: 4 horas
+
+#### ✅ Reporte de Lote - Historial Completo
+- **Tarea**: En modal "Reporte del Lote", agregar historial COMPLETO de pagos, deudas y saldos
+- **Objetivo**: Información financiera detallada para cada lote
+- **Archivos**: `LotController.php`, `lot-report.blade.php`, nuevos métodos en `Lot.php`
+- **Estimación**: 8 horas
+
+### **Sprint 13.2: Sistema de Empleados y Nómina (Semana 13-14)**
+
+#### 🔄 Gestión de Empleados
+- **Funcionalidades**:
+  - CRUD completo de empleados con información personal y laboral
+  - Departamentos, puestos y jerarquías organizacionales
+  - Control de asistencia con check-in/check-out
+  - Historial laboral y evaluaciones de desempeño
+- **Archivos a crear**:
+  - `Employee.php`, `Department.php`, `Position.php` models
+  - `EmployeeController.php`, `AttendanceController.php`
+  - Migraciones para `employees`, `departments`, `positions`, `attendance`
+  - Vistas completas para gestión de empleados
+- **Estimación**: 3 días
+
+#### 🔄 Sistema de Nómina
+- **Funcionalidades**:
+  - Cálculo automático de nómina por período
+  - Conceptos de pago (sueldo base, horas extra, bonos)
+  - Deducciones (impuestos, IMSS, préstamos)
+  - Generación de recibos de nómina en PDF
+  - Reportes de nómina por departamento/período
+- **Archivos a crear**:
+  - `Payroll.php`, `PayrollItem.php`, `PayrollDeduction.php` models
+  - `PayrollController.php`, `PayrollService.php`
+  - Templates PDF para recibos de nómina
+  - Dashboard de nómina para administradores
+- **Estimación**: 4 días
+
+### **Sprint 14.1: Gestión de Gastos Generales (Semana 14)**
+
+#### 🔄 Módulo de Gastos
+- **Funcionalidades**:
+  - Categorización de gastos (operativos, administrativos, ventas)
+  - Registro de gastos con comprobantes (upload de facturas)
+  - Aprobación de gastos por niveles jerárquicos
+  - Control presupuestal por categoría y período
+  - Reportes de gastos con gráficos comparativos
+- **Archivos a crear**:
+  - `Expense.php`, `ExpenseCategory.php`, `ExpenseBudget.php` models
+  - `ExpenseController.php`, `ExpenseService.php`
+  - Sistema de aprobaciones con workflow
+  - Dashboard de control presupuestal
+- **Estimación**: 3 días
+
+### **Sprint 14.2: Sistema de Invitaciones y Gestión de Usuarios (Semana 14-15)**
+
+#### 🔄 Invitaciones por Link
+- **Funcionalidades**:
+  - Invitación de usuarios por email con link único
+  - Asignación de roles desde la invitación
+  - Expiración automática de invitaciones (7 días)
+  - Dashboard de invitaciones pendientes/aceptadas
+  - Validación de permisos del invitador
+- **Archivos a crear**:
+  - `UserInvitation.php` model con UUID y tokens únicos
+  - `InvitationController.php`, `InvitationService.php`
+  - Mail `UserInvitationEmail.php`
+  - Middleware `ValidateInvitation.php`
+  - Vistas de invitación y registro por invite
+- **Estimación**: 2 días
+
+#### 🔄 Gestión Avanzada de Usuarios por Tenant
+- **Funcionalidades**:
+  - Panel de gestión de usuarios exclusivo para admin principal del tenant
+  - Asignación/revocación de roles con validaciones jerárquicas
+  - Suspensión temporal de usuarios
+  - Auditoría de actividades por usuario
+  - Límites de usuarios según plan contratado
+- **Archivos a modificar**:
+  - `UserController.php` con métodos tenant-aware
+  - Nuevos middleware para validación de límites de plan
+  - Dashboard de gestión de usuarios por tenant
+- **Estimación**: 2 días
+
+### **Sprint 15.1: Revisión de Permisos y Restricciones por Plan (Semana 15)**
+
+#### 🔄 Restricciones por Plan de Suscripción
+- **Funcionalidades**:
+  - Middleware que valida permisos según plan contratado
+  - Límites dinámicos: usuarios, lotes, storage, funcionalidades
+  - Blade directives para mostrar/ocultar features por plan
+  - Dashboard que muestra límites actuales vs utilizados
+  - Notificaciones cuando se acercan a límites
+- **Archivos a crear**:
+  - `CheckPlanLimits.php` middleware
+  - `PlanLimitService.php` para validaciones centralizadas
+  - Blade directives: `@planAllows`, `@withinLimits`
+  - Dashboard de uso por plan
+- **Estimación**: 2 días
+
+#### 🔄 Auditoría Completa de Permisos RBAC
+- **Funcionalidades**:
+  - Revisión y actualización de todos los permisos existentes
+  - Nuevos permisos para módulos de empleados, nómina y gastos
+  - Validación de consistency entre roles y permisos
+  - Testing automatizado de permisos por rol
+- **Archivos a modificar**:
+  - Seeders de permisos actualizados
+  - Gates en `AuthServiceProvider.php`
+  - Todos los controladores con validaciones actualizadas
+- **Estimación**: 2 días
+
+### **Sprint 15.2: Marca Blanca y Personalización (Semana 15-16)**
+
+#### 🔄 Configuración Avanzada de Empresa
+- **Funcionalidades**:
+  - Upload de logotipo empresarial (para planes premium+)
+  - Configuración de colores corporativos
+  - Personalización de headers/footers en reportes
+  - Configuración de datos fiscales completos
+  - Watermarks personalizados en documentos
+- **Archivos a crear**:
+  - `CompanyBrandingService.php`
+  - Sistema de upload y storage de logos
+  - Templates PDF personalizables
+  - Configuración de tema por tenant
+- **Estimación**: 3 días
+
+### **Sprint 16.1: Sistema de Reportes PDF/Excel (Semana 16-17)**
+
+#### 🔄 Generación de Reportes PDF
+- **Funcionalidades**:
+  - Descarga en PDF de todos los reportes principales
+  - Templates profesionales con marca empresarial
+  - Reportes de lotes, ventas, pagos, empleados, nómina, gastos
+  - Configuración de formato (legal, carta, A4)
+  - Watermarks y headers personalizados
+- **Archivos a crear**:
+  - `ReportPDFService.php` centralizado
+  - Templates PDF para cada tipo de reporte
+  - `PDFController.php` para manejo de descargas
+- **Estimación**: 4 días
+
+#### 🔄 Exportación a Excel
+- **Funcionalidades**:
+  - Exportación de listas y reportes a Excel (.xlsx)
+  - Formato profesional con logos y datos empresariales
+  - Filtros y ordenamiento preservados en exportación
+  - Múltiples hojas para reportes complejos
+  - Gráficos embebidos en Excel
+- **Archivos a crear**:
+  - `ExcelExportService.php` usando Laravel Excel
+  - Exports classes para cada módulo
+  - Configuración de formatos y estilos
+- **Estimación**: 3 días
+
+### **Sprint 17.1: Centinela PayPal Mejorado (Semana 17)**
+
+#### 🔄 Sistema de Monitoreo PayPal Comprehensivo
+- **Funcionalidades**:
+  - Verificación de todos los estados que requieren suspensión:
+    - Reembolsos (`REFUNDED`, `PARTIALLY_REFUNDED`)
+    - Cancelaciones (`CANCELLED`, `SUSPENDED`)
+    - Disputas y chargebacks (`REVERSED`)
+    - Fallos de pago recurrentes (`PAYMENT_FAILED`)
+    - Suscripciones expiradas sin renovación
+  - Dashboard de monitoreo en tiempo real
+  - Alertas automáticas para administradores
+  - Logs detallados de todas las verificaciones
+  - API endpoints para integración con webhooks
+- **Archivos a modificar/crear**:
+  - `MonitorPayPalTransactions.php` command mejorado
+  - `PayPalMonitoringService.php` centralizado
+  - Dashboard de monitoreo en `/developer/paypal/monitoring`
+  - Nuevos webhooks para todos los eventos PayPal
+- **Estimación**: 2 días
 
 ---
 
