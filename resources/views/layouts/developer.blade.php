@@ -70,12 +70,15 @@
                 <div class="flex items-center">
                     <!-- Logo -->
                     <div class="flex-shrink-0 flex items-center">
-                        <i class="fas fa-code text-xl sm:text-2xl text-indigo-600 mr-2 sm:mr-3"></i>
-                        <h1 class="text-lg sm:text-xl font-bold text-gray-900 truncate">Developer Panel</h1>
+                        <i class="fas fa-code text-xl md:text-2xl text-indigo-600 mr-2 md:mr-3"></i>
+                        <h1 class="text-lg md:text-xl font-bold text-gray-900 truncate">
+                            <span class="hidden lg:inline">Developer Panel</span>
+                            <span class="lg:hidden">Dev Panel</span>
+                        </h1>
                     </div>
 
-                    <!-- Navigation Links (Desktop) -->
-                    <div class="hidden md:ml-10 md:flex md:space-x-4 xl:space-x-6">
+                    <!-- Navigation Links (Desktop & Tablet) -->
+                    <div class="hidden lg:ml-10 lg:flex lg:space-x-4 xl:space-x-6">
                         <a href="{{ route('developer.index') }}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('developer.index') ? 'border-indigo-500 text-indigo-600' : '' }}">
                             Dashboard
                         </a>
@@ -180,15 +183,15 @@
 
                 <!-- Right Side -->
                 <div class="flex items-center space-x-2 sm:space-x-4">
-                    <!-- Mobile Menu Button -->
-                    <button type="button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" id="mobile-menu-button">
+                    <!-- Mobile/Tablet Menu Button -->
+                    <button type="button" class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" id="mobile-menu-button">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
 
                     <!-- System Status -->
-                    <div class="hidden lg:flex items-center space-x-2">
+                    <div class="hidden xl:flex items-center space-x-2">
                         @php
                             $maintenanceActive = \Cache::get('frontend_maintenance', false);
                         @endphp
@@ -216,48 +219,48 @@
                     </div>
 
                     <!-- Back to App -->
-                    <a href="{{ route('dashboard') }}" class="hidden sm:inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <i class="fas fa-arrow-left mr-1 sm:mr-2"></i>
-                        <span class="hidden lg:inline">Back to App</span>
-                        <span class="lg:hidden">App</span>
+                    <a href="{{ route('dashboard') }}" class="hidden md:inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-arrow-left mr-1 md:mr-2"></i>
+                        <span class="hidden xl:inline">Back to App</span>
+                        <span class="xl:hidden">App</span>
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Mobile Menu -->
-        <div class="md:hidden" id="mobile-menu" style="display: none;">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 border-t border-gray-200">
+        <!-- Mobile/Tablet Menu -->
+        <div class="lg:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1 md:px-3 bg-gray-50 border-t border-gray-200 max-h-screen overflow-y-auto">
                 <a href="{{ route('developer.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.index') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    <i class="fas fa-tachometer-alt mr-3 w-5 text-center"></i>Dashboard
                 </a>
                 <a href="{{ route('developer.users.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.users.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                    <i class="fas fa-users mr-2"></i>Users
+                    <i class="fas fa-users mr-3 w-5 text-center"></i>Users
                 </a>
                 <a href="{{ route('developer.roles.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.roles.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                    <i class="fas fa-user-shield mr-2"></i>Roles
+                    <i class="fas fa-user-shield mr-3 w-5 text-center"></i>Roles
                 </a>
                 <a href="{{ route('developer.config.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.config.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                    <i class="fas fa-cog mr-2"></i>Config
+                    <i class="fas fa-cog mr-3 w-5 text-center"></i>Config
                 </a>
                 <a href="{{ route('developer.tenants.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.tenants.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                    <i class="fas fa-building mr-2"></i>Tenants
+                    <i class="fas fa-building mr-3 w-5 text-center"></i>Tenants
                 </a>
 
                 <!-- Billing Section -->
                 <div class="border-t border-gray-200 pt-2 mt-2">
                     <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Billing</div>
                     <a href="{{ route('developer.plans.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.plans.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                        <i class="fas fa-layer-group mr-2"></i>Gestión de Planes
+                        <i class="fas fa-layer-group mr-3 w-5 text-center"></i>Gestión de Planes
                     </a>
                     <a href="{{ route('developer.subscriptions.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.subscriptions.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                        <i class="fas fa-credit-card mr-2"></i>Suscripciones
+                        <i class="fas fa-credit-card mr-3 w-5 text-center"></i>Suscripciones
                     </a>
                     <a href="{{ route('developer.paypal.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.paypal.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                        <i class="fab fa-paypal mr-2"></i>PayPal Config
+                        <i class="fab fa-paypal mr-3 w-5 text-center"></i>PayPal Config
                     </a>
                     <a href="{{ route('developer.billing.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.billing.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                        <i class="fas fa-chart-line mr-2"></i>Métricas
+                        <i class="fas fa-chart-line mr-3 w-5 text-center"></i>Métricas
                     </a>
                 </div>
 
@@ -265,13 +268,13 @@
                 <div class="border-t border-gray-200 pt-2 mt-2">
                     <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
                     <a href="{{ route('developer.config.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.config.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                        <i class="fas fa-cog mr-2"></i>Config
+                        <i class="fas fa-cog mr-3 w-5 text-center"></i>Config
                     </a>
                     <a href="{{ route('developer.backups.index') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.backups.*') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                        <i class="fas fa-database mr-2"></i>Backups
+                        <i class="fas fa-database mr-3 w-5 text-center"></i>Backups
                     </a>
                     <a href="{{ route('developer.logs') }}" class="block px-3 py-2 text-base font-medium rounded-md {{ request()->routeIs('developer.logs') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
-                        <i class="fas fa-file-alt mr-2"></i>Logs
+                        <i class="fas fa-file-alt mr-3 w-5 text-center"></i>Logs
                     </a>
                 </div>
                 <div class="border-t border-gray-200 pt-3">
@@ -291,7 +294,7 @@
                     </div>
 
                     <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
-                        <i class="fas fa-arrow-left mr-2"></i>Back to App
+                        <i class="fas fa-arrow-left mr-3 w-5 text-center"></i>Back to App
                     </a>
                 </div>
             </div>

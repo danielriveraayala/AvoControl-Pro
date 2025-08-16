@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Developer;
 
 use App\Http\Controllers\Controller;
-use App\Models\TenantPlan;
-use App\Models\TenantSubscription;
+use App\Models\Tenant;
+use App\Models\Subscription;
+use App\Models\SubscriptionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -18,102 +19,137 @@ class TenantController extends Controller
         $status = $request->get('status');
         $plan = $request->get('plan');
 
-        $subscriptions = TenantSubscription::with(['plan', 'creator'])
+        $tenants = Tenant::with(['users', 'subscriptions'])
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
-                    $q->where('tenant_name', 'like', "%{$search}%")
-                      ->orWhere('tenant_domain', 'like', "%{$search}%")
-                      ->orWhere('contact_name', 'like', "%{$search}%")
-                      ->orWhere('contact_email', 'like', "%{$search}%");
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('slug', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('domain', 'like', "%{$search}%");
                 });
             })
             ->when($status, function ($query, $status) {
                 return $query->where('status', $status);
             })
             ->when($plan, function ($query, $plan) {
-                return $query->where('tenant_plan_id', $plan);
+                return $query->where('plan', $plan);
             })
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        $plans = TenantPlan::active()->ordered()->get();
+        $plans = SubscriptionPlan::where('is_active', true)->orderBy('sort_order', 'asc')->get();
         
         $stats = [
-            'total' => TenantSubscription::count(),
-            'active' => TenantSubscription::active()->count(),
-            'trial' => TenantSubscription::trial()->count(),
-            'suspended' => TenantSubscription::suspended()->count(),
-            'expired' => TenantSubscription::expired()->count(),
+            'total' => Tenant::count(),
+            'active' => Tenant::where('status', 'active')->count(),
+            'trial' => Tenant::where('plan', 'trial')->count(),
+            'suspended' => Tenant::where('status', 'suspended')->count(),
+            'expired' => Tenant::where('status', 'inactive')->count(), // Renamed for view compatibility
         ];
 
+        // Map Tenant data to match TenantSubscription structure expected by view
+        $subscriptions = $tenants->getCollection()->map(function ($tenant) {
+            // Create a mock object with the properties the view expects
+            $mock = new \stdClass();
+            $mock->id = $tenant->id;
+            $mock->tenant_name = $tenant->name;
+            $mock->tenant_domain = $tenant->slug;
+            $mock->contact_name = $tenant->name; // Fallback to tenant name
+            $mock->contact_email = $tenant->email;
+            
+            // Status mapping
+            $mock->status_display = $this->getStatusDisplay($tenant->status);
+            $mock->status_color = $this->getStatusColor($tenant->status);
+            
+            // Plan mapping - use tenant's plan field directly since subscriptions relationship is empty
+            if ($tenant->plan) {
+                // Create a mock plan object with the properties the view expects
+                $planMock = new \stdClass();
+                $planMock->display_name = ucfirst($tenant->plan);
+                $planMock->price = $this->getPlanPrice($tenant->plan);
+                $planMock->name = $tenant->plan;
+                $mock->plan = $planMock;
+            } else {
+                // Fallback plan object
+                $planMock = new \stdClass();
+                $planMock->display_name = 'Sin plan';
+                $planMock->price = 0;
+                $planMock->name = 'none';
+                $mock->plan = $planMock;
+            }
+            
+            // Dates - ensure these are properly formatted for the view
+            $mock->created_at = $tenant->created_at;
+            $mock->created_at_formatted = $tenant->created_at->format('d/m/Y');
+            $mock->created_at_human = $tenant->created_at->diffForHumans();
+            
+            // Methods the view expects - convert closures to boolean values
+            $mock->isTrial = $tenant->plan === 'trial';
+            $mock->trial_days_remaining = $this->getTrialDaysRemaining($tenant);
+            $mock->current_users = $tenant->users()->count();
+            $mock->lots_this_month = $tenant->lots()->whereMonth('created_at', now()->month)->count();
+            $mock->isOverLimits = false; // Simplified for now
+            $mock->isSuspended = $tenant->status === 'suspended';
+            $mock->isActive = $tenant->status === 'active';
+            
+            return $mock;
+        });
+        
+        // Set the mapped collection back to the paginator
+        $tenants->setCollection($subscriptions);
+        $subscriptions = $tenants;
+        
         return view('developer.tenants.index', compact('subscriptions', 'plans', 'stats', 'search', 'status', 'plan'));
     }
 
     public function create()
     {
-        $plans = TenantPlan::active()->ordered()->get();
+        $plans = ['trial', 'basic', 'premium', 'enterprise', 'corporate'];
         return view('developer.tenants.create', compact('plans'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'tenant_name' => 'required|string|max:150',
-            'tenant_domain' => 'required|string|max:100|unique:tenant_subscriptions,tenant_domain|alpha_dash',
-            'contact_name' => 'required|string|max:150',
-            'contact_email' => 'required|email|max:150|unique:tenant_subscriptions,contact_email',
-            'contact_phone' => 'nullable|string|max:20',
-            'tenant_plan_id' => 'required|exists:tenant_plans,id',
-            'status' => 'required|in:trial,active',
-            'billing_name' => 'nullable|string|max:150',
-            'billing_address' => 'nullable|string',
-            'tax_id' => 'nullable|string|max:50',
-            'notes' => 'nullable|string',
+            'name' => 'required|string|max:150',
+            'slug' => 'required|string|max:100|unique:tenants,slug|alpha_dash',
+            'email' => 'required|email|max:150|unique:tenants,email',
+            'phone' => 'nullable|string|max:20',
+            'plan' => 'required|in:trial,basic,premium,enterprise,corporate',
+            'status' => 'required|in:active,inactive,suspended',
+            'address' => 'nullable|string',
         ]);
 
         try {
-            $plan = TenantPlan::findOrFail($request->tenant_plan_id);
-            
-            $subscription = new TenantSubscription();
-            $subscription->tenant_name = $request->tenant_name;
-            $subscription->tenant_domain = strtolower($request->tenant_domain);
-            $subscription->contact_name = $request->contact_name;
-            $subscription->contact_email = strtolower($request->contact_email);
-            $subscription->contact_phone = $request->contact_phone;
-            $subscription->tenant_plan_id = $request->tenant_plan_id;
-            $subscription->status = $request->status;
-            $subscription->billing_name = $request->billing_name;
-            $subscription->billing_address = $request->billing_address;
-            $subscription->tax_id = $request->tax_id;
-            $subscription->notes = $request->notes;
-            $subscription->created_by = auth()->id();
+            // Create new Tenant
+            $tenant = new Tenant();
+            $tenant->name = $request->name;
+            $tenant->slug = strtolower($request->slug);
+            $tenant->email = strtolower($request->email);
+            $tenant->phone = $request->phone;
+            $tenant->plan = $request->plan;
+            $tenant->status = $request->status;
+            $tenant->address = $request->address;
 
             // Set dates based on status
-            if ($request->status === 'trial') {
-                $subscription->trial_ends_at = Carbon::now()->addDays(14);
-                $subscription->current_period_start = Carbon::now();
-                $subscription->current_period_end = Carbon::now()->addDays(14);
-            } else {
-                $subscription->current_period_start = Carbon::now();
-                $subscription->current_period_end = $plan->billing_cycle === 'yearly' 
-                    ? Carbon::now()->addYear() 
-                    : Carbon::now()->addMonth();
+            if ($request->status === 'trial' || $tenant->plan === 'trial') {
+                $tenant->trial_ends_at = Carbon::now()->addDays(14);
             }
 
-            $subscription->save();
+            $tenant->save();
 
-            Log::info('New tenant subscription created', [
-                'tenant_name' => $subscription->tenant_name,
-                'tenant_domain' => $subscription->tenant_domain,
-                'plan' => $plan->name,
-                'status' => $subscription->status,
+            Log::info('New tenant created', [
+                'tenant_name' => $tenant->name,
+                'tenant_slug' => $tenant->slug,
+                'plan' => $tenant->plan,
+                'status' => $tenant->status,
                 'created_by' => auth()->user()->name
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Suscripción de tenant creada exitosamente',
-                'redirect' => route('developer.tenants.show', $subscription)
+                'message' => 'Tenant creado exitosamente',
+                'redirect' => route('developer.tenants.show', $tenant)
             ]);
 
         } catch (\Exception $e) {
@@ -129,54 +165,46 @@ class TenantController extends Controller
         }
     }
 
-    public function show(TenantSubscription $tenant)
+    public function show(Tenant $tenant)
     {
-        $tenant->load(['plan', 'creator']);
-        $usageSummary = $tenant->getUsageSummary();
-        $limitViolations = $tenant->getLimitViolations();
+        $tenant->load(['users', 'subscriptions']);
+        $usageSummary = []; // TODO: Implement usage summary for Tenant model
+        $limitViolations = []; // TODO: Implement limit violations for Tenant model
         
         return view('developer.tenants.show', compact('tenant', 'usageSummary', 'limitViolations'));
     }
 
-    public function edit(TenantSubscription $tenant)
+    public function edit(Tenant $tenant)
     {
-        $plans = TenantPlan::active()->ordered()->get();
+        $plans = ['trial', 'basic', 'premium', 'enterprise', 'corporate'];
         return view('developer.tenants.edit', compact('tenant', 'plans'));
     }
 
-    public function update(Request $request, TenantSubscription $tenant)
+    public function update(Request $request, Tenant $tenant)
     {
         $request->validate([
-            'tenant_name' => 'required|string|max:150',
-            'tenant_domain' => 'required|string|max:100|alpha_dash|unique:tenant_subscriptions,tenant_domain,' . $tenant->id,
-            'contact_name' => 'required|string|max:150',
-            'contact_email' => 'required|email|max:150|unique:tenant_subscriptions,contact_email,' . $tenant->id,
-            'contact_phone' => 'nullable|string|max:20',
-            'tenant_plan_id' => 'required|exists:tenant_plans,id',
-            'status' => 'required|in:trial,active,suspended,cancelled,expired',
-            'billing_name' => 'nullable|string|max:150',
-            'billing_address' => 'nullable|string',
-            'tax_id' => 'nullable|string|max:50',
-            'notes' => 'nullable|string',
+            'name' => 'required|string|max:150',
+            'slug' => 'required|string|max:100|alpha_dash|unique:tenants,slug,' . $tenant->id,
+            'email' => 'required|email|max:150|unique:tenants,email,' . $tenant->id,
+            'phone' => 'nullable|string|max:20',
+            'plan' => 'required|in:trial,basic,premium,enterprise,corporate',
+            'status' => 'required|in:active,inactive,suspended',
+            'address' => 'nullable|string',
         ]);
 
         try {
-            $oldPlan = $tenant->tenant_plan_id;
+            $oldPlan = $tenant->plan;
             $tenant->update($request->only([
-                'tenant_name', 'tenant_domain', 'contact_name', 'contact_email', 
-                'contact_phone', 'tenant_plan_id', 'status', 'billing_name', 
-                'billing_address', 'tax_id', 'notes'
+                'name', 'slug', 'email', 'phone', 
+                'plan', 'status', 'address'
             ]));
 
             // Log plan change
-            if ($oldPlan != $request->tenant_plan_id) {
-                $oldPlanName = TenantPlan::find($oldPlan)->name ?? 'unknown';
-                $newPlanName = TenantPlan::find($request->tenant_plan_id)->name;
-                
+            if ($oldPlan != $request->plan) {
                 Log::info('Tenant plan changed', [
-                    'tenant_name' => $tenant->tenant_name,
-                    'old_plan' => $oldPlanName,
-                    'new_plan' => $newPlanName,
+                    'tenant_name' => $tenant->name,
+                    'old_plan' => $oldPlan,
+                    'new_plan' => $request->plan,
                     'changed_by' => auth()->user()->name
                 ]);
             }
@@ -199,17 +227,19 @@ class TenantController extends Controller
         }
     }
 
-    public function suspend(Request $request, TenantSubscription $tenant)
+    public function suspend(Request $request, Tenant $tenant)
     {
         $request->validate([
             'reason' => 'required|string|max:500'
         ]);
 
         try {
-            $tenant->suspend($request->reason, auth()->user());
+            // Update tenant status to suspended
+            $tenant->status = 'suspended';
+            $tenant->save();
 
-            Log::info('Tenant subscription suspended', [
-                'tenant_name' => $tenant->tenant_name,
+            Log::info('Tenant suspended', [
+                'tenant_name' => $tenant->name,
                 'reason' => $request->reason,
                 'suspended_by' => auth()->user()->name
             ]);
@@ -227,13 +257,15 @@ class TenantController extends Controller
         }
     }
 
-    public function activate(TenantSubscription $tenant)
+    public function activate(Tenant $tenant)
     {
         try {
-            $tenant->activate();
+            // Update tenant status to active
+            $tenant->status = 'active';
+            $tenant->save();
 
-            Log::info('Tenant subscription activated', [
-                'tenant_name' => $tenant->tenant_name,
+            Log::info('Tenant activated', [
+                'tenant_name' => $tenant->name,
                 'activated_by' => auth()->user()->name
             ]);
 
@@ -250,16 +282,19 @@ class TenantController extends Controller
         }
     }
 
-    public function extendTrial(Request $request, TenantSubscription $tenant)
+    public function extendTrial(Request $request, Tenant $tenant)
     {
         $request->validate([
             'days' => 'required|integer|min:1|max:90'
         ]);
 
         try {
-            if ($tenant->extendTrial($request->days)) {
+            if ($tenant->plan === 'trial' && $tenant->trial_ends_at) {
+                $tenant->trial_ends_at = $tenant->trial_ends_at->addDays($request->days);
+                $tenant->save();
+                
                 Log::info('Trial extended', [
-                    'tenant_name' => $tenant->tenant_name,
+                    'tenant_name' => $tenant->name,
                     'extended_days' => $request->days,
                     'new_trial_end' => $tenant->trial_ends_at->format('Y-m-d H:i:s'),
                     'extended_by' => auth()->user()->name
@@ -272,7 +307,7 @@ class TenantController extends Controller
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Solo se puede extender el período de prueba para suscripciones en estado trial'
+                    'message' => 'Solo se puede extender el período de prueba para tenants en plan trial'
                 ], 422);
             }
 
@@ -284,10 +319,10 @@ class TenantController extends Controller
         }
     }
 
-    public function destroy(TenantSubscription $tenant)
+    public function destroy(Tenant $tenant)
     {
         try {
-            $tenantName = $tenant->tenant_name;
+            $tenantName = $tenant->name;
             
             // Solo permitir eliminación si está cancelled o expired
             if (!in_array($tenant->status, ['cancelled', 'expired'])) {
@@ -317,17 +352,17 @@ class TenantController extends Controller
         }
     }
 
-    public function refreshUsage(TenantSubscription $tenant)
+    public function refreshUsage(Tenant $tenant)
     {
         try {
-            // Here you would implement the actual usage calculation
-            // For now, we'll just update the timestamp
-            $tenant->updateUsageStats();
+            // Update last activity timestamp
+            $tenant->last_activity_at = Carbon::now();
+            $tenant->save();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Estadísticas de uso actualizadas',
-                'last_update' => $tenant->last_usage_update->format('d/m/Y H:i')
+                'last_update' => $tenant->last_activity_at ? $tenant->last_activity_at->format('d/m/Y H:i') : 'N/A'
             ]);
 
         } catch (\Exception $e) {
@@ -336,5 +371,59 @@ class TenantController extends Controller
                 'message' => 'Error al actualizar las estadísticas: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Helper methods for view compatibility
+     */
+    private function getStatusDisplay($status)
+    {
+        $statuses = [
+            'active' => 'Activo',
+            'suspended' => 'Suspendido',
+            'inactive' => 'Inactivo',
+            'trial' => 'Trial',
+            'cancelled' => 'Cancelado'
+        ];
+        
+        return $statuses[$status] ?? ucfirst($status);
+    }
+    
+    private function getStatusColor($status)
+    {
+        $colors = [
+            'active' => 'green',
+            'suspended' => 'red',
+            'inactive' => 'gray',
+            'trial' => 'yellow',
+            'cancelled' => 'gray'
+        ];
+        
+        return $colors[$status] ?? 'gray';
+    }
+    
+    private function getTrialDaysRemaining($tenant)
+    {
+        if ($tenant->plan !== 'trial' || !$tenant->trial_ends_at) {
+            return 0;
+        }
+        
+        return max(0, $tenant->trial_ends_at->diffInDays(now(), false));
+    }
+    
+    /**
+     * Get plan price based on plan name
+     */
+    private function getPlanPrice($planName)
+    {
+        $planPrices = [
+            'trial' => 0,
+            'basic' => 29,
+            'premium' => 79,
+            'enterprise' => 199,
+            'corporate' => 999
+        ];
+        
+        return $planPrices[strtolower($planName)] ?? 0;
     }
 }

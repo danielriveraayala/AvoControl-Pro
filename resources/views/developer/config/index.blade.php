@@ -13,9 +13,11 @@
                         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Configuración del Sistema</h1>
                         <p class="text-xs sm:text-sm text-gray-600">Gestiona la configuración global del sistema</p>
                     </div>
-                    <a href="{{ route('developer.index') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
-                        ← <span class="ml-1">Dashboard</span>
-                    </a>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Dashboard</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -27,7 +29,7 @@
                 <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Configuración SMTP</h3>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $configs['smtp']['configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} self-start">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $configs['smtp']['configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                             {{ $configs['smtp']['configured'] ? 'Configurado' : 'Sin Configurar' }}
                         </span>
                     </div>
@@ -69,7 +71,7 @@
                 <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Notificaciones Push</h3>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $configs['push']['configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} self-start">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $configs['push']['configured'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                             {{ $configs['push']['configured'] ? 'Configurado' : 'Sin Configurar' }}
                         </span>
                     </div>
@@ -113,7 +115,7 @@
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1">Gestión de Notificaciones</h3>
                         <p class="text-xs sm:text-sm text-gray-600">Administra todas las notificaciones del sistema</p>
                     </div>
-                    <a href="{{ route('developer.config.notifications-manager') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 self-start">
+                    <a href="{{ route('developer.config.notifications-manager') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                         <i class="fas fa-bell mr-1 sm:mr-2"></i>
                         <span class="hidden sm:inline">Gestionar</span> Notificaciones
                     </a>

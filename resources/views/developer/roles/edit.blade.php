@@ -3,19 +3,19 @@
 @section('title', 'Editar Rol')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Editar Rol: {{ $role->display_name }}</h1>
-                        <p class="text-sm text-gray-600">Modifica la información y permisos del rol</p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Editar Rol: {{ $role->display_name }}</h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Modifica la información y permisos del rol</p>
                     </div>
-                    <div class="flex space-x-3">
-                        <a href="{{ route('developer.roles.show', $role) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                            ← Volver
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.roles.show', $role) }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Volver</span>
                         </a>
                     </div>
                 </div>
@@ -45,14 +45,14 @@
             @csrf
             @method('PUT')
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <!-- Basic Information -->
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-lg">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Información Básica</h3>
+                        <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900">Información Básica</h3>
                         </div>
-                        <div class="px-6 py-4 space-y-6">
+                        <div class="px-4 sm:px-6 py-4 space-y-4 sm:space-y-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Nombre del Rol</label>
                                 <input type="text" 
@@ -129,21 +129,21 @@
                 <!-- Permissions -->
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-lg">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <div class="flex justify-between items-center">
-                                <h3 class="text-lg font-semibold text-gray-900">Permisos</h3>
-                                <div class="flex space-x-2">
-                                    <button type="button" class="inline-flex items-center px-3 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700" id="select-all-btn">
+                        <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-0">Permisos</h3>
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                                    <button type="button" class="inline-flex items-center justify-center px-3 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700" id="select-all-btn">
                                         <i class="fas fa-check-square mr-1"></i>Todos
                                     </button>
-                                    <button type="button" class="inline-flex items-center px-3 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700" id="deselect-all-btn">
+                                    <button type="button" class="inline-flex items-center justify-center px-3 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700" id="deselect-all-btn">
                                         <i class="fas fa-square mr-1"></i>Ninguno
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="px-6 py-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="px-4 sm:px-6 py-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 @foreach($permissions as $module => $modulePermissions)
                                 @php
                                     $rolePermissionIds = $role->permissions->pluck('id')->toArray();
@@ -195,12 +195,12 @@
             <!-- Actions -->
             <div class="mt-6">
                 <div class="bg-white shadow rounded-lg">
-                    <div class="px-6 py-4">
-                        <div class="flex justify-end space-x-3">
-                            <a href="{{ route('developer.roles.show', $role) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <div class="px-4 sm:px-6 py-4">
+                        <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                            <a href="{{ route('developer.roles.show', $role) }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                 <i class="fas fa-times mr-2"></i>Cancelar
                             </a>
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                                 <i class="fas fa-save mr-2"></i>Guardar Cambios
                             </button>
                         </div>

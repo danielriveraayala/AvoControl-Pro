@@ -32,6 +32,32 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Check if user has a tenant and redirect to tenant subdomain
+        $user = Auth::user();
+        
+        // Super admin goes to developer panel
+        if ($user->hasRole('super_admin')) {
+            return redirect()->to('https://dev.avocontrol.pro/developer');
+        }
+        
+        // Get user's tenants
+        $userTenants = $user->tenants()->where('tenants.status', 'active')->get();
+        
+        // If user has multiple tenants, let them choose
+        if ($userTenants->count() > 1) {
+            return redirect()->route('tenant.select');
+        }
+        
+        // If user has exactly one tenant, redirect there
+        if ($userTenants->count() == 1) {
+            $tenant = $userTenants->first();
+            $user->update(['current_tenant_id' => $tenant->id]);
+            
+            $tenantUrl = 'http://' . $tenant->slug . '.avocontrol.com/dashboard';
+            return redirect()->away($tenantUrl);
+        }
+        
+        // Default redirect if no tenant
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

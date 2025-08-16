@@ -21,9 +21,10 @@ class TenantController extends Controller
             return redirect()->route('login');
         }
 
-        $availableTenants = TenantServiceProvider::getAvailableTenantsForUser();
+        $user = auth()->user();
+        $tenants = $user->tenants()->where('tenants.status', 'active')->get();
         
-        return view('tenant.select', compact('availableTenants'));
+        return view('tenant.select', compact('tenants'));
     }
 
     /**

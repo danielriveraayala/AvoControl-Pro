@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
@@ -230,23 +230,23 @@
                 </div>
 
                 <!-- Form Actions -->
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
-                    <div class="flex space-x-3">
+                <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-0">
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-3 order-2 sm:order-1">
                         <button type="button" onclick="generatePassword()" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium">
-                            Generar Nueva Contraseña
+                            <span class="hidden sm:inline">🔑 </span>Generar Nueva Contraseña
                         </button>
                         @if(!$user->suspended_at && !$user->hasRole('super_admin'))
                             <button type="button" onclick="suspendUser()" class="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-md text-sm font-medium">
-                                Suspender Usuario
+                                <span class="hidden sm:inline">⚠️ </span>Suspender Usuario
                             </button>
                         @endif
                     </div>
-                    <div class="space-x-3">
-                        <a href="{{ route('developer.users.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-md text-sm font-medium">
-                            Cancelar
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-3 order-1 sm:order-2">
+                        <a href="{{ route('developer.users.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-md text-sm font-medium text-center">
+                            <span class="hidden sm:inline">← </span>Cancelar
                         </a>
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium">
-                            Actualizar Usuario
+                            <span class="hidden sm:inline">💾 </span>Actualizar Usuario
                         </button>
                     </div>
                 </div>

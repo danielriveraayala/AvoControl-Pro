@@ -203,7 +203,7 @@
                                                ($subscription->status_color === 'red' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')) }}">
                                             {{ $subscription->status_display }}
                                         </span>
-                                        @if($subscription->isTrial() && $subscription->trial_days_remaining > 0)
+                                        @if($subscription->isTrial && $subscription->trial_days_remaining > 0)
                                             <div class="text-xs text-gray-500 mt-1">{{ $subscription->trial_days_remaining }} días restantes</div>
                                         @endif
                                     </td>
@@ -214,24 +214,24 @@
                                                 <div>{{ $subscription->current_users }} usuarios</div>
                                                 <div class="text-gray-500">{{ $subscription->lots_this_month }} lotes/mes</div>
                                             </div>
-                                            @if($subscription->isOverLimits())
+                                            @if($subscription->isOverLimits)
                                                 <span class="text-red-500">⚠️</span>
                                             @endif
                                         </div>
                                     </td>
                                     
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <div>{{ $subscription->created_at->format('d/m/Y') }}</div>
-                                        <div class="text-xs">{{ $subscription->created_at->diffForHumans() }}</div>
+                                        <div>{{ $subscription->created_at_formatted }}</div>
+                                        <div class="text-xs">{{ $subscription->created_at_human }}</div>
                                     </td>
                                     
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex justify-end space-x-2">
-                                            <a href="{{ route('developer.tenants.show', $subscription) }}" class="text-blue-600 hover:text-blue-900">Ver</a>
-                                            <a href="{{ route('developer.tenants.edit', $subscription) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
-                                            @if($subscription->isSuspended())
+                                            <a href="{{ route('developer.tenants.show', $subscription->id) }}" class="text-blue-600 hover:text-blue-900">Ver</a>
+                                            <a href="{{ route('developer.tenants.edit', $subscription->id) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
+                                            @if($subscription->isSuspended)
                                                 <button onclick="activateTenant({{ $subscription->id }})" class="text-green-600 hover:text-green-900">Activar</button>
-                                            @elseif($subscription->isActive())
+                                            @elseif($subscription->isActive)
                                                 <button onclick="suspendTenant({{ $subscription->id }})" class="text-yellow-600 hover:text-yellow-900">Suspender</button>
                                             @endif
                                         </div>

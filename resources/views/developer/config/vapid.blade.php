@@ -3,25 +3,40 @@
 @section('title', 'Gestión de Llaves VAPID')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Gestión de Llaves VAPID</h1>
-                        <p class="text-sm text-gray-600">Administra las llaves VAPID para notificaciones push</p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Gestión de Llaves VAPID</h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Administra las llaves VAPID para notificaciones push</p>
                     </div>
-                    <a href="{{ route('developer.config.notifications') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                        ← Volver a Notificaciones
-                    </a>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.config.notifications') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Notificaciones</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Success/Error Messages -->
+        @if(session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 sm:mb-6">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 sm:mb-6">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <!-- VAPID Information -->
-        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4 sm:mb-6">
             <div class="flex">
                 <div class="flex-shrink-0">
                     <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,20 +53,20 @@
         </div>
 
         <!-- Current VAPID Keys -->
-        <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
+        <div class="bg-white shadow rounded-lg mb-4 sm:mb-6">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900">Llaves VAPID Actuales</h3>
             </div>
-            <div class="px-6 py-6">
+            <div class="px-4 sm:px-6 py-6">
                 @if($vapidConfig['public_key'] && $vapidConfig['private_key'])
                     <div class="space-y-4">
                         <!-- Public Key -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Clave Pública</label>
-                            <div class="flex">
+                            <div class="flex flex-col sm:flex-row">
                                 <input type="text" id="publicKey" value="{{ $vapidConfig['public_key'] }}" readonly
-                                       class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-md text-sm font-mono">
-                                <button onclick="copyToClipboard('publicKey')" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-300">
+                                       class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md sm:rounded-l-md sm:rounded-r-none text-xs sm:text-sm font-mono">
+                                <button onclick="copyToClipboard('publicKey')" class="mt-2 sm:mt-0 px-3 py-2 bg-gray-200 border border-t-0 sm:border-t sm:border-l-0 border-gray-300 rounded-md sm:rounded-l-none sm:rounded-r-md hover:bg-gray-300 text-xs sm:text-sm">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
                                     </svg>
@@ -62,30 +77,32 @@
                         <!-- Private Key -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Clave Privada</label>
-                            <div class="flex">
+                            <div class="flex flex-col sm:flex-row">
                                 <input type="password" id="privateKey" value="{{ $vapidConfig['private_key'] }}" readonly
-                                       class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-md text-sm font-mono">
-                                <button onclick="toggleVisibility('privateKey')" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 hover:bg-gray-300">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
-                                </button>
-                                <button onclick="copyToClipboard('privateKey')" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-300">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                                    </svg>
-                                </button>
+                                       class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md sm:rounded-l-md sm:rounded-r-none text-xs sm:text-sm font-mono">
+                                <div class="flex mt-2 sm:mt-0">
+                                    <button onclick="toggleVisibility('privateKey')" class="px-3 py-2 bg-gray-200 border border-gray-300 rounded-l-md sm:rounded-none sm:border-l-0 hover:bg-gray-300">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </button>
+                                    <button onclick="copyToClipboard('privateKey')" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-300">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Subject -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                            <div class="flex">
+                            <div class="flex flex-col sm:flex-row">
                                 <input type="text" id="subject" value="{{ $vapidConfig['subject'] }}" readonly
-                                       class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-l-md text-sm">
-                                <button onclick="copyToClipboard('subject')" class="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-300">
+                                       class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md sm:rounded-l-md sm:rounded-r-none text-xs sm:text-sm">
+                                <button onclick="copyToClipboard('subject')" class="mt-2 sm:mt-0 px-3 py-2 bg-gray-200 border border-t-0 sm:border-t sm:border-l-0 border-gray-300 rounded-md sm:rounded-l-none sm:rounded-r-md hover:bg-gray-300">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
                                     </svg>
@@ -117,11 +134,11 @@
 
         <!-- Actions -->
         <div class="bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900">Acciones</h3>
             </div>
-            <div class="px-6 py-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="px-4 sm:px-6 py-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Generate New Keys -->
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <h4 class="text-sm font-medium text-blue-900 mb-2">Generar Nuevas Llaves</h4>

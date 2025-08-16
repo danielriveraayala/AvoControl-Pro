@@ -21,25 +21,28 @@
 
         <!-- Quick Actions -->
         <div class="mb-6 sm:mb-8">
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Accesos Rápidos</h2>
+            <h2 class="text-lg md:text-xl font-semibold text-gray-900 mb-4 md:mb-6">Accesos Rápidos</h2>
 
             <!-- Primary Actions -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
-                <a href="{{ route('developer.users.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:border-blue-300 transition-all duration-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5 lg:gap-6 mb-6">
+                <a href="{{ route('developer.users.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-5 lg:p-6 hover:shadow-md hover:border-blue-300 transition-all duration-200">
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
-                            <div class="p-2 sm:p-3 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-colors">
-                                <svg class="w-5 h-5 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 md:p-2.5 lg:p-3 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-colors">
+                                <svg class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                                 </svg>
                             </div>
                         </div>
-                        <div class="ml-3 sm:ml-4 flex-1 min-w-0">
-                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">   Gestión de Usuarios</h3>
-                            <p class="text-xs sm:text-sm text-gray-600 mt-1">Administrar usuarios, roles y permisos del sistema</p>
-                            <div class="mt-2 sm:mt-3 flex items-center text-xs sm:text-sm text-blue-600">
-                                <span>Administrar usuarios</span>
-                                <svg class="ml-2 w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="ml-3 md:ml-3.5 lg:ml-4 flex-1 min-w-0">
+                            <h3 class="text-base md:text-base lg:text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
+                                <span class="hidden md:inline">👥</span> Gestión de Usuarios
+                            </h3>
+                            <p class="text-xs md:text-xs lg:text-sm text-gray-600 mt-1">Administrar usuarios, roles y permisos del sistema</p>
+                            <div class="mt-2 md:mt-2.5 lg:mt-3 flex items-center text-xs md:text-xs lg:text-sm text-blue-600">
+                                <span class="hidden md:inline">Administrar usuarios</span>
+                                <span class="md:hidden">Ver más</span>
+                                <svg class="ml-2 w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </div>
@@ -47,22 +50,25 @@
                     </div>
                 </a>
 
-                <a href="{{ route('developer.config.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:border-green-300 transition-all duration-200">
+                <a href="{{ route('developer.config.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-5 lg:p-6 hover:shadow-md hover:border-green-300 transition-all duration-200">
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
-                            <div class="p-2 sm:p-3 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200 transition-colors">
-                                <svg class="w-5 h-5 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 md:p-2.5 lg:p-3 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200 transition-colors">
+                                <svg class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
                             </div>
                         </div>
-                        <div class="ml-3 sm:ml-4 flex-1 min-w-0">
-                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-green-700 transition-colors">Configuración del Sistema</h3>
-                            <p class="text-xs sm:text-sm text-gray-600 mt-1">SMTP, notificaciones push y configuraciones globales</p>
-                            <div class="mt-2 sm:mt-3 flex items-center text-xs sm:text-sm text-green-600">
-                                <span>Configurar sistema</span>
-                                <svg class="ml-2 w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="ml-3 md:ml-3.5 lg:ml-4 flex-1 min-w-0">
+                            <h3 class="text-base md:text-base lg:text-lg font-semibold text-gray-900 group-hover:text-green-700 transition-colors">
+                                <span class="hidden md:inline">⚙️</span> Configuración del Sistema
+                            </h3>
+                            <p class="text-xs md:text-xs lg:text-sm text-gray-600 mt-1">SMTP, notificaciones push y configuraciones globales</p>
+                            <div class="mt-2 md:mt-2.5 lg:mt-3 flex items-center text-xs md:text-xs lg:text-sm text-green-600">
+                                <span class="hidden md:inline">Configurar sistema</span>
+                                <span class="md:hidden">Ver más</span>
+                                <svg class="ml-2 w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </div>
@@ -70,22 +76,25 @@
                     </div>
                 </a>
 
-                <a href="{{ route('developer.backups.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:border-indigo-300 transition-all duration-200">
+                <a href="{{ route('developer.backups.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-5 lg:p-6 hover:shadow-md hover:border-indigo-300 transition-all duration-200">
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
-                            <div class="p-2 sm:p-3 rounded-lg bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 transition-colors">
-                                <svg class="w-5 h-5 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 md:p-2.5 lg:p-3 rounded-lg bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 transition-colors">
+                                <svg class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
                                 </svg>
                             </div>
                         </div>
-                        <div class="ml-3 sm:ml-4 flex-1 min-w-0">
-                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors">Gestión de Respaldos</h3>
-                            <p class="text-xs sm:text-sm text-gray-600 mt-1">Crear, descargar y restaurar respaldos del sistema</p>
-                            <div class="mt-2 sm:mt-3 flex items-center text-xs sm:text-sm text-indigo-600">
-                                <span>Administrar respaldos</span>
-                                <svg class="ml-2 w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="ml-3 md:ml-3.5 lg:ml-4 flex-1 min-w-0">
+                            <h3 class="text-base md:text-base lg:text-lg font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors">
+                                <span class="hidden md:inline">💾</span> Gestión de Respaldos
+                            </h3>
+                            <p class="text-xs md:text-xs lg:text-sm text-gray-600 mt-1">Crear, descargar y restaurar respaldos del sistema</p>
+                            <div class="mt-2 md:mt-2.5 lg:mt-3 flex items-center text-xs md:text-xs lg:text-sm text-indigo-600">
+                                <span class="hidden md:inline">Administrar respaldos</span>
+                                <span class="md:hidden">Ver más</span>
+                                <svg class="ml-2 w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </div>

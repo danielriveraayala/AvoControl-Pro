@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
@@ -13,9 +13,11 @@
                         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Crear Nuevo Usuario</h1>
                         <p class="text-xs sm:text-sm text-gray-600">Agrega un nuevo usuario al sistema</p>
                     </div>
-                    <a href="{{ route('developer.users.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
-                        ← <span class="ml-1">Volver a Usuarios</span>
-                    </a>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.users.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Usuarios</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

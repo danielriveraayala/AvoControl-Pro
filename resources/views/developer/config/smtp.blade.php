@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
@@ -13,9 +13,11 @@
                         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Configuración SMTP</h1>
                         <p class="text-xs sm:text-sm text-gray-600">Configura el servidor de correo electrónico</p>
                     </div>
-                    <a href="{{ route('developer.config.index') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
-                        ← Volver
-                    </a>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.config.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Configuración</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -200,17 +202,22 @@
                 </div>
 
                 <!-- Form Actions -->
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
-                    <button type="button" onclick="testConfiguration()" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium">
-                        Probar Configuración
-                    </button>
-                    <div class="space-x-3">
-                        <a href="{{ route('developer.config.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-md text-sm font-medium">
-                            Cancelar
-                        </a>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium">
-                            Guardar Configuración
-                        </button>
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:justify-end">
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                            <button type="button" onclick="testConfiguration()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
+                                <i class="fas fa-vial mr-1 sm:mr-2"></i>
+                                Probar
+                            </button>
+                            <a href="{{ route('developer.config.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                                <i class="fas fa-times mr-1 sm:mr-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                                <i class="fas fa-save mr-1 sm:mr-2"></i>
+                                Guardar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>

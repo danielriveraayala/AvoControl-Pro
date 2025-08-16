@@ -155,6 +155,14 @@ class Tenant extends Model
     }
 
     /**
+     * Relationship: Subscriptions belonging to this tenant
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /**
      * Scope: Active tenants only
      */
     public function scopeActive($query)
@@ -243,10 +251,10 @@ class Tenant extends Model
     }
 
     /**
-     * Route model binding by slug
+     * Route model binding by ID (simpler for admin panel)
      */
     public function getRouteKeyName()
     {
-        return 'slug';
+        return 'id';
     }
 }

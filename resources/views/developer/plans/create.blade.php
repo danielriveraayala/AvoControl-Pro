@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="bg-white shadow rounded-lg mb-6">
             <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
@@ -16,9 +16,11 @@
                         </h1>
                         <p class="text-xs sm:text-sm text-gray-600">Configura un nuevo plan de suscripción</p>
                     </div>
-                    <a href="{{ route('developer.plans.index') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
-                        ← <span class="ml-1">Volver</span>
-                    </a>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.plans.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Volver</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -29,12 +31,12 @@
             
             <!-- Basic Information -->
             <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">
                         <i class="fas fa-info-circle text-blue-600 mr-2"></i>Información Básica
                     </h3>
                 </div>
-                <div class="px-6 py-6">
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Plan Key -->
                         <div>
@@ -75,12 +77,12 @@
 
             <!-- Pricing Information -->
             <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">
                         <i class="fas fa-dollar-sign text-green-600 mr-2"></i>Información de Precios
                     </h3>
                 </div>
-                <div class="px-6 py-6">
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Price -->
                         <div>
@@ -129,13 +131,13 @@
 
             <!-- Annual Pricing (Optional) -->
             <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">
                         <i class="fas fa-calendar-alt text-orange-600 mr-2"></i>Precios Anuales (Opcional)
                     </h3>
                     <p class="text-sm text-gray-600 mt-1">Configura precios anuales para ofrecer descuentos por pago adelantado</p>
                 </div>
-                <div class="px-6 py-6">
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Annual Price -->
                         <div>
@@ -194,12 +196,12 @@
 
             <!-- Limits and Trial -->
             <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">
                         <i class="fas fa-sliders-h text-purple-600 mr-2"></i>Límites y Configuración
                     </h3>
                 </div>
-                <div class="px-6 py-6">
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                         <!-- Trial Days -->
                         <div>
@@ -268,13 +270,13 @@
 
             <!-- Features Selection -->
             <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">
                         <i class="fas fa-puzzle-piece text-indigo-600 mr-2"></i>Funcionalidades del Plan
                     </h3>
                     <p class="text-sm text-gray-600 mt-1">Selecciona las funcionalidades que incluirá este plan</p>
                 </div>
-                <div class="px-6 py-6">
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
                     @foreach($availableFeatures as $category => $features)
                         <div class="mb-6">
                             <div class="flex items-center justify-between mb-3">
@@ -305,12 +307,12 @@
 
             <!-- Plan Configuration -->
             <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">
                         <i class="fas fa-cog text-gray-600 mr-2"></i>Configuración del Plan
                     </h3>
                 </div>
-                <div class="px-6 py-6">
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Plan Status -->
                         <div class="space-y-4">
@@ -379,7 +381,7 @@
 
             <!-- Action Buttons -->
             <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4">
+                <div class="px-4 sm:px-6 py-4">
                     <div class="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3">
                         <a href="{{ route('developer.plans.index') }}" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Cancelar

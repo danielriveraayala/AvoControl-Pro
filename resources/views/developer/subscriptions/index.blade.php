@@ -3,28 +3,33 @@
 @section('title', 'Gestión de Suscripciones')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         
         <!-- Header -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 p-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 flex items-center">
-                        <i class="fas fa-credit-card text-indigo-600 mr-3"></i>
-                        Gestión de Suscripciones
-                    </h1>
-                    <p class="mt-1 text-sm text-gray-600">Monitor and manage all tenant subscriptions and billing</p>
-                </div>
-                <div class="mt-4 sm:mt-0 flex space-x-3">
-                    <button onclick="refreshData()" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <i class="fas fa-refresh mr-2"></i>
-                        Refresh
-                    </button>
-                    <button onclick="exportData()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <i class="fas fa-download mr-2"></i>
-                        Export
-                    </button>
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+                            <i class="fas fa-credit-card text-indigo-600 mr-2"></i>
+                            Gestión de Suscripciones
+                        </h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Monitor and manage all tenant subscriptions and billing</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Dashboard</span>
+                        </a>
+                        <button onclick="refreshData()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 bg-white uppercase tracking-widest hover:bg-gray-50">
+                            <i class="fas fa-refresh mr-1 sm:mr-2"></i>
+                            <span class="hidden sm:inline">Refresh</span><span class="sm:hidden">Sync</span>
+                        </button>
+                        <button onclick="exportData()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                            <i class="fas fa-download mr-1 sm:mr-2"></i>
+                            Export
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -60,95 +65,75 @@
         @endif
 
         <!-- Statistics Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-credit-card text-2xl text-blue-500"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Suscripciones</dt>
-                                <dd class="text-lg font-semibold text-gray-900">{{ number_format($stats['total']) }}</dd>
-                            </dl>
-                        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-2 sm:p-3">
+                        <i class="fas fa-credit-card text-white text-lg sm:text-2xl"></i>
+                    </div>
+                    <div class="ml-3 sm:ml-4">
+                        <p class="text-xs sm:text-sm font-medium text-gray-600">Total Suscripciones</p>
+                        <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ number_format($stats['total']) }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-2xl text-green-500"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Activas</dt>
-                                <dd class="text-lg font-semibold text-gray-900">{{ number_format($stats['active']) }}</dd>
-                            </dl>
-                        </div>
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-green-500 rounded-md p-2 sm:p-3">
+                        <i class="fas fa-check-circle text-white text-lg sm:text-2xl"></i>
+                    </div>
+                    <div class="ml-3 sm:ml-4">
+                        <p class="text-xs sm:text-sm font-medium text-gray-600">Activas</p>
+                        <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ number_format($stats['active']) }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-pause text-2xl text-yellow-500"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Suspendidas</dt>
-                                <dd class="text-lg font-semibold text-gray-900">{{ number_format($stats['suspended']) }}</dd>
-                            </dl>
-                        </div>
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-2 sm:p-3">
+                        <i class="fas fa-pause text-white text-lg sm:text-2xl"></i>
+                    </div>
+                    <div class="ml-3 sm:ml-4">
+                        <p class="text-xs sm:text-sm font-medium text-gray-600">Suspendidas</p>
+                        <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ number_format($stats['suspended']) }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Pagos Fallidos</dt>
-                                <dd class="text-lg font-semibold text-gray-900">{{ number_format($stats['failing_payments']) }}</dd>
-                            </dl>
-                        </div>
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-red-500 rounded-md p-2 sm:p-3">
+                        <i class="fas fa-exclamation-triangle text-white text-lg sm:text-2xl"></i>
+                    </div>
+                    <div class="ml-3 sm:ml-4">
+                        <p class="text-xs sm:text-sm font-medium text-gray-600">Pagos Fallidos</p>
+                        <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ number_format($stats['failing_payments']) }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Business Metrics -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-dollar-sign text-2xl text-green-600"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">MRR</dt>
-                                <dd class="text-lg font-semibold text-gray-900">${{ number_format($metrics['mrr'], 2) }}</dd>
-                                @if($metrics['mrr_growth'] >= 0)
-                                <dd class="text-sm text-green-600">
-                                    <i class="fas fa-arrow-up"></i> {{ $metrics['mrr_growth'] }}%
-                                </dd>
-                                @else
-                                <dd class="text-sm text-red-600">
-                                    <i class="fas fa-arrow-down"></i> {{ abs($metrics['mrr_growth']) }}%
-                                </dd>
-                                @endif
-                            </dl>
-                        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-green-500 rounded-md p-2 sm:p-3">
+                        <i class="fas fa-dollar-sign text-white text-lg sm:text-2xl"></i>
+                    </div>
+                    <div class="ml-3 sm:ml-4">
+                        <p class="text-xs sm:text-sm font-medium text-gray-600">MRR</p>
+                        <p class="text-lg sm:text-2xl font-semibold text-gray-900">${{ number_format($metrics['mrr'], 2) }}</p>
+                        @if($metrics['mrr_growth'] >= 0)
+                        <p class="text-xs sm:text-sm text-green-600">
+                            <i class="fas fa-arrow-up"></i> {{ $metrics['mrr_growth'] }}%
+                        </p>
+                        @else
+                        <p class="text-xs sm:text-sm text-red-600">
+                            <i class="fas fa-arrow-down"></i> {{ abs($metrics['mrr_growth']) }}%
+                        </p>
+                        @endif
                     </div>
                 </div>
             </div>

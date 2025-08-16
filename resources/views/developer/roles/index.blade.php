@@ -19,8 +19,7 @@
                         </a>
                         @if(auth()->user()->isSuperAdmin() || auth()->user()->getHighestHierarchyLevel() > 1)
                         <a href="{{ route('developer.roles.create') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-                            <span class="sm:hidden">+</span>
-                            <span class="hidden sm:inline">+ Crear Nuevo Rol</span>
+                            <span class="mr-1">+</span> Crear Nuevo Rol
                         </a>
                         @endif
                     </div>

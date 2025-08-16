@@ -3,24 +3,26 @@
 @section('title', 'Configuración PayPal API')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="py-6 px-4 sm:px-6 lg:py-12 lg:px-8">
+    <div class="max-w-7xl mx-auto">
         
         <!-- Header -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 p-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 flex items-center">
-                        <i class="fab fa-paypal text-blue-600 mr-3"></i>
-                        Configuración PayPal API
-                    </h1>
-                    <p class="mt-1 text-sm text-gray-600">Configure las credenciales de PayPal para sandbox y producción</p>
-                </div>
-                <div class="mt-4 sm:mt-0">
-                    <a href="{{ route('developer.paypal.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Volver al Dashboard
-                    </a>
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div class="mb-4 sm:mb-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+                            <i class="fab fa-paypal text-blue-600 mr-2"></i>
+                            Configuración PayPal API
+                        </h1>
+                        <p class="text-xs sm:text-sm text-gray-600">Configure las credenciales de PayPal para pruebas y producción</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.paypal.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            <i class="fas fa-arrow-left mr-1 sm:mr-2"></i>
+                            Regresar
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -30,11 +32,13 @@
             @csrf
             
             <!-- Environment Selection -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-server text-gray-500 mr-2"></i>
-                    Entorno Activo
-                </h2>
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h2 class="text-base sm:text-lg font-semibold text-gray-900">
+                        <i class="fas fa-server text-gray-600 mr-2"></i>Entorno Activo
+                    </h2>
+                </div>
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <label class="relative flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 {{ $config['environment'] === 'sandbox' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200' }}">
@@ -42,7 +46,7 @@
                         <div class="ml-3">
                             <div class="flex items-center">
                                 <i class="fas fa-flask text-yellow-500 mr-2"></i>
-                                <span class="text-sm font-medium text-gray-900">Sandbox (Pruebas)</span>
+                                <span class="text-sm font-medium text-gray-900">Pruebas (Sandbox)</span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">Entorno de desarrollo para pruebas</p>
                         </div>
@@ -53,20 +57,23 @@
                         <div class="ml-3">
                             <div class="flex items-center">
                                 <i class="fas fa-globe text-green-500 mr-2"></i>
-                                <span class="text-sm font-medium text-gray-900">Producción (Live)</span>
+                                <span class="text-sm font-medium text-gray-900">Producción</span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">Entorno de producción real</p>
                         </div>
                     </label>
                 </div>
+                </div>
             </div>
 
             <!-- Sandbox Configuration -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-flask text-yellow-500 mr-2"></i>
-                    Configuración Sandbox
-                </h2>
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h2 class="text-base sm:text-lg font-semibold text-gray-900">
+                        <i class="fas fa-flask text-yellow-600 mr-2"></i>Configuración de Pruebas
+                    </h2>
+                </div>
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
                 
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                     <div class="flex">
@@ -74,13 +81,13 @@
                             <i class="fas fa-info-circle text-yellow-600"></i>
                         </div>
                         <div class="ml-3">
-                            <h3 class="text-sm font-medium text-yellow-800">Cómo obtener credenciales Sandbox</h3>
+                            <h3 class="text-sm font-medium text-yellow-800">Cómo obtener credenciales de Pruebas</h3>
                             <div class="mt-2 text-sm text-yellow-700">
                                 <ol class="list-decimal list-inside space-y-1">
                                     <li>Ingresa a <a href="https://developer.paypal.com/developer/applications/" target="_blank" class="underline">PayPal Developer Dashboard</a></li>
-                                    <li>Crea una nueva aplicación en modo Sandbox</li>
-                                    <li>Copia las credenciales Client ID y Client Secret</li>
-                                    <li>Configura los webhooks y copia el Webhook ID</li>
+                                    <li>Crea una nueva aplicación en modo de Pruebas</li>
+                                    <li>Copia las credenciales ID de Cliente y Secreto de Cliente</li>
+                                    <li>Configura los webhooks y copia el ID del Webhook</li>
                                 </ol>
                             </div>
                         </div>
@@ -89,7 +96,7 @@
                 
                 <div class="grid grid-cols-1 gap-6">
                     <div>
-                        <label for="sandbox_client_id" class="block text-sm font-medium text-gray-700">Client ID</label>
+                        <label for="sandbox_client_id" class="block text-sm font-medium text-gray-700">ID de Cliente</label>
                         <input type="text" name="sandbox_client_id" id="sandbox_client_id" 
                                value="{{ $config['sandbox']['client_id'] }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -100,7 +107,7 @@
                     </div>
                     
                     <div>
-                        <label for="sandbox_client_secret" class="block text-sm font-medium text-gray-700">Client Secret</label>
+                        <label for="sandbox_client_secret" class="block text-sm font-medium text-gray-700">Secreto de Cliente</label>
                         <input type="password" name="sandbox_client_secret" id="sandbox_client_secret" 
                                value="{{ $config['sandbox']['client_secret'] }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -111,7 +118,7 @@
                     </div>
                     
                     <div>
-                        <label for="sandbox_webhook_id" class="block text-sm font-medium text-gray-700">Webhook ID</label>
+                        <label for="sandbox_webhook_id" class="block text-sm font-medium text-gray-700">ID del Webhook</label>
                         <input type="text" name="sandbox_webhook_id" id="sandbox_webhook_id" 
                                value="{{ $config['sandbox']['webhook_id'] }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -122,14 +129,17 @@
                         <p class="mt-1 text-xs text-gray-500">URL del webhook: {{ url('/paypal/webhook') }}</p>
                     </div>
                 </div>
+                </div>
             </div>
 
             <!-- Live Configuration -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-globe text-green-500 mr-2"></i>
-                    Configuración Producción (Live)
-                </h2>
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h2 class="text-base sm:text-lg font-semibold text-gray-900">
+                        <i class="fas fa-globe text-green-600 mr-2"></i>Configuración de Producción
+                    </h2>
+                </div>
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
                 
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                     <div class="flex">
@@ -152,7 +162,7 @@
                 
                 <div class="grid grid-cols-1 gap-6">
                     <div>
-                        <label for="live_client_id" class="block text-sm font-medium text-gray-700">Client ID</label>
+                        <label for="live_client_id" class="block text-sm font-medium text-gray-700">ID de Cliente</label>
                         <input type="text" name="live_client_id" id="live_client_id" 
                                value="{{ $config['live']['client_id'] }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -163,7 +173,7 @@
                     </div>
                     
                     <div>
-                        <label for="live_client_secret" class="block text-sm font-medium text-gray-700">Client Secret</label>
+                        <label for="live_client_secret" class="block text-sm font-medium text-gray-700">Secreto de Cliente</label>
                         <input type="password" name="live_client_secret" id="live_client_secret" 
                                value="{{ $config['live']['client_secret'] }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -174,7 +184,7 @@
                     </div>
                     
                     <div>
-                        <label for="live_webhook_id" class="block text-sm font-medium text-gray-700">Webhook ID</label>
+                        <label for="live_webhook_id" class="block text-sm font-medium text-gray-700">ID del Webhook</label>
                         <input type="text" name="live_webhook_id" id="live_webhook_id" 
                                value="{{ $config['live']['webhook_id'] }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -185,24 +195,31 @@
                         <p class="mt-1 text-xs text-gray-500">URL del webhook: {{ url('/paypal/webhook') }}</p>
                     </div>
                 </div>
+                </div>
             </div>
 
             <!-- Actions -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-lg font-medium text-gray-900">Guardar Configuración</h3>
-                        <p class="text-sm text-gray-500">Los cambios se aplicarán inmediatamente al sistema</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button type="button" onclick="testCurrentConfig()" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <i class="fas fa-vial mr-2"></i>
-                            Probar Configuración
-                        </button>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <i class="fas fa-save mr-2"></i>
-                            Guardar Cambios
-                        </button>
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">
+                        <i class="fas fa-save text-blue-600 mr-2"></i>Guardar Configuración
+                    </h3>
+                </div>
+                <div class="px-4 sm:px-6 py-4 sm:py-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div class="mb-4 sm:mb-0">
+                            <p class="text-xs sm:text-sm text-gray-600">Los cambios se aplicarán inmediatamente al sistema</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                            <button type="button" onclick="testCurrentConfig()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                                <i class="fas fa-vial mr-1 sm:mr-2"></i>
+                                Probar
+                            </button>
+                            <button type="submit" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                                <i class="fas fa-save mr-1 sm:mr-2"></i>
+                                Guardar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -267,7 +284,7 @@ document.querySelectorAll('input[name="environment"]').forEach(radio => {
         if (this.value === 'live') {
             DevAlert.warning('Modo Producción', 'Has seleccionado el entorno de producción. Las transacciones serán reales.');
         } else {
-            DevAlert.info('Modo Sandbox', 'Has seleccionado el entorno de pruebas. Las transacciones son simuladas.');
+            DevAlert.info('Modo de Pruebas', 'Has seleccionado el entorno de pruebas. Las transacciones son simuladas.');
         }
     });
 });

@@ -13,9 +13,11 @@
                         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Configuración de Notificaciones Push</h1>
                         <p class="text-xs sm:text-sm text-gray-600">Configura las notificaciones push del navegador</p>
                     </div>
-                    <a href="{{ route('developer.config.index') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 self-start">
-                        ← <span class="ml-1">Volver</span>
-                    </a>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('developer.config.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            ← <span class="ml-1">Configuración</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
