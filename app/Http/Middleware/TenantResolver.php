@@ -45,7 +45,7 @@ class TenantResolver
                     session(['url.intended' => $fullUrl]);
                     session()->put('url.intended', $fullUrl);
                     
-                    return redirect()->guest('//avocontrol.pro/login')
+                    return redirect()->guest('https://avocontrol.pro/login')
                         ->with('error', 'Debes iniciar sesión para acceder a esta empresa.');
                 }
             }

@@ -33,7 +33,7 @@ class LandingPageController extends Controller
                     session(['url.intended' => $fullUrl]);
                     session()->put('url.intended', $fullUrl);
                     
-                    return redirect()->guest('//avocontrol.pro/login')
+                    return redirect()->guest('https://avocontrol.pro/login')
                         ->with('info', 'Por favor inicia sesión para acceder a esta empresa.');
                 }
             }

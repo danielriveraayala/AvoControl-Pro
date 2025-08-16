@@ -80,8 +80,9 @@ class AuthenticatedSessionController extends Controller
                         // Clear the intended URL from session
                         session()->forget('url.intended');
                         
-                        // Redirect to the intended URL
-                        return redirect($intendedUrl);
+                        // Ensure we use HTTPS for the redirect
+                        $secureUrl = str_replace('http://', 'https://', $intendedUrl);
+                        return redirect($secureUrl);
                     }
                 }
             }
@@ -89,7 +90,7 @@ class AuthenticatedSessionController extends Controller
         
         // Super admin goes to developer panel if no intended URL
         if ($user->hasRole('super_admin')) {
-            return redirect()->to('https://dev.avocontrol.pro/developer');
+            return redirect()->to('https://avocontrol.pro/developer');
         }
         
         // Get user's tenants
@@ -105,7 +106,7 @@ class AuthenticatedSessionController extends Controller
             $tenant = $userTenants->first();
             $user->update(['current_tenant_id' => $tenant->id]);
             
-            $tenantUrl = 'http://' . $tenant->slug . '.avocontrol.pro/dashboard';
+            $tenantUrl = 'https://' . $tenant->slug . '.avocontrol.pro/dashboard';
             return redirect()->away($tenantUrl);
         }
         
