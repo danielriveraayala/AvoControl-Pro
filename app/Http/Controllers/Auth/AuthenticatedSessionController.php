@@ -35,7 +35,51 @@ class AuthenticatedSessionController extends Controller
         // Check if user has a tenant and redirect to tenant subdomain
         $user = Auth::user();
         
-        // Super admin goes to developer panel
+        // Check if there's an intended URL (e.g., from trying to access a tenant subdomain)
+        $intendedUrl = session('url.intended');
+        
+        // If there's an intended URL and it's a tenant subdomain
+        if ($intendedUrl) {
+            // Parse the URL to extract the subdomain
+            $host = parse_url($intendedUrl, PHP_URL_HOST);
+            if ($host) {
+                $parts = explode('.', $host);
+                
+                // Check if it's a tenant subdomain (3+ parts)
+                if (count($parts) >= 3 && $parts[1] === 'avocontrol' && $parts[2] === 'pro') {
+                    $subdomain = $parts[0];
+                    
+                    // Verify user has access to this tenant
+                    $tenant = $user->tenants()
+                        ->where('tenants.slug', $subdomain)
+                        ->where('tenants.status', 'active')
+                        ->first();
+                    
+                    if ($tenant || $user->hasRole('super_admin')) {
+                        // User has access to this tenant or is super admin
+                        if ($tenant) {
+                            $user->update(['current_tenant_id' => $tenant->id]);
+                        } else if ($user->hasRole('super_admin')) {
+                            // Super admin accessing a tenant - find the tenant by slug
+                            $tenantForAdmin = \App\Models\Tenant::where('slug', $subdomain)
+                                ->where('status', 'active')
+                                ->first();
+                            if ($tenantForAdmin) {
+                                $user->update(['current_tenant_id' => $tenantForAdmin->id]);
+                            }
+                        }
+                        
+                        // Clear the intended URL from session
+                        session()->forget('url.intended');
+                        
+                        // Redirect to the intended URL
+                        return redirect($intendedUrl);
+                    }
+                }
+            }
+        }
+        
+        // Super admin goes to developer panel if no intended URL
         if ($user->hasRole('super_admin')) {
             return redirect()->to('https://dev.avocontrol.pro/developer');
         }
