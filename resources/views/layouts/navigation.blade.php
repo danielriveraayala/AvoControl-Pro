@@ -50,15 +50,9 @@
 
                     <x-slot name="content">
                         <!-- Authentication -->
-                        <form method="POST" action="{{ route('tenant.logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('tenant.logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
+                        <x-dropdown-link href="https://avocontrol.pro/logout">
+                            {{ __('Log Out') }}
+                        </x-dropdown-link>
                     </x-slot>
                 </x-dropdown>
             </div>
@@ -107,15 +101,9 @@
 
             <div class="mt-3 space-y-1">
                 <!-- Authentication -->
-                <form method="POST" action="{{ route('tenant.logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('tenant.logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
+                <x-responsive-nav-link href="https://avocontrol.pro/logout">
+                    {{ __('Log Out') }}
+                </x-responsive-nav-link>
             </div>
         </div>
     </div>

@@ -93,6 +93,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->to('https://avocontrol.pro/developer');
         }
         
+        // Check from which domain the login is happening
+        $currentHost = $request->getHost();
+        $isMainDomain = ($currentHost === 'avocontrol.pro');
+        
         // Get user's tenants
         $userTenants = $user->tenants()->where('tenants.status', 'active')->get();
         
@@ -101,8 +105,8 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('tenant.select');
         }
         
-        // If user has exactly one tenant, redirect there
-        if ($userTenants->count() == 1) {
+        // If user has exactly one tenant and is NOT logging in from main domain
+        if ($userTenants->count() == 1 && !$isMainDomain) {
             $tenant = $userTenants->first();
             $user->update(['current_tenant_id' => $tenant->id]);
             
@@ -110,34 +114,63 @@ class AuthenticatedSessionController extends Controller
             return redirect()->away($tenantUrl);
         }
         
-        // Default redirect if no tenant
+        // For main domain login or no tenants, go to main dashboard
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
     /**
-     * Handle logout from tenant subdomain by redirecting to main domain
+     * Handle GET logout (from tenant subdomains)
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function tenantLogout(Request $request)
+    public function getLogout(Request $request)
     {
-        // If we're on a tenant subdomain, redirect to main domain for logout
-        $host = $request->getHost();
-        $parts = explode('.', $host);
-        
-        if (count($parts) >= 3 && $parts[1] === 'avocontrol' && $parts[2] === 'pro') {
-            $subdomain = $parts[0];
+        \Log::info('GET Logout attempt', [
+            'authenticated' => Auth::check(),
+            'user_id' => Auth::id(),
+            'user_email' => Auth::user() ? Auth::user()->email : null,
+            'host' => $request->getHost(),
+            'session_id' => $request->session()->getId(),
+            'url' => $request->fullUrl(),
+            'user_agent' => $request->userAgent()
+        ]);
+
+        // Only logout if user is authenticated
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $userEmail = Auth::user()->email;
             
-            // Skip special subdomains
-            if (!in_array($subdomain, ['dev', 'www', 'api'])) {
-                // This is a tenant subdomain - redirect to main domain logout
-                return redirect()->away('https://avocontrol.pro/logout');
-            }
+            // Clear user's current tenant
+            Auth::user()->update(['current_tenant_id' => null]);
+            
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            \Log::info('Logout completed successfully', [
+                'user_id' => $userId,
+                'user_email' => $userEmail,
+                'new_session_id' => $request->session()->getId(),
+                'auth_check_after' => Auth::check()
+            ]);
+        } else {
+            \Log::info('No user to logout');
         }
         
-        // If we're already on main domain, proceed with normal logout
-        return $this->destroy($request);
+        // Create response with explicit cookie clearing
+        $response = redirect('/')->with('message', 'Sesión cerrada correctamente');
+        
+        // Clear the session cookie for the entire domain
+        $cookieName = config('session.cookie');
+        $response->withCookie(cookie()->forget($cookieName, '/', '.avocontrol.pro'));
+        
+        \Log::info('Logout redirect created', [
+            'redirect_url' => '/',
+            'cookie_cleared' => $cookieName
+        ]);
+        
+        return $response;
     }
 
     /**

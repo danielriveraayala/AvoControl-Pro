@@ -34,6 +34,10 @@ Route::middleware('guest')->group(function () {
                 ->name('password.update');
 });
 
+// GET logout route (no auth middleware to avoid conflicts)
+Route::get('logout', [AuthenticatedSessionController::class, 'getLogout'])
+            ->name('logout.get');
+
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', [EmailVerificationPromptController::class, '__invoke'])
                 ->name('verification.notice');
@@ -50,9 +54,6 @@ Route::middleware('auth')->group(function () {
                 ->name('password.confirm');
 
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
-
-    Route::post('tenant-logout', [AuthenticatedSessionController::class, 'tenantLogout'])
-                ->name('tenant.logout');
                 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
                 ->name('logout');

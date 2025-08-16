@@ -27,13 +27,9 @@
                 </div>
             </form>
 
-            <form method="POST" action="{{ route('tenant.logout') }}">
-                @csrf
-
-                <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900">
-                    {{ __('Log Out') }}
-                </button>
-            </form>
+            <a href="https://avocontrol.pro/logout" class="underline text-sm text-gray-600 hover:text-gray-900">
+                {{ __('Log Out') }}
+            </a>
         </div>
     </x-auth-card>
 </x-guest-layout>
