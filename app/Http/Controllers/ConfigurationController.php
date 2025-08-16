@@ -39,8 +39,6 @@ class ConfigurationController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'caliber_min' => 'nullable|integer|min:1',
-            'caliber_max' => 'nullable|integer|min:1',
             'weight_min' => 'nullable|integer|min:1',
             'weight_max' => 'nullable|integer|min:1',
             'description' => 'nullable|string|max:500',
@@ -71,8 +69,6 @@ class ConfigurationController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'caliber_min' => 'nullable|integer|min:1',
-            'caliber_max' => 'nullable|integer|min:1',
             'weight_min' => 'nullable|integer|min:1',
             'weight_max' => 'nullable|integer|min:1',
             'description' => 'nullable|string|max:500',

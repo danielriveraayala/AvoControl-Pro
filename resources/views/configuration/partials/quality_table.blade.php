@@ -4,7 +4,6 @@
             <th>Orden</th>
             <th>Nombre</th>
             <th>Color</th>
-            <th>Calibre</th>
             <th>Peso (g)</th>
             <th>Descripción</th>
             <th>Estado</th>
@@ -25,17 +24,6 @@
                         <div class="color-preview me-2" style="width: 20px; height: 20px; background-color: {{ $quality->color ?? '#6c757d' }}; border-radius: 4px; border: 1px solid #ccc;"></div>
                         <small class="text-muted">{{ $quality->color ?? '#6c757d' }}</small>
                     </div>
-                </td>
-                <td>
-                    <span class="text-info">
-                        @if($quality->caliber_min && $quality->caliber_max)
-                            {{ $quality->caliber_min }} - {{ $quality->caliber_max }}
-                        @elseif($quality->caliber_min || $quality->caliber_max)
-                            {{ $quality->caliber_min ?: $quality->caliber_max }}
-                        @else
-                            Sin especificar
-                        @endif
-                    </span>
                 </td>
                 <td>
                     <span class="text-primary">
@@ -71,7 +59,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="8" class="text-center text-muted">
+                <td colspan="7" class="text-center text-muted">
                     <i class="fas fa-star fa-2x mb-2 d-block"></i>
                     No hay calidades configuradas. <a href="#" onclick="openCreateQualityModal()">Crear la primera calidad</a>
                 </td>

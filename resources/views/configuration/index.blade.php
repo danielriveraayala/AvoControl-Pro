@@ -65,7 +65,6 @@
                                             <th>Orden</th>
                                             <th>Nombre</th>
                                             <th>Color</th>
-                                            <th>Calibre</th>
                                             <th>Peso (g)</th>
                                             <th>Estado</th>
                                             <th width="100">Acciones</th>
@@ -413,22 +412,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Rango de Calibre</label>
-                                    <div class="input-group">
-                                        <input type="number" name="caliber_min" id="caliber_min" class="form-control"
-                                               placeholder="Min" min="1">
-                                        <div class="input-group-prepend input-group-append">
-                                            <span class="input-group-text">-</span>
-                                        </div>
-                                        <input type="number" name="caliber_max" id="caliber_max" class="form-control"
-                                               placeholder="Max" min="1">
-                                    </div>
-                                    <small class="text-muted">Rango de calibre para esta calidad</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
+                            <div class="col-12">
                                 <div class="form-group">
                                     <label>Rango de Peso (gramos)</label>
                                     <div class="input-group">
@@ -443,7 +427,7 @@
                                             <span class="input-group-text">g</span>
                                         </div>
                                     </div>
-                                    <small class="text-muted">Rango de peso en gramos</small>
+                                    <small class="text-muted">Rango de peso en gramos para esta calidad</small>
                                 </div>
                             </div>
                         </div>
@@ -612,8 +596,6 @@
                 .then(response => response.json())
                 .then(data => {
                     $('#quality_name').val(data.name);
-                    $('#caliber_min').val(data.caliber_min);
-                    $('#caliber_max').val(data.caliber_max);
                     $('#weight_min').val(data.weight_min);
                     $('#weight_max').val(data.weight_max);
                     $('#description').val(data.description);
